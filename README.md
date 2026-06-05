@@ -96,6 +96,7 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 - `requirements.txt`：后端运行依赖。
 - `docs/research-report.md`：数据源、资讯源、真实性判断、情绪面、AI 反思和落地路线报告。
 - `docs/engineering-todo.md`：后端、数据库、API key、自动化、多账户和打包 TODO。
+- `docs/handoff.md`：换电脑或开启新 Codex 会话时的交接说明。
 
 ## 已实现的交互原型
 
@@ -142,3 +143,4 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 下一阶段的后端、数据库、API key、自动化、多账户和打包计划见：
 
 - [docs/engineering-todo.md](/Users/admin/Documents/keiko_stock/docs/engineering-todo.md)
+- [docs/handoff.md](/Users/admin/Documents/keiko_stock/docs/handoff.md)
