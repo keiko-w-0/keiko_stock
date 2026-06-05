@@ -1,1 +1,1 @@
-"""Keiko Stock AI local mock backend."""
+"""聚宝盆 local mock backend."""

@@ -374,6 +374,230 @@ const healthSources = [
   }
 ];
 
+const sourceKindLabels = {
+  market: "行情",
+  financial: "财务/估值",
+  filing: "公告/披露",
+  news: "新闻情绪"
+};
+
+const marketLabels = {
+  A: "A 股",
+  HK: "港股",
+  US: "美股"
+};
+
+const providerDisplayLabels = {
+  akshare: "AKShare",
+  alpha_vantage: "Alpha Vantage",
+  cninfo: "CNINFO 公告",
+  cninfo_sse_szse: "A 股公告自动源",
+  finnhub: "Finnhub",
+  hkexnews: "HKEXnews 公告",
+  mock: "模拟数据",
+  mock_hk_market: "港股模拟行情",
+  mock_hk_financial: "港股模拟财务",
+  mock_news_cn: "A 股模拟新闻情绪",
+  mock_news_hk: "港股模拟新闻情绪",
+  mock_news_us: "美股模拟新闻情绪",
+  sse: "上交所公告",
+  szse: "深交所公告",
+  tushare: "Tushare Pro",
+  "mock-adapter": "模拟适配器",
+  "mock adapter": "模拟适配器",
+  "structured mock": "结构化模拟数据",
+  "exchange mock": "交易所模拟数据",
+  "sentiment mock": "情绪模拟数据",
+  "data gate": "数据闸门"
+};
+
+const displayValueLabels = {
+  active: "上市中",
+  all: "全部",
+  auto: "自动",
+  balance_sheet: "资产负债表",
+  cash_flow: "现金流量表",
+  daily: "日线",
+  daily_basic: "每日指标",
+  delisted: "已退市",
+  earliest: "最早优先",
+  earnings: "每股收益",
+  etf_profile: "ETF 资料",
+  filing: "公告/披露",
+  fina_indicator: "财务指标",
+  financial: "财务/估值",
+  global_quote: "最新报价",
+  income: "利润表",
+  latest: "最新优先",
+  market: "行情",
+  market_status: "市场状态",
+  news: "新闻情绪",
+  news_sentiment: "新闻情绪",
+  overview: "公司概览",
+  profile: "公司资料",
+  quote: "报价",
+  relevance: "相关性优先",
+  source: "来源",
+  top_gainers: "涨幅榜",
+  top_losers: "跌幅榜",
+  most_actively_traded: "成交活跃榜"
+};
+
+const fieldDisplayLabels = {
+  adjusted_close: "复权收盘价",
+  annualreports: "年度报告",
+  asset_allocation: "资产配置",
+  authors: "作者",
+  change: "涨跌额",
+  change_percent: "涨跌幅",
+  close: "收盘价",
+  company: "公司",
+  currency: "币种",
+  date: "日期",
+  dividend_amount: "股息",
+  error: "错误",
+  high: "最高价",
+  information: "说明",
+  latest_trading_day: "最新交易日",
+  low: "最低价",
+  market: "市场",
+  market_open: "开市时间",
+  market_close: "收市时间",
+  message: "消息",
+  name: "名称",
+  open: "开盘价",
+  overall_sentiment_label: "整体情绪标签",
+  overall_sentiment_score: "整体情绪分",
+  previous_close: "前收盘价",
+  price: "最新价",
+  published_at: "发布时间",
+  quarterlyreports: "季度报告",
+  raw_ticker_sentiment: "原始标的情绪",
+  section: "分组",
+  sentiment_score: "情绪分",
+  source: "来源",
+  source_tier: "来源等级",
+  stock_code: "股票代码",
+  summary: "摘要",
+  symbol: "股票代码",
+  ticker: "标的",
+  tickers: "标的",
+  time_published: "发布时间",
+  timestamp: "时间",
+  timezone: "时区",
+  title: "标题",
+  total_rows: "总行数",
+  type: "类型",
+  url: "链接",
+  volume: "成交量"
+};
+
+const fieldTokenLabels = {
+  adjusted: "复权",
+  amount: "金额",
+  annual: "年度",
+  assets: "资产",
+  average: "平均",
+  capitalization: "市值",
+  cash: "现金",
+  change: "涨跌",
+  close: "收盘",
+  code: "代码",
+  company: "公司",
+  currency: "币种",
+  date: "日期",
+  day: "日",
+  debt: "债务",
+  dividend: "股息",
+  eps: "每股收益",
+  exchange: "交易所",
+  fiscal: "财务",
+  flow: "现金流",
+  from: "来源",
+  gross: "毛",
+  high: "最高",
+  income: "利润",
+  label: "标签",
+  latest: "最新",
+  low: "最低",
+  market: "市场",
+  name: "名称",
+  net: "净",
+  open: "开盘",
+  operating: "经营",
+  percent: "百分比",
+  price: "价格",
+  previous: "前一",
+  profit: "利润",
+  published: "发布",
+  quarterly: "季度",
+  report: "报告",
+  revenue: "收入",
+  score: "分",
+  sector: "行业",
+  sentiment: "情绪",
+  share: "股份",
+  source: "来源",
+  stock: "股票",
+  symbol: "代码",
+  time: "时间",
+  title: "标题",
+  total: "总",
+  trading: "交易",
+  type: "类型",
+  url: "链接",
+  value: "值",
+  volume: "成交量"
+};
+
+const traditionalToSimplifiedPairs = [
+  ["騰", "腾"], ["訊", "讯"], ["報", "报"], ["購", "购"], ["證", "证"], ["券", "券"],
+  ["變", "变"], ["動", "动"], ["發", "发"], ["額", "额"], ["資", "资"], ["產", "产"],
+  ["業", "业"], ["實", "实"], ["體", "体"], ["線", "线"], ["盤", "盘"], ["價", "价"],
+  ["張", "张"], ["戶", "户"], ["據", "据"], ["數", "数"], ["據", "据"], ["庫", "库"],
+  ["間", "间"], ["時", "时"], ["開", "开"], ["關", "关"], ["國", "国"], ["際", "际"],
+  ["華", "华"], ["電", "电"], ["腦", "脑"], ["聯", "联"], ["絡", "络"], ["網", "网"],
+  ["優", "优"], ["點", "点"], ["買", "买"], ["賣", "卖"], ["萬", "万"], ["億", "亿"],
+  ["與", "与"], ["專", "专"], ["項", "项"], ["總", "总"], ["續", "续"], ["經", "经"],
+  ["濟", "济"], ["務", "务"], ["員", "员"], ["獲", "获"], ["營", "营"], ["銷", "销"],
+  ["聞", "闻"], ["稱", "称"], ["為", "为"], ["後", "后"], ["會", "会"], ["顯", "显"],
+  ["示", "示"], ["風", "风"], ["險", "险"], ["應", "应"], ["層", "层"], ["級", "级"],
+  ["構", "构"], ["選", "选"], ["輪", "轮"], ["轉", "转"], ["復", "复"], ["盤", "盘"],
+  ["該", "该"], ["條", "条"], ["單", "单"], ["雙", "双"], ["讀", "读"], ["寫", "写"],
+  ["錄", "录"], ["檔", "档"], ["彙", "汇"], ["別", "别"], ["啟", "启"], ["欄", "栏"],
+  ["標", "标"], ["題", "题"], ["圖", "图"], ["過", "过"], ["輸", "输"], ["入", "入"],
+  ["輸", "输"], ["出", "出"], ["傳", "传"], ["並", "并"], ["憑", "凭"], ["審", "审"],
+  ["計", "计"], ["訊", "讯"], ["證", "证"], ["監", "监"], ["屬", "属"], ["灣", "湾"],
+  ["廣", "广"], ["東", "东"], ["滬", "沪"], ["深", "深"], ["港", "港"], ["臺", "台"],
+  ["來", "来"], ["類", "类"], ["佈", "布"], ["佔", "占"], ["餘", "余"], ["內", "内"],
+  ["參", "参"], ["壓", "压"], ["減", "减"], ["增", "增"], ["續", "续"], ["須", "须"],
+  ["對", "对"], ["區", "区"], ["號", "号"], ["認", "认"], ["許", "许"], ["註", "注"],
+  ["獨", "独"], ["權", "权"], ["償", "偿"], ["餘", "余"], ["貝", "贝"], ["頁", "页"],
+  ["台", "台"], ["二零二六", "二零二六"], ["發行人", "发行人"], ["證券", "证券"]
+];
+
+const traditionalToSimplifiedMap = new Map(traditionalToSimplifiedPairs);
+
+const fallbackDataSources = [
+  { id: "cn-akshare-market", market: "A", label: "AKShare A股行情", provider: "akshare", source_kind: "market", source_kind_label: "行情", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "" },
+  { id: "cn-tushare-market", market: "A", label: "Tushare Pro A股行情", provider: "tushare", source_kind: "market", source_kind_label: "行情", requires_key: true, credential_label: "Tushare token", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "cn-tushare-financial", market: "A", label: "Tushare Pro 财务/估值", provider: "tushare", source_kind: "financial", source_kind_label: "财务/估值", requires_key: true, credential_label: "Tushare token", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "cn-exchange-filings", market: "A", label: "CNINFO / 交易所公告", provider: "cninfo_sse_szse", source_kind: "filing", source_kind_label: "公告/披露", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "" },
+  { id: "cn-news-sentiment", market: "A", label: "A股新闻情绪", provider: "mock_news_cn", source_kind: "news", source_kind_label: "新闻情绪", requires_key: true, credential_label: "News API key", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "hk-market-vendor", market: "HK", label: "港股行情供应商", provider: "mock_hk_market", source_kind: "market", source_kind_label: "行情", requires_key: true, credential_label: "Market API key", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "hk-financial-provider", market: "HK", label: "港股财务/估值", provider: "mock_hk_financial", source_kind: "financial", source_kind_label: "财务/估值", requires_key: true, credential_label: "Financial API key", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "hk-hkexnews-filings", market: "HK", label: "HKEXnews 公告", provider: "hkexnews", source_kind: "filing", source_kind_label: "公告/披露", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "" },
+  { id: "hk-news-sentiment", market: "HK", label: "港股新闻情绪", provider: "mock_news_hk", source_kind: "news", source_kind_label: "新闻情绪", requires_key: true, credential_label: "News API key", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "us-alpha-vantage-market", market: "US", label: "Alpha Vantage 美股行情", provider: "alpha_vantage", source_kind: "market", source_kind_label: "行情", requires_key: true, credential_label: "Alpha Vantage key", enabled: true, configured: false, active: false, credential_hint: "" },
+  { id: "us-alpha-vantage-financial", market: "US", label: "Alpha Vantage 基本面", provider: "alpha_vantage", source_kind: "financial", source_kind_label: "财务/估值", requires_key: true, credential_label: "Alpha Vantage key", enabled: true, configured: false, active: false, credential_hint: "" },
+  { id: "us-finnhub-market", market: "US", label: "Finnhub 美股行情", provider: "finnhub", source_kind: "market", source_kind_label: "行情", requires_key: true, credential_label: "Finnhub key", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "us-finnhub-financial", market: "US", label: "Finnhub 基本面", provider: "finnhub", source_kind: "financial", source_kind_label: "财务/估值", requires_key: true, credential_label: "Finnhub key", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "us-sec-edgar-filings", market: "US", label: "SEC EDGAR 披露", provider: "sec_edgar", source_kind: "filing", source_kind_label: "公告/披露", requires_key: false, credential_label: "User-Agent", enabled: true, configured: true, active: true, credential_hint: "" },
+  { id: "us-news-sentiment", market: "US", label: "美股新闻情绪", provider: "mock_news_us", source_kind: "news", source_kind_label: "新闻情绪", requires_key: true, credential_label: "News API key", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "us-alpha-vantage-news", market: "US", label: "Alpha Vantage 新闻情绪", provider: "alpha_vantage", source_kind: "news", source_kind_label: "新闻情绪", requires_key: true, credential_label: "Alpha Vantage key", enabled: true, configured: false, active: false, credential_hint: "" },
+  { id: "us-finnhub-news", market: "US", label: "Finnhub 公司新闻", provider: "finnhub", source_kind: "news", source_kind_label: "新闻情绪", requires_key: true, credential_label: "Finnhub key", enabled: false, configured: false, active: false, credential_hint: "" }
+];
+
 const fxToCny = {
   CNY: 1,
   HKD: 0.92,
@@ -390,7 +614,7 @@ let portfolioTrades = [
 ];
 
 const filtersById = new Map(filterCatalog.flatMap((group) => group.items.map((item) => [item.id, item])));
-const stocks = baseStocks.map((stock) => enrichStock(stock));
+let stocks = baseStocks.map((stock) => enrichStock(stock));
 
 let activeMarket = "all";
 let selectedSymbol = stocks[0].symbol;
@@ -402,24 +626,60 @@ let latestPriceRefreshAt = "未刷新";
 let selectedHoldingSymbol = "002594.SZ";
 let tradeDetailsOpen = false;
 let selectedAnomalySymbol = "002594.SZ";
+let activeTab = "filters";
+let dataSources = [];
+let aksharePayload = null;
+let activeAkshareCategory = "stock";
+let akshareExpanded = false;
+let aksharePreviewPayload = null;
+let aksharePreviewLoading = false;
+let aksharePreviewError = "";
+let alphaVantagePayload = null;
+let activeAlphaVantageCategory = "market";
+let alphaVantagePreviewPayload = null;
+let alphaVantagePreviewLoading = false;
+let alphaVantagePreviewError = "";
+let sourceTestCatalog = null;
+let selectedSourceTestId = "filing-sse";
+let sourceTestPayload = null;
+let sourceTestLoading = false;
+let sourceTestError = "";
+let searchHistoryItems = [];
+let backtestPayload = null;
+let backtestLoading = false;
+let backtestError = "";
 const apiState = {
   connected: false,
-  accountId: "acct-demo-a",
+  accountId: "acct-admin",
   accounts: [],
   sharedCache: null,
+  sourceSummary: null,
   portfolio: null,
   lastError: ""
 };
-const navSectionIds = ["filters", "health", "daily", "anomalies", "favorites", "holdings"];
+const navSectionIds = ["filters", "health", "source-tests", "daily", "anomalies", "backtests", "favorites", "holdings", "settings"];
 
 const candidateGrid = document.querySelector("#candidateGrid");
 const candidateCount = document.querySelector("#candidateCount");
+const filterResultGrid = document.querySelector("#filterResultGrid");
+const filterResultCount = document.querySelector("#filterResultCount");
 const anomalyUniverseCount = document.querySelector("#anomalyUniverseCount");
 const anomalyStockSearch = document.querySelector("#anomalyStockSearch");
 const anomalyStockList = document.querySelector("#anomalyStockList");
 const anomalyPrompt = document.querySelector("#anomalyPrompt");
 const runAnomalyPrompt = document.querySelector("#runAnomalyPrompt");
 const anomalyReport = document.querySelector("#anomalyReport");
+const backtestForm = document.querySelector("#backtestForm");
+const backtestStatus = document.querySelector("#backtestStatus");
+const backtestResult = document.querySelector("#backtestResult");
+const backtestStrategy = document.querySelector("#backtestStrategy");
+const backtestMarket = document.querySelector("#backtestMarket");
+const backtestStart = document.querySelector("#backtestStart");
+const backtestEnd = document.querySelector("#backtestEnd");
+const backtestPositions = document.querySelector("#backtestPositions");
+const backtestRebalance = document.querySelector("#backtestRebalance");
+const backtestFee = document.querySelector("#backtestFee");
+const backtestSlippage = document.querySelector("#backtestSlippage");
 const detailTitle = document.querySelector("#detailTitle");
 const detailAction = document.querySelector("#detailAction");
 const detailBody = document.querySelector("#detailBody");
@@ -450,14 +710,41 @@ const activeRules = document.querySelector("#activeRules");
 const accountSelect = document.querySelector("#accountSelect");
 const backendStatus = document.querySelector("#backendStatus");
 const sharedCacheStatus = document.querySelector("#sharedCacheStatus");
+const dataSourceGrid = document.querySelector("#dataSourceGrid");
+const sourceSettingsStatus = document.querySelector("#sourceSettingsStatus");
+const akshareStatus = document.querySelector("#akshareStatus");
+const akshareToggle = document.querySelector("#akshareToggle");
+const akshareBody = document.querySelector("#akshareBody");
+const akshareCapabilityTabs = document.querySelector("#akshareCapabilityTabs");
+const akshareCapabilityGrid = document.querySelector("#akshareCapabilityGrid");
+const aksharePreview = document.querySelector("#aksharePreview");
+const alphaVantageStatus = document.querySelector("#alphaVantageStatus");
+const alphaVantageCapabilityTabs = document.querySelector("#alphaVantageCapabilityTabs");
+const alphaVantageCapabilityGrid = document.querySelector("#alphaVantageCapabilityGrid");
+const alphaVantagePreview = document.querySelector("#alphaVantagePreview");
+const sourceTestStatus = document.querySelector("#sourceTestStatus");
+const sourceTestSelect = document.querySelector("#sourceTestSelect");
+const sourceTestList = document.querySelector("#sourceTestList");
+const sourceTestForm = document.querySelector("#sourceTestForm");
+const sourceTestSymbol = document.querySelector("#sourceTestSymbol");
+const sourceTestParams = document.querySelector("#sourceTestParams");
+const sourceTestResult = document.querySelector("#sourceTestResult");
 const modalShell = document.querySelector("#detailModal");
 const modalTitle = document.querySelector("#modalTitle");
 const modalKicker = document.querySelector("#modalKicker");
 const modalBody = document.querySelector("#modalBody");
 const singleDrawer = document.querySelector("#singleDrawer");
+const searchHistoryBindings = [
+  { surface: "stock_analysis", input: () => symbolInput },
+  { surface: "filter_prompt", input: () => filterPrompt },
+  { surface: "data_source_test_symbol", input: () => sourceTestSymbol },
+  { surface: "data_source_test_keyword", input: () => sourceTestParams?.querySelector('[data-source-test-param="keyword"]') },
+  { surface: "anomaly_stock", input: () => anomalyStockSearch },
+  { surface: "anomaly_prompt", input: () => anomalyPrompt }
+];
 
 function enrichStock(stock) {
-  const metrics = metricProfiles[stock.symbol];
+  const metrics = stock.metrics ?? metricProfiles[stock.symbol];
   const enriched = {
     ...stock,
     metrics,
@@ -719,6 +1006,58 @@ function escapeHTML(value) {
     .replaceAll("'", "&#039;");
 }
 
+function normalizeFieldKey(key) {
+  return String(key ?? "")
+    .trim()
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .replace(/[\s.-]+/g, "_")
+    .replace(/_+/g, "_")
+    .toLowerCase();
+}
+
+function toSimplifiedChinese(value) {
+  let text = String(value ?? "");
+  for (const [from, to] of traditionalToSimplifiedPairs.filter(([from]) => from.length > 1)) {
+    text = text.replaceAll(from, to);
+  }
+  return [...text].map((char) => traditionalToSimplifiedMap.get(char) ?? char).join("");
+}
+
+function providerDisplayName(provider) {
+  const key = normalizeFieldKey(provider);
+  return providerDisplayLabels[key] || providerDisplayLabels[String(provider ?? "").trim().toLowerCase()] || toSimplifiedChinese(provider ?? "");
+}
+
+function displayColumnLabel(column) {
+  const raw = String(column ?? "");
+  const key = normalizeFieldKey(raw);
+  if (fieldDisplayLabels[key]) return fieldDisplayLabels[key];
+  if (/[\u4e00-\u9fff]/.test(raw)) return toSimplifiedChinese(raw);
+  const words = key.split("_").filter(Boolean);
+  if (!words.length) return "";
+  const translated = words.map((word) => fieldTokenLabels[word] || word.toUpperCase());
+  return translated.join("");
+}
+
+function displayCellValue(value, column = "") {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "boolean") return value ? "是" : "否";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "object") return toSimplifiedChinese(JSON.stringify(value));
+
+  const raw = String(value);
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  const simplified = toSimplifiedChinese(raw);
+  const key = normalizeFieldKey(simplified);
+  const columnKey = normalizeFieldKey(column);
+  if (columnKey === "source" || columnKey === "provider") return providerDisplayName(simplified);
+  return displayValueLabels[key] || providerDisplayLabels[key] || simplified;
+}
+
+function displayText(value) {
+  return displayCellValue(value);
+}
+
 async function apiRequest(path, options = {}) {
   const response = await fetch(path, {
     ...options,
@@ -728,9 +1067,105 @@ async function apiRequest(path, options = {}) {
     }
   });
   if (!response.ok) {
-    throw new Error(`${response.status} ${response.statusText}`);
+    const text = await response.text();
+    let detail = text;
+    try {
+      const payload = text ? JSON.parse(text) : null;
+      const value = payload?.detail ?? payload;
+      detail = typeof value === "string"
+        ? value
+        : (value?.message ?? value?.note ?? JSON.stringify(value));
+    } catch (error) {
+      detail = text;
+    }
+    throw new Error(detail || `${response.status} ${response.statusText}`);
   }
   return response.json();
+}
+
+async function saveSearchHistory(surface, query, metadata = {}) {
+  const clean = String(query ?? "").trim();
+  if (!clean || !apiState.connected) return;
+  try {
+    await apiRequest("/api/search-history", {
+      method: "POST",
+      body: JSON.stringify({
+        account_id: apiState.accountId,
+        surface,
+        query: clean,
+        metadata
+      })
+    });
+    await loadSearchHistory();
+  } catch (error) {
+    apiState.lastError = `搜索历史保存失败：${error.message}`;
+    updateBackendStatus(apiState.lastError);
+  }
+}
+
+async function loadSearchHistory() {
+  if (!apiState.connected) {
+    searchHistoryItems = [];
+    renderSearchHistories();
+    return;
+  }
+  try {
+    const params = new URLSearchParams({ account_id: apiState.accountId, limit: "80" });
+    const payload = await apiRequest(`/api/search-history?${params.toString()}`);
+    searchHistoryItems = Array.isArray(payload.items) ? payload.items : [];
+  } catch (error) {
+    searchHistoryItems = [];
+  }
+  renderSearchHistories();
+}
+
+function renderSearchHistories() {
+  searchHistoryBindings.forEach((binding) => {
+    const input = binding.input();
+    if (!input) return;
+    const row = ensureSearchHistoryRow(input, binding.surface);
+    if (!row) return;
+    const items = searchHistoryItems
+      .filter((item) => item.surface === binding.surface)
+      .slice(0, 6);
+    row.hidden = !items.length;
+    row.innerHTML = items.length
+      ? `
+        <span>历史</span>
+        ${items.map((item) => `
+          <button type="button" data-history-surface="${escapeHTML(binding.surface)}" data-history-value="${escapeHTML(item.query)}">
+            ${escapeHTML(item.query)}
+          </button>
+        `).join("")}
+      `
+      : "";
+  });
+}
+
+function ensureSearchHistoryRow(input, surface) {
+  const anchor = input.closest("label") ?? input;
+  let row = document.querySelector(`[data-search-history-row="${CSS.escape(surface)}"]`);
+  if (!row || !document.body.contains(row)) {
+    row = document.createElement("div");
+    row.className = "search-history-row";
+    row.dataset.searchHistoryRow = surface;
+  }
+  if (anchor.tagName === "LABEL") {
+    if (row.parentElement !== anchor) anchor.append(row);
+  } else if (row.previousElementSibling !== anchor) {
+    anchor.insertAdjacentElement("afterend", row);
+  }
+  return row;
+}
+
+function applySearchHistoryValue(surface, value) {
+  const binding = searchHistoryBindings.find((item) => item.surface === surface);
+  const input = binding?.input();
+  if (input) input.value = value;
+  if (surface === "stock_analysis") selectStock(value);
+  else if (surface === "filter_prompt") applyNaturalLanguageFilter();
+  else if (surface === "anomaly_stock") renderAnomalyStockList();
+  else if (surface === "anomaly_prompt") renderPromptAnomalyReport();
 }
 
 function normalizeBackendTrade(trade) {
@@ -760,11 +1195,106 @@ function updateBackendStatus(message = "") {
   }
 }
 
+function normalizeApiStock(stock) {
+  return {
+    ...stock,
+    metrics: stock.metrics ?? metricProfiles[stock.symbol],
+    evidence: stock.evidence ?? [],
+    reflection: stock.reflection ?? []
+  };
+}
+
 function populateAccountSelect() {
   if (!accountSelect || !apiState.accounts.length) return;
   accountSelect.innerHTML = apiState.accounts.map((account) => `
     <option value="${account.id}" ${account.id === apiState.accountId ? "selected" : ""}>${account.name}</option>
   `).join("");
+}
+
+async function loadStocksFromApi() {
+  if (!apiState.connected) return;
+  const data = await apiRequest(`/api/stocks/search?account_id=${encodeURIComponent(apiState.accountId)}`);
+  if (!Array.isArray(data.stocks) || !data.stocks.length) return;
+  stocks = data.stocks.map(normalizeApiStock).map((stock) => enrichStock(stock));
+  if (!stockBySymbol(selectedSymbol)) selectedSymbol = stocks[0].symbol;
+  if (!stockBySymbol(selectedAnomalySymbol)) selectedAnomalySymbol = stocks[0].symbol;
+}
+
+function applyDataSourcePayload(payload) {
+  dataSources = Array.isArray(payload?.sources) ? payload.sources : fallbackDataSources;
+  apiState.sourceSummary = payload?.summary ?? null;
+  renderDataSources();
+}
+
+async function loadAkshareCapabilities() {
+  if (!apiState.connected) {
+    aksharePayload = null;
+    aksharePreviewPayload = null;
+    aksharePreviewError = "";
+    renderAkshareExplorer();
+    return;
+  }
+  try {
+    aksharePayload = await apiRequest("/api/akshare/capabilities");
+    const groups = aksharePayload.groups ?? [];
+    if (!groups.some((group) => group.id === activeAkshareCategory)) {
+      activeAkshareCategory = groups[0]?.id ?? "stock";
+    }
+    aksharePreviewError = "";
+  } catch (error) {
+    aksharePayload = null;
+    aksharePreviewPayload = null;
+    aksharePreviewError = `AKShare 能力清单加载失败：${error.message}`;
+  }
+  renderAkshareExplorer();
+}
+
+async function loadAlphaVantageCapabilities() {
+  if (!apiState.connected) {
+    alphaVantagePayload = null;
+    alphaVantagePreviewPayload = null;
+    alphaVantagePreviewError = "";
+    renderAlphaVantageExplorer();
+    return;
+  }
+  try {
+    const params = new URLSearchParams({ account_id: apiState.accountId });
+    alphaVantagePayload = await apiRequest(`/api/alpha-vantage/capabilities?${params.toString()}`);
+    const groups = alphaVantagePayload.groups ?? [];
+    if (!groups.some((group) => group.id === activeAlphaVantageCategory)) {
+      activeAlphaVantageCategory = groups[0]?.id ?? "market";
+    }
+    alphaVantagePreviewError = "";
+  } catch (error) {
+    alphaVantagePayload = null;
+    alphaVantagePreviewPayload = null;
+    alphaVantagePreviewError = `Alpha Vantage 能力清单加载失败：${error.message}`;
+  }
+  renderAlphaVantageExplorer();
+}
+
+async function loadSourceTestCatalog() {
+  if (!apiState.connected) {
+    sourceTestCatalog = null;
+    sourceTestPayload = null;
+    sourceTestError = "";
+    renderSourceTests();
+    return;
+  }
+  try {
+    const params = new URLSearchParams({ account_id: apiState.accountId });
+    sourceTestCatalog = await apiRequest(`/api/data-source-tests/catalog?${params.toString()}`);
+    const tests = sourceTestCatalog.tests ?? [];
+    if (!tests.some((item) => item.id === selectedSourceTestId)) {
+      selectedSourceTestId = tests[0]?.id ?? "";
+    }
+    sourceTestError = "";
+  } catch (error) {
+    sourceTestCatalog = null;
+    sourceTestPayload = null;
+    sourceTestError = `数据源测试清单加载失败：${error.message}`;
+  }
+  renderSourceTests();
 }
 
 async function loadAccountFromApi(accountId = apiState.accountId) {
@@ -774,8 +1304,15 @@ async function loadAccountFromApi(accountId = apiState.accountId) {
     apiState.accountId = data.account.id;
     apiState.accounts = data.accounts;
     apiState.sharedCache = data.shared_cache;
+    apiState.sourceSummary = data.data_sources?.summary ?? null;
     apiState.portfolio = data.portfolio;
     apiState.lastError = "";
+    applyDataSourcePayload(data.data_sources);
+    await loadAkshareCapabilities();
+    await loadAlphaVantageCapabilities();
+    await loadSourceTestCatalog();
+    await loadStocksFromApi();
+    await loadSearchHistory();
     favoriteSymbols = new Set(data.favorites);
     portfolioTrades = data.trades.map(normalizeBackendTrade);
     selectedHoldingSymbol = openPositions()[0]?.symbol ?? "";
@@ -789,8 +1326,13 @@ async function loadAccountFromApi(accountId = apiState.accountId) {
   } catch (error) {
     apiState.connected = false;
     apiState.sharedCache = null;
+    apiState.sourceSummary = null;
     apiState.portfolio = null;
     apiState.lastError = `Mock API 未连接：${error.message}`;
+    applyDataSourcePayload({ sources: fallbackDataSources });
+    await loadAkshareCapabilities();
+    await loadAlphaVantageCapabilities();
+    await loadSourceTestCatalog();
     updateBackendStatus(apiState.lastError);
   }
 }
@@ -885,6 +1427,7 @@ function renderActiveRules() {
 function applyNaturalLanguageFilter() {
   const text = filterPrompt.value.trim().toLowerCase();
   if (!text) return;
+  void saveSearchHistory("filter_prompt", filterPrompt.value);
   filterCatalog.forEach((group) => {
     group.items.forEach((item) => {
       const matched = item.keywords.some((keyword) => text.includes(keyword.toLowerCase()));
@@ -902,9 +1445,17 @@ function applyNaturalLanguageFilter() {
 function renderCandidates() {
   const list = filteredStocks();
   candidateCount.textContent = `${list.length} 只`;
-  candidateGrid.innerHTML = list.length
-    ? list.map(renderStockCard).join("")
-    : `<div class="empty-state">当前过滤组合没有匹配股票。</div>`;
+  if (candidateGrid) {
+    candidateGrid.innerHTML = list.length
+      ? list.map(renderStockCard).join("")
+      : `<div class="empty-state">当前过滤组合没有匹配股票。</div>`;
+  }
+  if (filterResultCount) filterResultCount.textContent = `${list.length} 只`;
+  if (filterResultGrid) {
+    filterResultGrid.innerHTML = list.length
+      ? list.map(renderStockCard).join("")
+      : `<div class="empty-state">当前过滤组合没有匹配股票。</div>`;
+  }
   requestAnimationFrame(drawAllSparklines);
   renderAnomalyStockList();
 }
@@ -994,6 +1545,7 @@ function renderStockAnomalyReport(symbol) {
 function renderPromptAnomalyReport() {
   const text = anomalyPrompt.value.trim();
   if (!text) return;
+  void saveSearchHistory("anomaly_prompt", text);
   const normalized = text.toLowerCase();
   const isSector = text.includes("板块") || text.includes("电力") || text.includes("新能源") || text.includes("银行");
   const isMarket = text.includes("大盘") || text.includes("指数") || text.includes("市场");
@@ -1041,6 +1593,281 @@ function renderPromptAnomalyReport() {
       </div>
     </section>
   `;
+}
+
+function backtestConfigFromForm() {
+  return {
+    strategy: backtestStrategy?.value ?? "quality_momentum",
+    market: backtestMarket?.value ?? "all",
+    start_date: backtestStart?.value || "2026-03-02",
+    end_date: backtestEnd?.value || "2026-06-05",
+    max_positions: Number(backtestPositions?.value || 3),
+    initial_cash: 1000000,
+    fee_bps: Number(backtestFee?.value || 8),
+    slippage_bps: Number(backtestSlippage?.value || 5),
+    rebalance: backtestRebalance?.value ?? "monthly"
+  };
+}
+
+async function handleBacktestSubmit(event) {
+  event?.preventDefault();
+  const config = backtestConfigFromForm();
+  backtestLoading = true;
+  backtestError = "";
+  renderBacktestResult();
+  try {
+    backtestPayload = apiState.connected
+      ? await apiRequest("/api/backtests/run", { method: "POST", body: JSON.stringify(config) })
+      : localBacktestPayload(config);
+  } catch (error) {
+    backtestPayload = null;
+    backtestError = `回测失败：${error.message}`;
+  } finally {
+    backtestLoading = false;
+    renderBacktestResult();
+  }
+}
+
+function renderBacktestResult() {
+  if (!backtestResult) return;
+  if (backtestStatus) {
+    backtestStatus.textContent = backtestLoading ? "运行中" : backtestPayload ? "已生成报告" : "Mock 研究回测";
+  }
+  if (backtestLoading) {
+    backtestResult.innerHTML = `<div class="empty-state compact">正在运行回测...</div>`;
+    return;
+  }
+  if (backtestError) {
+    backtestResult.innerHTML = `<div class="empty-state compact">${escapeHTML(backtestError)}</div>`;
+    return;
+  }
+  if (!backtestPayload) {
+    backtestResult.innerHTML = `<div class="empty-state compact">选择策略和参数后运行回测。这里会展示收益曲线、回撤、换手、调仓记录、归因和研究限制。</div>`;
+    return;
+  }
+
+  const summary = backtestPayload.summary ?? {};
+  const strategy = backtestPayload.strategy ?? {};
+  const attribution = backtestPayload.attribution ?? {};
+  const logs = backtestPayload.rebalance_log ?? [];
+  const notes = backtestPayload.research_notes ?? [];
+  backtestResult.innerHTML = `
+    <div class="thesis">
+      <strong>${escapeHTML(strategy.label ?? "回测策略")}</strong>
+      <p>${escapeHTML(strategy.thesis ?? "用于验证策略假设的 mock 研究回测。")}</p>
+    </div>
+    <div class="backtest-summary-grid">
+      ${renderBacktestCard("总收益", formatPct(Number(summary.total_return ?? 0)), Number(summary.total_return ?? 0))}
+      ${renderBacktestCard("年化收益", formatPct(Number(summary.annualized_return ?? 0)), Number(summary.annualized_return ?? 0))}
+      ${renderBacktestCard("基准收益", formatPct(Number(summary.benchmark_return ?? 0)), Number(summary.benchmark_return ?? 0))}
+      ${renderBacktestCard("最大回撤", formatPct(Number(summary.max_drawdown ?? 0)), Number(summary.max_drawdown ?? 0), true)}
+      ${renderBacktestCard("波动率", `${Number(summary.volatility ?? 0).toFixed(2)}%`, 0)}
+      ${renderBacktestCard("Sharpe", Number(summary.sharpe ?? 0).toFixed(2), Number(summary.sharpe ?? 0))}
+      ${renderBacktestCard("胜率", `${Number(summary.win_rate ?? 0).toFixed(2)}%`, Number(summary.win_rate ?? 0))}
+      ${renderBacktestCard("换手事件", String(summary.turnover_events ?? 0), 0)}
+    </div>
+    <div class="backtest-layout">
+      <section class="backtest-panel">
+        <div class="curve-head">
+          <div>
+            <p class="eyebrow">Equity curve</p>
+            <h4>收益曲线与基准</h4>
+          </div>
+          <span class="confidence">${escapeHTML(backtestPayload.mode ?? "mock")}</span>
+        </div>
+        <canvas id="backtestCurve" class="backtest-chart" width="1200" height="320"></canvas>
+      </section>
+      <section class="backtest-panel">
+        <h4>归因摘要</h4>
+        <div class="source-meta">
+          <span class="status-chip verified">主驱动：${escapeHTML(attribution.main_driver ?? "N/A")}</span>
+          <span class="status-chip ${Number(attribution.annualized_excess_vs_benchmark ?? 0) >= 0 ? "fresh" : "warn"}">年化超额 ${formatPct(Number(attribution.annualized_excess_vs_benchmark ?? 0))}</span>
+        </div>
+        <div class="backtest-log">
+          ${renderAttributionList("贡献靠前", attribution.leaders ?? [])}
+          ${renderAttributionList("贡献靠后", attribution.laggards ?? [])}
+        </div>
+      </section>
+    </div>
+    <section class="backtest-panel">
+      <h4>调仓记录</h4>
+      <div class="backtest-log">
+        ${logs.length ? logs.map(renderBacktestLog).join("") : `<div class="empty-state compact">当前参数没有产生调仓记录。</div>`}
+      </div>
+    </section>
+    <section class="backtest-panel">
+      <h4>研究限制</h4>
+      <ul class="backtest-note-list">${notes.map((note) => `<li>${escapeHTML(note)}</li>`).join("")}</ul>
+    </section>
+  `;
+  requestAnimationFrame(drawBacktestCurve);
+}
+
+function renderBacktestCard(label, value, numberValue, invert = false) {
+  const positive = invert ? numberValue >= -8 : numberValue >= 0;
+  const className = positive ? "profit" : "loss";
+  return `
+    <article class="backtest-card">
+      <span>${label}</span>
+      <strong class="${className}">${value}</strong>
+    </article>
+  `;
+}
+
+function renderAttributionList(title, rows) {
+  return `
+    <article class="backtest-log-item">
+      <strong>${title}</strong>
+      <div class="backtest-holding-row">
+        ${rows.length ? rows.map((row) => `<span>${escapeHTML(row.symbol)} · ${Number(row.score ?? 0).toFixed(1)}</span>`).join("") : "<span>N/A</span>"}
+      </div>
+    </article>
+  `;
+}
+
+function renderBacktestLog(item) {
+  return `
+    <article class="backtest-log-item">
+      <strong>${escapeHTML(item.date)}</strong>
+      <p class="confidence">${escapeHTML(item.reason ?? "")}</p>
+      <div class="backtest-holding-row">
+        ${(item.holdings ?? []).map((holding) => `<span>${escapeHTML(holding.symbol)} · ${(Number(holding.weight ?? 0) * 100).toFixed(0)}%</span>`).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function drawBacktestCurve() {
+  const canvas = document.querySelector("#backtestCurve");
+  if (!canvas || !backtestPayload?.equity_curve?.length) return;
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+  const points = backtestPayload.equity_curve;
+  const values = points.flatMap((point) => [Number(point.value), Number(point.benchmark)]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(max - min, 1);
+  const padX = 46;
+  const padY = 34;
+  const plotWidth = width - padX * 2;
+  const plotHeight = height - padY * 2;
+  const xFor = (index) => padX + (index / Math.max(points.length - 1, 1)) * plotWidth;
+  const yFor = (value) => height - padY - ((value - min) / span) * plotHeight;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#fbfcfd";
+  ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = "#dbe2e7";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  [0, 0.5, 1].forEach((ratio) => {
+    const y = padY + plotHeight * ratio;
+    ctx.moveTo(padX, y);
+    ctx.lineTo(width - padX, y);
+  });
+  ctx.stroke();
+  drawBacktestLine(ctx, points, xFor, yFor, "value", "#16815f", 4);
+  drawBacktestLine(ctx, points, xFor, yFor, "benchmark", "#2364aa", 3);
+  ctx.fillStyle = "#172026";
+  ctx.font = "900 20px system-ui";
+  ctx.fillText("策略", padX, 26);
+  ctx.fillStyle = "#2364aa";
+  ctx.fillText("基准", padX + 68, 26);
+}
+
+function drawBacktestLine(ctx, points, xFor, yFor, key, color, width) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    const x = xFor(index);
+    const y = yFor(Number(point[key]));
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+
+function localBacktestPayload(config) {
+  const universe = stocks
+    .filter((stock) => config.market === "all" || stock.market === config.market)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, Math.max(1, config.max_positions));
+  const length = Math.max(...universe.map((stock) => stock.spark.length), 1);
+  let value = config.initial_cash;
+  let benchmark = config.initial_cash;
+  let peak = value;
+  const curve = [];
+  const returns = [];
+  for (let index = 0; index < length; index += 1) {
+    if (index > 0) {
+      const dayReturn = universe.reduce((sum, stock) => {
+        const current = stock.spark[index] ?? stock.price;
+        const previous = stock.spark[index - 1] ?? current;
+        return sum + (current / previous - 1);
+      }, 0) / Math.max(universe.length, 1);
+      const benchmarkReturn = stocks.reduce((sum, stock) => {
+        const current = stock.spark[index] ?? stock.price;
+        const previous = stock.spark[index - 1] ?? current;
+        return sum + (current / previous - 1);
+      }, 0) / Math.max(stocks.length, 1);
+      value *= 1 + dayReturn;
+      benchmark *= 1 + benchmarkReturn;
+      peak = Math.max(peak, value);
+      returns.push(dayReturn);
+    }
+    curve.push({
+      date: `D-${length - index - 1}`,
+      value: roundMoney(value),
+      benchmark: roundMoney(benchmark),
+      drawdown: peak ? Number(((value / peak - 1) * 100).toFixed(2)) : 0
+    });
+  }
+  const totalReturn = (value / config.initial_cash - 1) * 100;
+  const benchmarkReturn = (benchmark / config.initial_cash - 1) * 100;
+  const winRate = returns.length ? returns.filter((item) => item > 0).length / returns.length * 100 : 0;
+  return {
+    mode: "local-mock-research-backtest",
+    run_id: `local-${Date.now()}`,
+    config,
+    strategy: { label: strategyLabel(config.strategy), thesis: "本地 fallback 使用页面内 mock 股票曲线，只用于确认回测报告交互。" },
+    summary: {
+      total_return: Number(totalReturn.toFixed(2)),
+      annualized_return: Number((totalReturn * 252 / Math.max(returns.length, 1)).toFixed(2)),
+      benchmark_return: Number(benchmarkReturn.toFixed(2)),
+      max_drawdown: Math.min(...curve.map((point) => point.drawdown)),
+      volatility: 0,
+      sharpe: 0,
+      win_rate: Number(winRate.toFixed(2)),
+      turnover_events: 0,
+      trading_days: length
+    },
+    equity_curve: curve,
+    rebalance_log: [{ date: config.start_date, reason: "本地 fallback 按综合评分选择样本。", holdings: universe.map((stock) => ({ symbol: stock.symbol, weight: 1 / Math.max(universe.length, 1) })) }],
+    attribution: {
+      leaders: universe.slice(0, 3).map((stock) => ({ symbol: stock.symbol, score: stock.score })),
+      laggards: universe.slice(-3).map((stock) => ({ symbol: stock.symbol, score: stock.score })),
+      annualized_excess_vs_benchmark: Number((totalReturn - benchmarkReturn).toFixed(2)),
+      main_driver: strategyLabel(config.strategy)
+    },
+    research_notes: [
+      "当前为本地 fallback mock 回测，不代表真实历史收益。",
+      "正式版本必须使用复权行情、完整交易日历、真实调仓价、滑点和手续费。",
+      "样本量太小，不能用当前结果判断策略有效性。"
+    ]
+  };
+}
+
+function strategyLabel(strategy) {
+  if (strategy === "catalyst_rotation") return "催化轮动";
+  if (strategy === "defensive_quality") return "防守质量";
+  if (strategy === "low_rumor") return "低传闻高证据";
+  return "质量 + 动量";
+}
+
+function roundMoney(value) {
+  return Number(value.toFixed(2));
 }
 
 function renderStockCard(stock) {
@@ -1131,9 +1958,43 @@ function selectedStock() {
   return stocks.find((item) => item.symbol === selectedSymbol);
 }
 
-function selectStock(symbol, shouldOpenDrawer = true) {
-  const normalized = symbol.trim().toUpperCase();
-  const stock = stocks.find((item) => item.symbol.toUpperCase() === normalized);
+function stockByQuery(query) {
+  const raw = String(query ?? "").trim();
+  const normalized = raw.toLowerCase();
+  const upper = raw.toUpperCase();
+  if (!raw) return null;
+  return stocks.find((item) => (
+    item.symbol.toUpperCase() === upper
+    || item.name.toLowerCase() === normalized
+    || item.name.toLowerCase().includes(normalized)
+  ));
+}
+
+async function selectStock(symbol, shouldOpenDrawer = true) {
+  const raw = String(symbol ?? "").trim();
+  const normalized = raw.toUpperCase();
+  let stock = stockByQuery(raw);
+  if (!stock && raw && apiState.connected) {
+    try {
+      const params = new URLSearchParams({
+        q: raw,
+        market: activeMarket,
+        account_id: apiState.accountId
+      });
+      const payload = await apiRequest(`/api/stocks/search?${params.toString()}`);
+      const apiStocks = Array.isArray(payload.stocks) ? payload.stocks : [];
+      apiStocks.map(normalizeApiStock).map((item) => enrichStock(item)).forEach((item) => {
+        const index = stocks.findIndex((existing) => existing.symbol === item.symbol);
+        if (index >= 0) stocks[index] = item;
+        else stocks.push(item);
+      });
+      stock = apiStocks.length ? stockByQuery(apiStocks[0].symbol) : null;
+      await loadSearchHistory();
+    } catch (error) {
+      apiState.lastError = `股票搜索失败：${error.message}`;
+      updateBackendStatus(apiState.lastError);
+    }
+  }
   selectedSymbol = stock ? stock.symbol : normalized;
   renderCandidates();
   renderFavoriteRows();
@@ -1377,9 +2238,9 @@ function renderEvidence(item, index) {
     <div class="evidence-item">
       <div class="evidence-top">
         <span class="source-tier">${item.tier}</span>
-        <span class="confidence">${Math.round(item.confidence * 100)}% · ${item.source}</span>
+        <span class="confidence">${Math.round(item.confidence * 100)}% · ${escapeHTML(displayText(item.source))}</span>
       </div>
-      <p>${item.claim}</p>
+      <p>${escapeHTML(displayText(item.claim))}</p>
       <button class="mini-action" data-claim-index="${index}" type="button">详情</button>
     </div>
   `;
@@ -1738,25 +2599,762 @@ function renderHealth() {
         <strong>${item.name}</strong>
         <span class="freshness-badge ${item.status}">${statusText(item.status)}</span>
       </div>
-      <p class="confidence">${item.source}</p>
-      <p>${item.text}</p>
+      <p class="confidence">${escapeHTML(displayText(item.source))}</p>
+      <p>${escapeHTML(displayText(item.text))}</p>
     </article>
   `).join("");
+}
+
+function renderDataSources() {
+  if (!dataSourceGrid) return;
+  const sources = dataSources.length ? dataSources : fallbackDataSources;
+  const grouped = sources.reduce((map, source) => {
+    const market = source.market;
+    if (!map.has(market)) map.set(market, []);
+    map.get(market).push(source);
+    return map;
+  }, new Map());
+  const activeCount = sources.filter((source) => source.active).length;
+  if (sourceSettingsStatus) {
+    sourceSettingsStatus.textContent = apiState.connected
+      ? `${activeCount}/${sources.length} 已生效`
+      : "本地 fallback";
+  }
+  dataSourceGrid.innerHTML = [...grouped.entries()].map(([market, items]) => `
+    <section class="source-market-group">
+      <div class="source-market-head">
+        <h4>${marketLabels[market] ?? market}</h4>
+        <span class="confidence">${items.filter((item) => item.active).length}/${items.length} 个数据源已生效</span>
+      </div>
+      <div class="source-card-grid">
+        ${items.map(renderSourceCard).join("")}
+      </div>
+    </section>
+  `).join("");
+}
+
+function renderSourceCard(source) {
+  const active = source.enabled && source.configured;
+  const needsConfig = source.enabled && source.requires_key && !source.configured;
+  const status = active ? "已生效" : needsConfig ? "需配置 API" : source.enabled ? "已勾选" : "未使用";
+  const statusClass = active ? "fresh" : needsConfig ? "warn" : "stale";
+  const cardClass = active ? "active" : needsConfig ? "needs-config" : "";
+  const placeholder = source.requires_key
+    ? (source.credential_hint ? `已配置 ${source.credential_hint}` : source.credential_label)
+    : source.credential_label;
+  return `
+    <article class="source-card ${cardClass}" data-source-card="${source.id}">
+      <div class="source-top">
+        <div class="source-title">
+          <strong>${escapeHTML(source.label)}</strong>
+          <span>${escapeHTML(providerDisplayName(source.provider))} · ${escapeHTML(source.source_kind_label ?? sourceKindLabels[source.source_kind] ?? source.source_kind)}</span>
+        </div>
+        <label class="source-toggle">
+          <input type="checkbox" data-source-enabled="${source.id}" ${source.enabled ? "checked" : ""} />
+          <span>使用</span>
+        </label>
+      </div>
+      <div class="source-fields">
+        <label>
+          <span>${escapeHTML(source.credential_label)}</span>
+          <input data-source-key="${source.id}" type="${source.requires_key ? "password" : "text"}" placeholder="${escapeHTML(placeholder)}" ${source.requires_key ? "" : "disabled"} />
+        </label>
+        <button class="primary-action" data-source-save="${source.id}" type="button">保存配置</button>
+        ${["tushare", "finnhub"].includes(source.provider) ? `<button class="ghost-action small" data-source-refresh="${source.provider}" type="button">刷新数据</button>` : ""}
+      </div>
+      <div class="source-meta">
+        <span class="status-chip ${statusClass}">${status}</span>
+        <span class="status-chip verified">${escapeHTML(source.source_kind_label ?? source.source_kind)}</span>
+      </div>
+    </article>
+  `;
+}
+
+function renderSourceTests() {
+  if (!sourceTestStatus || !sourceTestSelect || !sourceTestList || !sourceTestParams || !sourceTestResult) return;
+
+  if (!apiState.connected) {
+    sourceTestStatus.textContent = "后端未连接";
+    sourceTestSelect.innerHTML = "";
+    sourceTestList.innerHTML = `<p class="empty-state compact">启动本地后端后可测试真实数据源。</p>`;
+    sourceTestParams.innerHTML = "";
+    sourceTestResult.innerHTML = "";
+    return;
+  }
+
+  if (!sourceTestCatalog) {
+    sourceTestStatus.textContent = "加载失败";
+    sourceTestSelect.innerHTML = "";
+    sourceTestList.innerHTML = `<p class="empty-state compact">${escapeHTML(sourceTestError || "数据源测试清单不可用。")}</p>`;
+    sourceTestParams.innerHTML = "";
+    sourceTestResult.innerHTML = "";
+    return;
+  }
+
+  const tests = sourceTestCatalog.tests ?? [];
+  const activeCount = tests.filter((item) => item.active).length;
+  sourceTestStatus.textContent = `${activeCount}/${tests.length} 可测试`;
+
+  sourceTestSelect.innerHTML = tests.map((test) => `
+    <option value="${escapeHTML(test.id)}" ${test.id === selectedSourceTestId ? "selected" : ""}>
+      ${escapeHTML(displayText(test.label))}
+    </option>
+  `).join("");
+
+  const grouped = tests.reduce((map, test) => {
+    const group = test.source_kind_label || test.source_kind || "其他";
+    if (!map.has(group)) map.set(group, []);
+    map.get(group).push(test);
+    return map;
+  }, new Map());
+  sourceTestList.innerHTML = [...grouped.entries()].map(([group, items]) => `
+    <section class="source-test-group">
+      <h4>${escapeHTML(displayText(group))}</h4>
+      ${items.map(renderSourceTestItem).join("")}
+    </section>
+  `).join("");
+
+  renderSourceTestForm();
+  renderSourceTestResult();
+}
+
+function renderSourceTestItem(test) {
+  const selected = test.id === selectedSourceTestId;
+  const statusClass = test.active ? "fresh" : test.implemented ? "warn" : "stale";
+  return `
+    <button class="source-test-item ${selected ? "active" : ""}" data-source-test-id="${escapeHTML(test.id)}" type="button">
+      <span>
+        <strong>${escapeHTML(displayText(test.label))}</strong>
+        <small>${escapeHTML(providerDisplayName(test.provider))} · ${escapeHTML(marketLabels[test.market] ?? test.market ?? "")}</small>
+      </span>
+      <em class="${statusClass}">${escapeHTML(displayText(test.status))}</em>
+    </button>
+  `;
+}
+
+function renderSourceTestForm() {
+  const test = selectedSourceTest();
+  if (!test || !sourceTestSymbol || !sourceTestParams) return;
+  if (!sourceTestSymbol.value || sourceTestSymbol.dataset.testDefaultFor !== test.id) {
+    sourceTestSymbol.value = test.default_symbol ?? "";
+    sourceTestSymbol.dataset.testDefaultFor = test.id;
+  }
+  sourceTestParams.innerHTML = (test.params ?? []).map((param) => {
+    const type = param.kind === "date" ? "date" : param.kind === "int" || param.kind === "float" ? "number" : "search";
+    const step = param.kind === "float" ? "0.01" : "1";
+    return `
+      <label>
+        <span>${escapeHTML(param.label ?? param.name)}</span>
+        <input
+          data-source-test-param="${escapeHTML(param.name)}"
+          data-source-test-kind="${escapeHTML(param.kind ?? "str")}"
+          type="${type}"
+          step="${step}"
+          value="${escapeHTML(param.default ?? "")}"
+        />
+      </label>
+    `;
+  }).join("");
+  renderSearchHistories();
+}
+
+function renderSourceTestResult() {
+  if (!sourceTestResult) return;
+  if (sourceTestLoading) {
+    sourceTestResult.innerHTML = `<p class="empty-state compact">正在测试数据源...</p>`;
+    return;
+  }
+  if (sourceTestError) {
+    sourceTestResult.innerHTML = `<p class="empty-state compact">${escapeHTML(sourceTestError)}</p>`;
+    return;
+  }
+  if (!sourceTestPayload) {
+    const test = selectedSourceTest();
+    sourceTestResult.innerHTML = test
+      ? `
+        <div class="source-test-empty">
+          <strong>${escapeHTML(test.label)}</strong>
+          <p>${escapeHTML(displayText(test.description ?? ""))}</p>
+        </div>
+      `
+      : `<p class="empty-state compact">请选择数据源。</p>`;
+    return;
+  }
+
+  const result = sourceTestPayload.result ?? {};
+  const rows = Array.isArray(result.rows) ? result.rows : [];
+  const columns = result.columns?.length ? result.columns : Object.keys(rows[0] ?? {});
+  const visibleColumns = columns.slice(0, 10);
+  const errorList = Array.isArray(result.errors) ? result.errors : [];
+  const errorHtml = errorList.length
+    ? `
+      <div class="source-test-error-list">
+        ${errorList.map((item) => `<span>${escapeHTML(displayCellValue(item.source ?? "source", "source"))}：${escapeHTML(displayText(item.message ?? item.error ?? ""))}</span>`).join("")}
+      </div>
+    `
+    : "";
+  const table = rows.length
+    ? `
+      <div class="table-wrap source-test-table-wrap">
+        <table>
+          <thead>
+            <tr>${visibleColumns.map((column) => `<th>${escapeHTML(displayColumnLabel(column))}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${rows.slice(0, 12).map((row) => `
+              <tr>${visibleColumns.map((column) => renderResultCell(row?.[column], column)).join("")}</tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `
+    : `<p class="empty-state compact">本次调用没有表格行。</p>`;
+
+  sourceTestResult.innerHTML = `
+    <div class="source-test-result-head">
+      <div>
+        <strong>${escapeHTML(displayText(sourceTestPayload.test?.label ?? "数据源测试结果"))}</strong>
+        <p>${escapeHTML(sourceTestPayload.request?.symbol ?? "")} · ${escapeHTML(providerDisplayName(sourceTestPayload.test?.provider ?? ""))}</p>
+      </div>
+      <span class="count-pill">${result.returned_rows ?? rows.length}/${result.total_rows ?? rows.length} 行</span>
+    </div>
+    ${errorHtml}
+    ${table}
+    <details class="source-test-raw">
+      <summary>原始 JSON</summary>
+      <pre>${escapeHTML(JSON.stringify(sourceTestPayload, null, 2))}</pre>
+    </details>
+  `;
+}
+
+function renderResultCell(value, column = "") {
+  const text = value === null || value === undefined ? "" : String(value);
+  const href = text.startsWith("http://") || text.startsWith("https://");
+  const display = displayCellValue(value, column);
+  return href
+    ? `<td><a class="source-link" href="${escapeHTML(text)}" target="_blank" rel="noreferrer">打开</a></td>`
+    : `<td><div class="result-cell-clamp" title="${escapeHTML(display)}">${escapeHTML(display)}</div></td>`;
+}
+
+function selectedSourceTest() {
+  return (sourceTestCatalog?.tests ?? []).find((item) => item.id === selectedSourceTestId);
+}
+
+function sourceTestParamPayload() {
+  const payload = {};
+  sourceTestParams?.querySelectorAll("[data-source-test-param]").forEach((input) => {
+    const key = input.dataset.sourceTestParam;
+    const kind = input.dataset.sourceTestKind;
+    if (!key) return;
+    if (kind === "int") payload[key] = input.value ? Number.parseInt(input.value, 10) : "";
+    else if (kind === "float") payload[key] = input.value ? Number.parseFloat(input.value) : "";
+    else payload[key] = input.value.trim();
+  });
+  return payload;
+}
+
+async function runSourceTest() {
+  const test = selectedSourceTest();
+  if (!test) return;
+  sourceTestLoading = true;
+  sourceTestError = "";
+  sourceTestPayload = null;
+  renderSourceTestResult();
+  try {
+    sourceTestPayload = await apiRequest("/api/data-source-tests/run", {
+      method: "POST",
+      body: JSON.stringify({
+        test_id: test.id,
+        symbol: sourceTestSymbol?.value.trim() || test.default_symbol || "",
+        account_id: apiState.accountId,
+        params: sourceTestParamPayload()
+      })
+    });
+    sourceTestError = "";
+    await loadSearchHistory();
+  } catch (error) {
+    sourceTestError = `数据源测试失败：${error.message}`;
+  } finally {
+    sourceTestLoading = false;
+    renderSourceTestResult();
+  }
+}
+
+function renderAkshareExplorer() {
+  if (!akshareStatus || !akshareCapabilityTabs || !akshareCapabilityGrid || !aksharePreview) return;
+  syncAkshareExplorerChrome();
+
+  if (!apiState.connected) {
+    akshareStatus.textContent = "后端未连接";
+    akshareStatus.className = "status-chip warn";
+    akshareCapabilityTabs.innerHTML = "";
+    akshareCapabilityGrid.innerHTML = `<p class="empty-state compact">启动本地后端后可查看 AKShare 能力清单。</p>`;
+    aksharePreview.innerHTML = "";
+    return;
+  }
+
+  if (!aksharePayload) {
+    akshareStatus.textContent = "加载失败";
+    akshareStatus.className = "status-chip warn";
+    akshareCapabilityTabs.innerHTML = "";
+    akshareCapabilityGrid.innerHTML = `<p class="empty-state compact">${escapeHTML(aksharePreviewError || "AKShare 能力清单不可用。")}</p>`;
+    aksharePreview.innerHTML = "";
+    return;
+  }
+
+  const installed = Boolean(aksharePayload.status?.installed);
+  const total = aksharePayload.summary?.total ?? 0;
+  const available = aksharePayload.summary?.available ?? 0;
+  akshareStatus.textContent = installed
+    ? `AKShare ${aksharePayload.status?.version ?? ""} · ${available}/${total} 可用`
+    : "未安装 AKShare";
+  akshareStatus.className = `status-chip ${installed ? "fresh" : "warn"}`;
+  akshareStatus.title = aksharePayload.status?.note ?? "";
+
+  const groups = aksharePayload.groups ?? [];
+  akshareCapabilityTabs.innerHTML = groups.map((group) => `
+    <button class="akshare-tab ${group.id === activeAkshareCategory ? "active" : ""}" data-ak-category="${group.id}" type="button">
+      ${escapeHTML(group.label)} <span>${group.count}</span>
+    </button>
+  `).join("");
+
+  const capabilities = (aksharePayload.capabilities ?? []).filter((item) => item.category === activeAkshareCategory);
+  akshareCapabilityGrid.innerHTML = capabilities.length
+    ? capabilities.map(renderAkshareCapabilityCard).join("")
+    : `<p class="empty-state compact">当前分类没有已登记能力。</p>`;
+
+  renderAksharePreview();
+}
+
+function syncAkshareExplorerChrome() {
+  if (akshareBody) akshareBody.hidden = !akshareExpanded;
+  if (akshareToggle) {
+    akshareToggle.textContent = akshareExpanded ? "收起" : "展开";
+    akshareToggle.setAttribute("aria-expanded", String(akshareExpanded));
+  }
+}
+
+function renderAkshareCapabilityCard(capability) {
+  const available = capability.available;
+  const statusClass = available ? "fresh" : "warn";
+  const statusTextValue = available ? "当前版本可用" : "未安装或版本不含";
+  const params = capability.params ?? [];
+
+  return `
+    <article class="akshare-card" data-ak-card="${capability.id}">
+      <div class="akshare-card-head">
+        <div>
+          <strong>${escapeHTML(capability.label)}</strong>
+          <span>${escapeHTML(capability.function)}</span>
+        </div>
+        <span class="status-chip ${statusClass}">${statusTextValue}</span>
+      </div>
+      <p>${escapeHTML(capability.description)}</p>
+      ${params.length ? `<div class="provider-param-grid">${params.map((param) => renderAkshareParamField(capability, param)).join("")}</div>` : `<p class="akshare-card-meta">无需参数，直接获取。</p>`}
+      <div class="akshare-card-actions">
+        <button class="primary-action small" data-ak-fetch="${escapeHTML(capability.id)}" type="button" ${available ? "" : "disabled"}>获取数据</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderAkshareParamField(capability, param) {
+  const fieldId = `ak-${capability.id}-${param.name}`;
+  const defaultValue = akshareParamDefault(capability, param);
+  const description = akshareParamDescription(param);
+  const choices = Array.isArray(param.choices) && param.choices.length ? param.choices : [];
+  const input = choices.length
+    ? `
+      <select id="${escapeHTML(fieldId)}" data-ak-param="${escapeHTML(param.name)}">
+        ${choices.map((choice) => `<option value="${escapeHTML(choice)}" ${String(choice) === String(defaultValue) ? "selected" : ""}>${escapeHTML(choice)}</option>`).join("")}
+      </select>
+    `
+    : `<input id="${escapeHTML(fieldId)}" data-ak-param="${escapeHTML(param.name)}" type="text" value="${escapeHTML(defaultValue)}" placeholder="${escapeHTML(param.required ? "必填" : "可选")}" />`;
+  return `
+    <label class="provider-param-field" for="${escapeHTML(fieldId)}">
+      <span>${escapeHTML(param.name)}${param.required ? " *" : ""}</span>
+      <small>${escapeHTML(description)}</small>
+      ${input}
+    </label>
+  `;
+}
+
+function akshareParamDefault(capability, param) {
+  const example = capability.examples?.[0] ?? {};
+  const value = example[param.name] ?? param.default ?? akshareFallbackParamDefault(param);
+  return value === null || value === undefined ? "" : String(value);
+}
+
+function akshareFallbackParamDefault(param) {
+  const name = param.name;
+  if (name === "period") return "daily";
+  if (name === "adjust") return "qfq";
+  if (name === "start_date") return "20250101";
+  if (name === "end_date") return "20260605";
+  if (name === "symbol") return "600519";
+  return "";
+}
+
+function akshareParamDescription(param) {
+  if (param.name === "period") return "周期：daily 日线，weekly 周线，monthly 月线；分钟线接口可用 1/5/15/30/60。";
+  if (param.name === "adjust") return "复权方式：空值为不复权，qfq 为前复权，hfq 为后复权。";
+  if (param.name === "symbol") return param.description || "股票代码，A 股通常填 6 位代码，例如 600519。";
+  if (param.name === "start_date" || param.name === "end_date") return param.description || "日期，通常为 YYYYMMDD。";
+  return param.description || "接口参数。";
+}
+
+function renderAksharePreview() {
+  if (!aksharePreview) return;
+  if (aksharePreviewLoading) {
+    aksharePreview.innerHTML = `<p class="empty-state compact">正在调用 AKShare...</p>`;
+    return;
+  }
+  if (aksharePreviewError) {
+    aksharePreview.innerHTML = `<p class="empty-state compact">${escapeHTML(aksharePreviewError)}</p>`;
+    return;
+  }
+  if (!aksharePreviewPayload) {
+    aksharePreview.innerHTML = `<p class="empty-state compact">选择一个能力试跑后，这里会显示返回行数、字段和前几行数据。</p>`;
+    return;
+  }
+
+  const result = aksharePreviewPayload.result ?? {};
+  const capability = aksharePreviewPayload.capability ?? {};
+  const rows = Array.isArray(result.rows) ? result.rows : [];
+  const columns = result.columns?.length ? result.columns : Object.keys(rows[0] ?? {});
+  const visibleColumns = columns.slice(0, 8);
+  const rowHtml = rows.slice(0, 8).map((row) => `
+    <tr>
+      ${visibleColumns.map((column) => renderResultCell(row?.[column], column)).join("")}
+    </tr>
+  `).join("");
+
+  const table = rows.length
+    ? `
+      <div class="table-wrap akshare-table-wrap">
+        <table>
+          <thead>
+            <tr>${visibleColumns.map((column) => `<th>${escapeHTML(displayColumnLabel(column))}</th>`).join("")}</tr>
+          </thead>
+          <tbody>${rowHtml}</tbody>
+        </table>
+      </div>
+    `
+    : `<p class="empty-state compact">本次调用没有表格行，返回类型：${escapeHTML(result.type ?? "unknown")}</p>`;
+
+  aksharePreview.innerHTML = `
+    <div class="akshare-preview-head">
+      <div>
+        <strong>${escapeHTML(capability.label ?? "AKShare 结果")}</strong>
+        <p>${escapeHTML(displayText(capability.function ?? ""))} · ${escapeHTML(aksharePreviewPayload.fetched_at ?? "")}</p>
+      </div>
+      <span class="count-pill">${result.returned_rows ?? 0}/${result.total_rows ?? 0} 行</span>
+    </div>
+    ${table}
+  `;
+}
+
+function renderAlphaVantageExplorer() {
+  if (!alphaVantageStatus || !alphaVantageCapabilityTabs || !alphaVantageCapabilityGrid || !alphaVantagePreview) return;
+
+  if (!apiState.connected) {
+    alphaVantageStatus.textContent = "后端未连接";
+    alphaVantageStatus.className = "status-chip warn";
+    alphaVantageCapabilityTabs.innerHTML = "";
+    alphaVantageCapabilityGrid.innerHTML = `<p class="empty-state compact">启动本地后端后可查看 Alpha Vantage 能力清单。</p>`;
+    alphaVantagePreview.innerHTML = "";
+    return;
+  }
+
+  if (!alphaVantagePayload) {
+    alphaVantageStatus.textContent = "加载失败";
+    alphaVantageStatus.className = "status-chip warn";
+    alphaVantageCapabilityTabs.innerHTML = "";
+    alphaVantageCapabilityGrid.innerHTML = `<p class="empty-state compact">${escapeHTML(alphaVantagePreviewError || "Alpha Vantage 能力清单不可用。")}</p>`;
+    alphaVantagePreview.innerHTML = "";
+    return;
+  }
+
+  const configured = Boolean(alphaVantagePayload.status?.configured);
+  const total = alphaVantagePayload.summary?.total ?? 0;
+  const available = alphaVantagePayload.summary?.available ?? 0;
+  const hint = alphaVantagePayload.status?.credential_hint ? ` · ${alphaVantagePayload.status.credential_hint}` : "";
+  alphaVantageStatus.textContent = configured
+    ? `Alpha Vantage 已配置${hint} · ${available}/${total} 可用`
+    : "未配置 Alpha Vantage key";
+  alphaVantageStatus.className = `status-chip ${configured ? "fresh" : "warn"}`;
+  alphaVantageStatus.title = alphaVantagePayload.status?.note ?? "";
+
+  const groups = alphaVantagePayload.groups ?? [];
+  alphaVantageCapabilityTabs.innerHTML = groups.map((group) => `
+    <button class="akshare-tab ${group.id === activeAlphaVantageCategory ? "active" : ""}" data-av-category="${group.id}" type="button">
+      ${escapeHTML(group.label)} <span>${group.count}</span>
+    </button>
+  `).join("");
+
+  const capabilities = (alphaVantagePayload.capabilities ?? []).filter((item) => item.category === activeAlphaVantageCategory);
+  alphaVantageCapabilityGrid.innerHTML = capabilities.length
+    ? capabilities.map(renderAlphaVantageCapabilityCard).join("")
+    : `<p class="empty-state compact">当前分类没有已登记能力。</p>`;
+
+  renderAlphaVantagePreview();
+}
+
+function renderAlphaVantageCapabilityCard(capability) {
+  const available = capability.available;
+  const statusClass = available ? "fresh" : "warn";
+  const statusTextValue = available ? "key 已配置" : "等待 key";
+  const params = capability.params?.length
+    ? capability.params.map((param) => `${param.name}${param.required ? "*" : ""}`).join(" / ")
+    : "无需参数";
+  const examples = capability.examples?.length ? capability.examples : [{}];
+
+  return `
+    <article class="akshare-card" data-av-card="${capability.id}">
+      <div class="akshare-card-head">
+        <div>
+          <strong>${escapeHTML(capability.label)}</strong>
+          <span>${escapeHTML(capability.function)}</span>
+        </div>
+        <span class="status-chip ${statusClass}">${statusTextValue}</span>
+      </div>
+      <p>${escapeHTML(capability.description)}</p>
+      <div class="akshare-card-meta">
+        <span>参数：${escapeHTML(params)}</span>
+      </div>
+      <div class="provider-example-row">
+        ${examples.map((example, index) => renderProviderExampleButton("av", capability.id, example, index, available)).join("")}
+      </div>
+      <div class="akshare-card-actions">
+        <a class="source-link" href="${escapeHTML(capability.docs_url)}" target="_blank" rel="noreferrer">文档</a>
+      </div>
+    </article>
+  `;
+}
+
+function renderProviderExampleButton(provider, capabilityId, example, index, enabled = true) {
+  const attr = provider === "ak" ? "data-ak-run" : "data-av-run";
+  const exampleAttr = provider === "ak" ? "data-ak-example" : "data-av-example";
+  const label = Object.keys(example).length
+    ? Object.entries(example).slice(0, 3).map(([key, value]) => `${key}=${value}`).join(" · ")
+    : "直接调用";
+  return `
+    <button class="provider-example-button" ${attr}="${escapeHTML(capabilityId)}" ${exampleAttr}="${index}" type="button" ${enabled ? "" : "disabled"}>
+      <span>示例 ${index + 1}</span>
+      <strong>${escapeHTML(label)}</strong>
+    </button>
+  `;
+}
+
+function renderAlphaVantagePreview() {
+  if (!alphaVantagePreview) return;
+  if (alphaVantagePreviewLoading) {
+    alphaVantagePreview.innerHTML = `<p class="empty-state compact">正在调用 Alpha Vantage...</p>`;
+    return;
+  }
+  if (alphaVantagePreviewError) {
+    alphaVantagePreview.innerHTML = `<p class="empty-state compact">${escapeHTML(alphaVantagePreviewError)}</p>`;
+    return;
+  }
+  if (!alphaVantagePreviewPayload) {
+    alphaVantagePreview.innerHTML = `<p class="empty-state compact">选择一个能力试跑后，这里会显示返回行数、字段和前几行数据。</p>`;
+    return;
+  }
+
+  const result = alphaVantagePreviewPayload.result ?? {};
+  const capability = alphaVantagePreviewPayload.capability ?? {};
+  const rows = Array.isArray(result.rows) ? result.rows : [];
+  const columns = result.columns?.length ? result.columns : Object.keys(rows[0] ?? {});
+  const visibleColumns = columns.slice(0, 8);
+  const rowHtml = rows.slice(0, 8).map((row) => `
+    <tr>
+      ${visibleColumns.map((column) => renderResultCell(row?.[column], column)).join("")}
+    </tr>
+  `).join("");
+
+  const table = rows.length
+    ? `
+      <div class="table-wrap akshare-table-wrap">
+        <table>
+          <thead>
+            <tr>${visibleColumns.map((column) => `<th>${escapeHTML(displayColumnLabel(column))}</th>`).join("")}</tr>
+          </thead>
+          <tbody>${rowHtml}</tbody>
+        </table>
+      </div>
+    `
+    : `<p class="empty-state compact">本次调用没有表格行，返回类型：${escapeHTML(result.type ?? "unknown")}</p>`;
+
+  alphaVantagePreview.innerHTML = `
+    <div class="akshare-preview-head">
+      <div>
+        <strong>${escapeHTML(capability.label ?? "Alpha Vantage 结果")}</strong>
+        <p>${escapeHTML(capability.function ?? "")} · ${escapeHTML(alphaVantagePreviewPayload.fetched_at ?? "")}</p>
+      </div>
+      <span class="count-pill">${result.returned_rows ?? 0}/${result.total_rows ?? 0} 行</span>
+    </div>
+    ${table}
+  `;
+}
+
+function formatPreviewCell(value, column = "") {
+  return displayCellValue(value, column);
+}
+
+function akshareCapabilityById(capabilityId) {
+  return (aksharePayload?.capabilities ?? []).find((item) => item.id === capabilityId);
+}
+
+function buildAkshareQuery(capability, card = null) {
+  const searchParams = new URLSearchParams();
+  searchParams.set("account_id", apiState.accountId);
+  searchParams.set("limit", String(Math.min(capability.default_limit ?? 50, 50)));
+  for (const param of capability.params ?? []) {
+    const input = card?.querySelector(`[data-ak-param="${CSS.escape(param.name)}"]`);
+    const value = input ? input.value.trim() : akshareParamDefault(capability, param);
+    if (param.required && (value === "" || value === null || value === undefined)) {
+      throw new Error(`缺少参数：${param.name}`);
+    }
+    if (value !== "" && value !== null && value !== undefined) {
+      searchParams.set(param.name, value);
+    }
+  }
+  return searchParams.toString();
+}
+
+async function runAkshareCapability(capabilityId, card = null) {
+  const capability = akshareCapabilityById(capabilityId);
+  if (!capability) return;
+  aksharePreviewLoading = true;
+  aksharePreviewError = "";
+  renderAksharePreview();
+  try {
+    const query = buildAkshareQuery(capability, card);
+    const suffix = query ? `?${query}` : "";
+    aksharePreviewPayload = await apiRequest(`/api/akshare/query/${encodeURIComponent(capabilityId)}${suffix}`);
+    aksharePreviewError = "";
+    await loadSearchHistory();
+  } catch (error) {
+    aksharePreviewPayload = null;
+    aksharePreviewError = `AKShare 试跑失败：${error.message}`;
+  } finally {
+    aksharePreviewLoading = false;
+    renderAksharePreview();
+  }
+}
+
+function alphaVantageCapabilityById(capabilityId) {
+  return (alphaVantagePayload?.capabilities ?? []).find((item) => item.id === capabilityId);
+}
+
+function buildAlphaVantageQuery(capability, exampleIndex = 0) {
+  const searchParams = new URLSearchParams();
+  const example = capability.examples?.[exampleIndex] ?? capability.examples?.[0] ?? {};
+  searchParams.set("account_id", apiState.accountId);
+  searchParams.set("return_limit", String(Math.min(capability.default_return_limit ?? 50, 50)));
+  for (const param of capability.params ?? []) {
+    const value = example[param.name] ?? param.default ?? "";
+    if (param.required && (value === "" || value === null || value === undefined)) {
+      throw new Error(`缺少示例参数：${param.name}`);
+    }
+    if (value !== "" && value !== null && value !== undefined) {
+      searchParams.set(param.name, value);
+    }
+  }
+  return searchParams.toString();
+}
+
+async function runAlphaVantageCapability(capabilityId, exampleIndex = 0) {
+  const capability = alphaVantageCapabilityById(capabilityId);
+  if (!capability) return;
+  alphaVantagePreviewLoading = true;
+  alphaVantagePreviewError = "";
+  renderAlphaVantagePreview();
+  try {
+    const query = buildAlphaVantageQuery(capability, exampleIndex);
+    const suffix = query ? `?${query}` : "";
+    alphaVantagePreviewPayload = await apiRequest(`/api/alpha-vantage/query/${encodeURIComponent(capabilityId)}${suffix}`);
+    alphaVantagePreviewError = "";
+    await loadSearchHistory();
+  } catch (error) {
+    alphaVantagePreviewPayload = null;
+    alphaVantagePreviewError = `Alpha Vantage 试跑失败：${error.message}`;
+  } finally {
+    alphaVantagePreviewLoading = false;
+    renderAlphaVantagePreview();
+  }
+}
+
+async function saveDataSource(sourceId) {
+  const card = dataSourceGrid?.querySelector(`[data-source-card="${CSS.escape(sourceId)}"]`);
+  const source = dataSources.find((item) => item.id === sourceId) ?? fallbackDataSources.find((item) => item.id === sourceId);
+  if (!card || !source) return;
+  const enabled = Boolean(card.querySelector(`[data-source-enabled="${CSS.escape(sourceId)}"]`)?.checked);
+  const credential = card.querySelector(`[data-source-key="${CSS.escape(sourceId)}"]`)?.value.trim() ?? "";
+
+  if (!apiState.connected) {
+    source.enabled = enabled;
+    if (credential || !source.requires_key) source.configured = true;
+    source.active = source.enabled && source.configured;
+    if (credential) source.credential_hint = credential.length <= 6 ? "******" : `${credential.slice(0, 3)}...${credential.slice(-3)}`;
+    renderDataSources();
+    return;
+  }
+
+  try {
+    const payload = await apiRequest(`/api/data-sources/${encodeURIComponent(sourceId)}?account_id=${encodeURIComponent(apiState.accountId)}`, {
+      method: "PUT",
+      body: JSON.stringify({ enabled, credential })
+    });
+    applyDataSourcePayload(payload);
+    if (source.provider === "alpha_vantage") await loadAlphaVantageCapabilities();
+    await loadStocksFromApi();
+    renderCandidates();
+    renderDetails(selectedStock() ?? stocks[0]);
+    renderWatchlist();
+    renderStockAnomalyReport(selectedAnomalySymbol);
+    updateBackendStatus(`数据源 ${source.label} 已更新`);
+  } catch (error) {
+    apiState.lastError = `数据源配置失败：${error.message}`;
+    updateBackendStatus(apiState.lastError);
+  }
+}
+
+async function refreshProviderData(provider) {
+  if (!apiState.connected) {
+    updateBackendStatus("后端未连接，无法刷新真实数据源。");
+    return;
+  }
+
+  try {
+    const label = provider === "finnhub" ? "Finnhub" : provider === "tushare" ? "Tushare" : provider;
+    updateBackendStatus(`${label} 数据刷新中`);
+    const payload = await apiRequest("/api/data/refresh", {
+      method: "POST",
+      body: JSON.stringify({ provider, scope: provider, account_id: apiState.accountId })
+    });
+    await loadAccountFromApi(apiState.accountId);
+    const counts = payload.counts ?? {};
+    updateBackendStatus(`${label} 已刷新：行情 ${counts.market_snapshots ?? 0}，财务 ${counts.financial_snapshots ?? 0}，新闻 ${counts.news_items ?? 0}`);
+  } catch (error) {
+    apiState.lastError = `真实数据刷新失败：${error.message}`;
+    updateBackendStatus(apiState.lastError);
+  }
 }
 
 function openClaimDetail(index) {
   const stock = selectedStock();
   if (!stock || !stock.evidence[index]) return;
   const item = stock.evidence[index];
-  openModal("Claim detail", item.claim, `
+  openModal("证据详情", displayText(item.claim), `
     <div class="modal-grid">
       <div class="metric-box"><span>来源等级</span><strong>${item.tier}</strong></div>
       <div class="metric-box"><span>置信度</span><strong>${Math.round(item.confidence * 100)}%</strong></div>
-      <div class="metric-box"><span>来源</span><strong>${item.source}</strong></div>
+      <div class="metric-box"><span>来源</span><strong>${escapeHTML(displayText(item.source))}</strong></div>
     </div>
     <section class="modal-section">
       <h4>分析过程</h4>
-      <ol>${item.process.map((step) => `<li>${step}</li>`).join("")}</ol>
+      <ol>${item.process.map((step) => `<li>${escapeHTML(displayText(step))}</li>`).join("")}</ol>
     </section>
     <section class="modal-section">
       <h4>原始字段快照</h4>
@@ -1770,7 +3368,7 @@ function openFactorDetail(name) {
   const stock = selectedStock();
   if (!stock) return;
   const detail = factorDetail(stock, name);
-  openModal("Factor detail", `${stock.symbol} · ${name}`, `
+  openModal("因子详情", `${stock.symbol} · ${name}`, `
     <p class="thesis">${detail.summary}</p>
     <section class="modal-section">
       <h4>具体数据值</h4>
@@ -1778,7 +3376,7 @@ function openFactorDetail(name) {
     </section>
     <section class="modal-section">
       <h4>数据来源</h4>
-      <p>${detail.source}</p>
+      <p>${escapeHTML(displayText(detail.source))}</p>
     </section>
     <section class="modal-section">
       <h4>计算和复核逻辑</h4>
@@ -1792,8 +3390,8 @@ function renderKeyValue(values) {
     <dl class="kv-list">
       ${Object.entries(values).map(([key, value]) => `
         <div>
-          <dt>${key}</dt>
-          <dd>${value}</dd>
+          <dt>${escapeHTML(displayColumnLabel(key))}</dt>
+          <dd>${escapeHTML(displayCellValue(value, key))}</dd>
         </div>
       `).join("")}
     </dl>
@@ -1811,9 +3409,28 @@ function closeModal() {
   modalShell.hidden = true;
 }
 
-function refreshStockData(source) {
+async function refreshStockData(source) {
   const stock = selectedStock();
   if (!stock) return;
+  if (apiState.connected && source === "market" && stock.market === "US") {
+    try {
+      updateBackendStatus(`Finnhub 刷新 ${stock.symbol} 中`);
+      await apiRequest("/api/data/refresh", {
+        method: "POST",
+        body: JSON.stringify({ provider: "finnhub", scope: "finnhub", account_id: apiState.accountId, symbols: [stock.symbol] })
+      });
+      await loadStocksFromApi();
+      const refreshed = stockBySymbol(stock.symbol) ?? stock;
+      renderDetails(refreshed);
+      renderCandidates();
+      renderWatchlist();
+      updateBackendStatus(`Finnhub 已刷新 ${stock.symbol}`);
+      return;
+    } catch (error) {
+      apiState.lastError = `Finnhub 刷新失败：${error.message}`;
+      updateBackendStatus(apiState.lastError);
+    }
+  }
   if (source === "market") {
     stock.lagMinutes = 0;
     stock.freshnessStatus = "fresh";
@@ -2006,23 +3623,28 @@ async function toggleFavorite(symbol) {
 }
 
 function syncActiveNav() {
-  if (navSectionIds.includes(location.hash.slice(1))) {
-    const hashTarget = location.hash.slice(1);
-    const targetSection = document.getElementById(hashTarget);
-    if (targetSection && Math.abs(targetSection.getBoundingClientRect().top) < 260) {
-      setActiveNav(hashTarget);
-      return;
-    }
-  }
+  const hashTarget = location.hash.slice(1);
+  setActiveTab(navSectionIds.includes(hashTarget) ? hashTarget : activeTab, false);
+}
 
-  const current = navSectionIds.reduce((active, id) => {
-    const section = document.getElementById(id);
-    if (!section) return active;
-    const rect = section.getBoundingClientRect();
-    if (rect.top <= 220 && rect.bottom > 120) return id;
-    return active;
-  }, navSectionIds[0]);
-  setActiveNav(current);
+function setActiveTab(current, shouldUpdateHash = true) {
+  const next = navSectionIds.includes(current) ? current : "filters";
+  activeTab = next;
+  document.querySelectorAll(".section-block").forEach((section) => {
+    const active = section.id === next;
+    section.classList.toggle("active-panel", active);
+    section.hidden = !active;
+  });
+  setActiveNav(next);
+  if (shouldUpdateHash && location.hash !== `#${next}`) {
+    history.replaceState(null, "", `#${next}`);
+  }
+  requestAnimationFrame(() => {
+    drawAllSparklines();
+    drawPortfolioCurve();
+    drawPositionKline();
+    drawBacktestCurve();
+  });
 }
 
 function setActiveNav(current) {
@@ -2068,8 +3690,14 @@ function handleStockGridClick(event) {
 
 candidateGrid.addEventListener("click", handleStockGridClick);
 favoriteGrid.addEventListener("click", handleStockGridClick);
+filterResultGrid?.addEventListener("click", handleStockGridClick);
 
 anomalyStockSearch.addEventListener("input", renderAnomalyStockList);
+anomalyStockSearch.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    void saveSearchHistory("anomaly_stock", anomalyStockSearch.value);
+  }
+});
 
 anomalyStockList.addEventListener("click", (event) => {
   const button = event.target.closest("[data-anomaly-symbol]");
@@ -2082,6 +3710,8 @@ runAnomalyPrompt.addEventListener("click", renderPromptAnomalyReport);
 anomalyPrompt.addEventListener("keydown", (event) => {
   if (event.key === "Enter") renderPromptAnomalyReport();
 });
+
+backtestForm?.addEventListener("submit", handleBacktestSubmit);
 
 anomalyReport.addEventListener("click", (event) => {
   const anomalyButton = event.target.closest("[data-anomaly-symbol]");
@@ -2111,11 +3741,15 @@ detailBody.addEventListener("click", (event) => {
 });
 
 document.querySelector("#runAnalysis").addEventListener("click", () => {
+  void saveSearchHistory("stock_analysis", symbolInput.value);
   selectStock(symbolInput.value);
 });
 
 symbolInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") selectStock(symbolInput.value);
+  if (event.key === "Enter") {
+    void saveSearchHistory("stock_analysis", symbolInput.value);
+    selectStock(symbolInput.value);
+  }
 });
 
 document.querySelector("#applyPromptFilter").addEventListener("click", applyNaturalLanguageFilter);
@@ -2161,6 +3795,81 @@ portfolioSummary.addEventListener("click", (event) => {
   if (event.target.closest("[data-refresh-profit]")) refreshPortfolioPrices();
 });
 
+dataSourceGrid?.addEventListener("click", (event) => {
+  const refreshButton = event.target.closest("[data-source-refresh]");
+  if (refreshButton) {
+    refreshProviderData(refreshButton.dataset.sourceRefresh);
+    return;
+  }
+  const button = event.target.closest("[data-source-save]");
+  if (button) saveDataSource(button.dataset.sourceSave);
+});
+
+dataSourceGrid?.addEventListener("change", (event) => {
+  const checkbox = event.target.closest("[data-source-enabled]");
+  if (checkbox) saveDataSource(checkbox.dataset.sourceEnabled);
+});
+
+sourceTestSelect?.addEventListener("change", () => {
+  selectedSourceTestId = sourceTestSelect.value;
+  sourceTestPayload = null;
+  sourceTestError = "";
+  if (sourceTestSymbol) sourceTestSymbol.value = "";
+  renderSourceTests();
+});
+
+sourceTestList?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-source-test-id]");
+  if (!button) return;
+  selectedSourceTestId = button.dataset.sourceTestId;
+  sourceTestPayload = null;
+  sourceTestError = "";
+  if (sourceTestSymbol) sourceTestSymbol.value = "";
+  renderSourceTests();
+  runSourceTest();
+});
+
+sourceTestForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  runSourceTest();
+});
+
+akshareToggle?.addEventListener("click", () => {
+  akshareExpanded = !akshareExpanded;
+  renderAkshareExplorer();
+});
+
+akshareCapabilityTabs?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-ak-category]");
+  if (!button) return;
+  activeAkshareCategory = button.dataset.akCategory;
+  aksharePreviewPayload = null;
+  aksharePreviewError = "";
+  renderAkshareExplorer();
+});
+
+akshareCapabilityGrid?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-ak-fetch]");
+  if (!button || button.disabled) return;
+  runAkshareCapability(button.dataset.akFetch, button.closest("[data-ak-card]"));
+});
+
+alphaVantageCapabilityTabs?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-av-category]");
+  if (!button) return;
+  activeAlphaVantageCategory = button.dataset.avCategory;
+  alphaVantagePreviewPayload = null;
+  alphaVantagePreviewError = "";
+  renderAlphaVantageExplorer();
+});
+
+alphaVantageCapabilityGrid?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-av-run]");
+  if (button && !button.disabled) {
+    runAlphaVantageCapability(button.dataset.avRun, Number.parseInt(button.dataset.avExample ?? "0", 10));
+  }
+});
+
 modalShell.addEventListener("click", (event) => {
   if (event.target.closest("[data-close-modal]")) closeModal();
 });
@@ -2175,25 +3884,33 @@ document.addEventListener("keydown", (event) => {
   else if (!singleDrawer.hidden) closeSingleDrawer();
 });
 
-window.addEventListener("scroll", syncActiveNav, { passive: true });
-window.addEventListener("resize", syncActiveNav);
-window.addEventListener("hashchange", () => {
-  window.setTimeout(syncActiveNav, 80);
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-history-value]");
+  if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  applySearchHistoryValue(button.dataset.historySurface, button.dataset.historyValue);
 });
+
+window.addEventListener("hashchange", syncActiveNav);
 window.addEventListener("load", () => {
   const hashTarget = location.hash.slice(1);
-  if (navSectionIds.includes(hashTarget)) setActiveNav(hashTarget);
-  window.setTimeout(syncActiveNav, 250);
+  setActiveTab(navSectionIds.includes(hashTarget) ? hashTarget : "filters", false);
 });
 
 document.querySelectorAll(".nav-item").forEach((link) => {
-  link.addEventListener("click", () => {
+  link.addEventListener("click", (event) => {
     const target = link.getAttribute("href")?.slice(1);
-    if (navSectionIds.includes(target)) setActiveNav(target);
-    window.setTimeout(syncActiveNav, 180);
+    if (!navSectionIds.includes(target)) return;
+    event.preventDefault();
+    setActiveTab(target);
   });
 });
 
+applyDataSourcePayload({ sources: fallbackDataSources });
+renderAkshareExplorer();
+renderAlphaVantageExplorer();
+renderSourceTests();
 renderFilterGroups();
 syncFilterModeButtons();
 populateTradeForm();
@@ -2202,8 +3919,8 @@ renderDetails(stocks[0]);
 renderWatchlist();
 renderHealth();
 renderStockAnomalyReport(selectedAnomalySymbol);
-syncActiveNav();
-window.setTimeout(syncActiveNav, 120);
+renderBacktestResult();
+setActiveTab(navSectionIds.includes(location.hash.slice(1)) ? location.hash.slice(1) : "filters", false);
 updateBackendStatus();
 loadAccountFromApi();
 

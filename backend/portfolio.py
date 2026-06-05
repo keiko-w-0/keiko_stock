@@ -47,7 +47,9 @@ def account_portfolio(conn: sqlite3.Connection, account_id: str) -> dict[str, An
         "positions": positions,
         "totals": totals,
         "computed_at": now_iso(),
-        "pricing_mode": "mock_latest_price",
+        "pricing_mode": "provider_cached_price"
+        if any(not position["pricing_provider"].startswith("mock") for position in positions)
+        else "mock_latest_price",
     }
 
 
@@ -118,7 +120,9 @@ def calculate_position(
         cost_basis -= realized_cost
 
     currency = stock["currency"]
-    current_price = MOCK_PRICES.get(symbol, symbol_trades[-1]["price"] if symbol_trades else 0)
+    snapshot_price = latest_provider_price(conn, symbol)
+    current_price = snapshot_price["price"] if snapshot_price else MOCK_PRICES.get(symbol, symbol_trades[-1]["price"] if symbol_trades else 0)
+    pricing_provider = snapshot_price["provider"] if snapshot_price else "mock-memory"
     market_value = quantity * current_price
     unrealized_profit = market_value - cost_basis
     total_profit = realized_profit + unrealized_profit
@@ -133,6 +137,7 @@ def calculate_position(
         "quantity": number_for_json(quantity),
         "avg_cost": round(avg_cost, 4),
         "current_price": round(float(current_price), 4),
+        "pricing_provider": pricing_provider,
         "market_value": round(market_value, 4),
         "realized_profit": round(realized_profit, 4),
         "unrealized_profit": round(unrealized_profit, 4),
@@ -142,6 +147,22 @@ def calculate_position(
         "trade_count": len(symbol_trades),
         "last_trade": symbol_trades[-1] if symbol_trades else None,
     }
+
+
+def latest_provider_price(conn: sqlite3.Connection, symbol: str) -> dict[str, Any] | None:
+    row = conn.execute(
+        """
+        select provider, price, as_of, fetched_at
+        from market_snapshots
+        where symbol = ? and provider in ('tushare-market', 'finnhub-market')
+        order by fetched_at desc, id desc
+        limit 1
+        """,
+        (symbol,),
+    ).fetchone()
+    if not row:
+        return None
+    return {"provider": row["provider"], "price": float(row["price"]), "as_of": row["as_of"], "fetched_at": row["fetched_at"]}
 
 
 def portfolio_totals(positions: list[dict[str, Any]]) -> dict[str, Any]:

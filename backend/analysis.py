@@ -13,6 +13,11 @@ from .schemas import AnomalyInput
 def shared_cache_summary(conn: sqlite3.Connection) -> dict[str, Any]:
     return {
         "symbols": scalar_count(conn, "symbols"),
+        "market_snapshots": scalar_count(conn, "market_snapshots"),
+        "financial_snapshots": scalar_count(conn, "financial_snapshots"),
+        "news_items": scalar_count(conn, "news_items"),
+        "claims": scalar_count(conn, "claims"),
+        "factor_runs": scalar_count(conn, "factor_runs"),
         "stock_analysis_runs": scalar_count(conn, "stock_analysis_runs"),
         "anomaly_runs": scalar_count(conn, "anomaly_runs"),
         "stock_memories": scalar_count(conn, "stock_memories"),

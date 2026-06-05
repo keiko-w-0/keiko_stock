@@ -1,4 +1,4 @@
-# Keiko Stock AI Handoff
+# 聚宝盆 Handoff
 
 更新时间：2026-06-05
 
@@ -11,13 +11,20 @@
 
 ## 当前产品状态
 
-当前是 mock 数据阶段，不接真实行情、不调用真实 LLM、不接真实 API key。目标是先把产品交互、数据库边界、多账户、记忆管理和打包路线跑通。
+当前仍以 mock 分析链路为主，不调用真实 LLM；已接入账户级真实数据源配置，并完成 Finnhub 美股行情、基本面、公司新闻的基础刷新。当前优先开发网页版；macOS 和 iPhoneOS 打包暂缓。
 
 已完成：
 
 - 静态前端：`index.html`、`styles.css`、`app.js`
 - FastAPI mock 后端：`backend/app.py`
 - SQLite schema 和种子数据：`backend/db.py`、`backend/seed_data.py`
+- Web 版命名已改为“聚宝盆”；左侧“股票池过滤”已改为“筛选股票”。
+- 左侧导览已改成独立 tab：切换后只显示当前 tab 内容，不再连续滚动串在一起。
+- 设置页已加入 mock 数据源配置：按 A/HK/US 市场配置行情、财务、公告、新闻情绪源，未启用或未配置成功的数据源不会进入后续 mock 分析。
+- 已新增 `acct-admin` 管理账户；数据源开关和 API key 按账户隔离保存，当前 Finnhub key 已写入本地 admin 账户。
+- Finnhub 已可刷新 AAPL/NVDA 等美股的行情快照、基本面快照和公司新闻，并写入共享缓存表。
+- 回测平台已加入左侧导览：当前是 mock 研究回测，支持策略模板、市场、区间、持仓数、调仓频率、手续费和滑点参数。
+- Phase 1E 已开始：新增 `providers/` mock provider、共享快照表、数据源配置表、`/api/stocks/search`、`/api/screeners/run`、`/api/memory/stocks/{symbol}`、`/api/data-sources`、`/api/backtests/run`。
 - 多账户 mock：账户 A/B 可切换；股票分析、异动分析、记忆共享；关注列表、交易流水、持仓按账户隔离。
 - 持仓收益：支持 Buy/Sell 流水、持仓数量、成本、盈利金额、收益率、刷新 mock 最新价。
 - 单股分析浮层：点击“查看分析”打开，左上角关闭，含低置信原因、claim 详情、因子详情、记忆、最多 3 轮反思。
@@ -135,13 +142,13 @@ iPhone 上架需要：
 
 用户明确说“先不用真实数据”。所以下一阶段仍以 mock provider 为主，不申请真实 API key，不接真实行情。
 
-建议从 Phase 1E 开始：
+Phase 1E 已开始，下一步继续补 Web 版闭环：
 
-1. 建立 provider 抽象，但先实现 `MockMarketProvider`、`MockNewsProvider`、`MockFinancialProvider`。
-2. 补齐 mock 版数据库表：`market_snapshots`、`financial_snapshots`、`news_items`、`claims`、`factor_runs`。
-3. 把当前 `app.js` 中的大块 mock 数据逐步迁到后端 seed/provider，前端只调用 API。
-4. 增加 `GET /stocks/search`、`POST /screeners/run`、`GET /memory/stocks/{symbol}` 的 mock API。
-5. 给关键流程加测试：bootstrap、账户隔离、portfolio 计算、刷新价格、共享分析缓存、异动分析。
+1. 继续把当前 `app.js` 中的大块 mock 数据迁到后端 seed/provider，前端只调用 API。
+2. 给数据源设置增加 loading/error/empty 状态和更明确的“生效/未生效”提示。
+3. 让回测平台接入真实复权行情、交易日历、停复牌、分红拆股、调仓价、滑点和手续费模型。
+4. 让单股分析、异动分析进一步读取后端 claims/factor_runs，而不是只用前端本地数据。
+5. 给关键流程加测试：bootstrap、账户隔离、portfolio 计算、刷新价格、共享分析缓存、异动分析、数据源启停、回测参数和指标。
 6. 再考虑把静态前端迁移到 React + TypeScript + Vite。
 
 不要优先做：

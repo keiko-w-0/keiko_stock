@@ -1,6 +1,6 @@
 {
-  "name": "Keiko Stock AI",
-  "short_name": "Keiko",
+  "name": "聚宝盆",
+  "short_name": "聚宝盆",
   "description": "本地优先的选股研究台 mock app",
   "start_url": "/",
   "scope": "/",

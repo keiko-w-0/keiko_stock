@@ -1,14 +1,14 @@
-# Keiko Stock AI 工程 TODO
+# 聚宝盆工程 TODO
 
 更新时间：2026-06-05
 
-目标：把当前静态 mock demo 逐步变成可安装在 MacBook 上、支持多账户、真实数据、共享分析记忆、独立持仓/关注的股票研究软件。
+目标：先把当前 mock demo 打磨成可用网页版，支持多账户、真实数据源配置、共享分析记忆、独立持仓/关注的股票研究软件；macOS 和 iPhoneOS 打包暂缓。
 
 换电脑或开启新 Codex 会话时，先读 `docs/handoff.md`，再按本 TODO 继续推进。
 
 ## 0. 当前 Demo 已验证
 
-- 股票池过滤：显式规则 + 自然语言规则。
+- 筛选股票：显式规则 + 自然语言规则，左侧导览切换后各 tab 独立显示。
 - 数据健康检查：数据新鲜度、证据可信、刷新入口。
 - 今日观察：A 股、港股、美股候选卡片。
 - 关注列表：独立页面，卡片展示，支持查看单股分析。
@@ -24,6 +24,10 @@
 - Phase 1C 局域网预览：可用 `--host 0.0.0.0 --port 8101` 让同一 Wi-Fi 的 iPhone 访问。
 - Phase 1D 打包：已生成 Mac 后端 mock `.app`、Mac 离线 Universal mock `.app`、Mac zip、iPhone SwiftUI/WKWebView mock 源码包和 iPhone zip。
 - Phase 1D 兼容性：Mac mock 包已设置最低 macOS 12.0，并同时包含 Apple Silicon 与 Intel 架构。
+- Phase 1E Web：已加入 mock provider 抽象、共享快照表、`/api/stocks/search`、`/api/screeners/run`、`/api/memory/stocks/{symbol}` 和数据源设置 API。
+- Phase 1E Web：左侧新增“设置”，可按 A/HK/US 市场勾选行情、财务、公告、新闻情绪数据源并输入 mock API key；未生效的数据源不会进入后续 mock 分析。
+- Phase 1E Web：已新增 `acct-admin` 管理账户、账户级数据源开关/key 隔离，以及 Finnhub 美股行情、基本面、公司新闻刷新。
+- Phase 1E Web：左侧新增“回测平台”，支持 mock 研究回测，输出收益曲线、最大回撤、胜率、换手、调仓记录、归因和研究限制。
 
 ## 1. 技术架构 TODO
 
@@ -32,7 +36,7 @@
 - [ ] 把当前 `index.html` / `styles.css` / `app.js` 迁移到 React + TypeScript + Vite。
 - [x] 当前静态前端加入 PWA/iPhone app shell。
 - [ ] 拆组件：`StockCard`、`SingleStockDrawer`、`PortfolioTable`、`AnomalyReport`、`DataHealthPanel`、`MemoryPanel`。
-- [ ] 建立前端状态层：用户会话、当前账户、股票池过滤、关注列表、持仓、分析报告、异动报告。
+- [ ] 建立前端状态层：用户会话、当前账户、筛选股票、关注列表、持仓、分析报告、异动报告、数据源设置。
 - [ ] 所有按钮和表单增加 loading、error、empty、stale 状态。
 - [ ] 为关键交互写 Playwright 测试：查看分析、关注/取消关注、录入 Buy/Sell、刷新股价、生成异动报告。
 - [ ] 生成正式 iOS app icon PNG/icon set，替换当前 SVG 原型图标。
@@ -41,7 +45,7 @@
 
 - [x] 使用 FastAPI 做本地 API 服务。
 - [ ] 建立模块：
-  - `providers/`：行情、财务、公告、新闻、情绪供应商适配器。
+  - `providers/`：行情、财务、公告、新闻、情绪供应商适配器。当前已有 mock provider 起点。
   - `ingestion/`：拉取、去重、标准化、缓存。
   - `data_quality/`：新鲜度、字段完整性、异常值、跨源一致性。当前已有 mock 模块。
   - `claims/`：claim 抽取、证据绑定、真实性评分。
@@ -52,11 +56,14 @@
   - `portfolio/`：账户级持仓、收益率、盈利金额、币种汇总。当前已有 mock 模块。
   - `audit/`：每次分析输入、输出、数据快照、版本号。
 - [ ] 提供 API：
-  - `GET /stocks/search`
-  - `POST /screeners/run`
+  - `GET /stocks/search` 已有 mock 版
+  - `POST /screeners/run` 已有 mock 版
   - `GET /api/analysis/stocks/{symbol}` 已有 mock 版
   - `POST /api/analysis/anomalies` 已有 mock 版
-  - `GET /memory/stocks/{symbol}`
+  - `GET /memory/stocks/{symbol}` 已有 mock 版
+  - `GET /api/data-sources` 已有 mock 版
+  - `PUT /api/data-sources/{source_id}` 已有 mock 版
+  - `POST /api/backtests/run` 已有 mock 版
   - `PUT /api/accounts/{account_id}/favorites/{symbol}` 已有 mock 版
   - `POST /api/accounts/{account_id}/trades` 已有 mock 版
   - `GET /api/accounts/{account_id}/portfolio` 已有 mock 版
@@ -149,7 +156,7 @@
 - [ ] Tushare Pro：A 股行情、基础资料、财务、交易日历。需要 Tushare token。
 - [ ] AKShare：原型/补充数据，可先不需要 key，但必须做源质量标记。
 - [ ] Alpha Vantage：美股时间序列、基本面、新闻情绪。需要 API key。
-- [ ] Finnhub：美股/全球股票行情、公司新闻、基本面。需要 API key。
+- [x] Finnhub：美股行情、公司新闻、基本面基础接入。需要 API key，当前按账户私有保存。
 - [ ] Polygon/Massive：美股更高质量行情、聚合 K 线、WebSocket。生产环境建议申请 paid key。
 
 ### 官方披露

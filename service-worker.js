@@ -1,4 +1,4 @@
-const CACHE_NAME = "keiko-stock-ai-v4";
+const CACHE_NAME = "jubao-pen-search-history-v1";
 const APP_SHELL = [
   "/",
   "/index.html",
