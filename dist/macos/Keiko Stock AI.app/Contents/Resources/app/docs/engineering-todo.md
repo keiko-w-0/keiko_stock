@@ -206,6 +206,8 @@
 - [ ] API key 放 macOS Keychain。
 - [x] 生成 mock `.app`：`dist/macos/Keiko Stock AI.app`。
 - [x] 生成 mock zip：`dist/macos/KeikoStockAI-mac-mock.zip`。
+- [x] 修复 Mac 壳重新打开行为：关闭窗口后再次点击 App 会重新显示窗口。
+- [x] 修复 Mac 壳端口占用问题：默认从 `8123` 开始自动选择可用端口。
 - [ ] 使用 Tauri 打包正式 `.app` 和 `.dmg`。
 - [ ] 后续增加签名、公证、自动更新。
 
