@@ -1,0 +1,19 @@
+{
+  "name": "Keiko Stock AI",
+  "short_name": "Keiko",
+  "description": "本地优先的选股研究台 mock app",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#172026",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

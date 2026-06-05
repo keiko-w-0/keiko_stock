@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#172026" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Keiko" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Keiko Stock AI</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/app-icon.svg" />
+    <link rel="stylesheet" href="styles.css?v=20260605-drawer-left" />
+    <script defer src="app.js?v=20260605-drawer-left"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="rail" aria-label="主导航">
+        <div class="brand">
+          <div class="brand-mark">K</div>
+          <div>
+            <h1>Keiko Stock AI</h1>
+            <p>本地研究台 · Mock</p>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="页面区域">
+          <a href="#filters" class="nav-item active">股票池过滤</a>
+          <a href="#health" class="nav-item">数据健康</a>
+          <a href="#daily" class="nav-item">今日观察</a>
+          <a href="#anomalies" class="nav-item">异动分析</a>
+          <a href="#favorites" class="nav-item">关注列表</a>
+          <a href="#holdings" class="nav-item">持仓列表</a>
+        </nav>
+
+        <div class="rail-panel">
+          <span class="panel-label">风险模式</span>
+          <div class="risk-meter" aria-label="风险模式：保守">
+            <span></span>
+          </div>
+          <strong>保守</strong>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">2026-06-05 · Asia/Shanghai</p>
+            <h2>选股研究台</h2>
+          </div>
+          <div class="status-strip" aria-label="系统状态">
+            <label class="account-switcher">
+              <span>账户</span>
+              <select id="accountSelect">
+                <option value="acct-demo-a">我的主账户</option>
+              </select>
+            </label>
+            <span id="backendStatus" class="status-chip warn">Mock API 连接中</span>
+            <span id="sharedCacheStatus" class="status-chip verified">共享分析 local</span>
+            <span class="status-chip fresh">行情 fresh</span>
+            <span class="status-chip verified">证据链 86%</span>
+            <span class="status-chip warn">AI 需反思</span>
+          </div>
+        </header>
+
+        <section class="control-band" aria-label="筛选控制">
+          <div class="segmented" role="tablist" aria-label="市场筛选">
+            <button class="segment active" data-market="all" type="button">全部</button>
+            <button class="segment" data-market="A" type="button">A 股</button>
+            <button class="segment" data-market="HK" type="button">港股</button>
+            <button class="segment" data-market="US" type="button">美股</button>
+          </div>
+          <label class="search-box">
+            <span>输入股票</span>
+            <input id="symbolInput" type="search" placeholder="例如 002594.SZ / 0700.HK / NVDA" />
+          </label>
+          <button id="runAnalysis" class="primary-action" type="button">分析</button>
+        </section>
+
+        <section id="filters" class="section-block">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Pool filters</p>
+              <h3>股票池过滤</h3>
+            </div>
+            <div class="filter-mode" aria-label="组合方式">
+              <button class="mini-segment active" data-filter-mode="all" type="button">全部满足</button>
+              <button class="mini-segment" data-filter-mode="any" type="button">任一满足</button>
+            </div>
+          </div>
+          <div class="filter-builder">
+            <div id="filterGroups" class="filter-groups"></div>
+            <div class="nl-filter-box">
+              <label class="search-box">
+                <span>自然语言过滤</span>
+                <input id="filterPrompt" type="search" placeholder="例如：成交额高、价差小、趋势强、证据可信度高" />
+              </label>
+              <div class="filter-actions">
+                <button id="applyPromptFilter" class="primary-action" type="button">应用</button>
+                <button id="resetFilters" class="ghost-action" type="button">重置</button>
+              </div>
+              <div id="activeRules" class="active-rules" aria-live="polite"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="health" class="section-block">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Data quality</p>
+              <h3>数据健康检查</h3>
+            </div>
+          </div>
+          <div id="healthGrid" class="health-grid"></div>
+        </section>
+
+        <section id="daily" class="section-block">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Daily candidates</p>
+              <h3>今日值得观察</h3>
+            </div>
+            <span id="candidateCount" class="count-pill">0</span>
+          </div>
+          <div id="candidateGrid" class="candidate-grid" aria-live="polite"></div>
+        </section>
+
+        <section id="anomalies" class="section-block">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Anomaly analysis</p>
+              <h3>异动分析</h3>
+            </div>
+            <span id="anomalyUniverseCount" class="count-pill">0</span>
+          </div>
+          <div class="anomaly-layout">
+            <aside class="anomaly-picker">
+              <label class="search-box">
+                <span>搜索股票</span>
+                <input id="anomalyStockSearch" type="search" placeholder="输入代码或名称，例如 NVDA / 腾讯" />
+              </label>
+              <div id="anomalyStockList" class="anomaly-stock-list" aria-live="polite"></div>
+              <div class="nl-question-box">
+                <label class="search-box">
+                  <span>自然语言异动问题</span>
+                  <input id="anomalyPrompt" type="search" placeholder="例如：为什么今天大盘跳水 / 电力板块为什么跳水" />
+                </label>
+                <button id="runAnomalyPrompt" class="primary-action" type="button">生成报告</button>
+              </div>
+            </aside>
+            <article id="anomalyReport" class="anomaly-report"></article>
+          </div>
+        </section>
+
+        <section id="favorites" class="section-block">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Watchlist</p>
+              <h3>关注列表</h3>
+            </div>
+            <span id="favoriteCount" class="count-pill">0</span>
+          </div>
+          <div id="favoriteGrid" class="candidate-grid" aria-live="polite"></div>
+        </section>
+
+        <section id="holdings" class="section-block">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Portfolio</p>
+              <h3>持仓列表</h3>
+            </div>
+          </div>
+
+          <div class="watch-panel">
+            <div id="portfolioSummary" class="portfolio-summary"></div>
+            <div class="curve-panel">
+              <div class="curve-head">
+                <div>
+                  <p class="eyebrow">Daily curve</p>
+                  <h4>组合天级收益曲线</h4>
+                </div>
+                <span class="confidence">Mock 日线估算</span>
+              </div>
+              <canvas id="portfolioCurve" class="portfolio-curve" width="1200" height="260"></canvas>
+            </div>
+            <form id="tradeForm" class="trade-form">
+              <label>
+                <span>股票</span>
+                <select id="tradeSymbol"></select>
+              </label>
+              <label>
+                <span>B/S</span>
+                <select id="tradeSide">
+                  <option value="BUY">Buy</option>
+                  <option value="SELL">Sell</option>
+                </select>
+              </label>
+              <label>
+                <span>日期</span>
+                <input id="tradeDate" type="date" />
+              </label>
+              <label>
+                <span>数量</span>
+                <input id="tradeQty" type="number" min="1" step="1" placeholder="100" />
+              </label>
+              <label>
+                <span>价格</span>
+                <input id="tradePrice" type="number" min="0" step="0.01" placeholder="214.36" />
+              </label>
+              <label>
+                <span>费用</span>
+                <input id="tradeFee" type="number" min="0" step="0.01" placeholder="0" />
+              </label>
+              <button class="primary-action" type="submit">录入</button>
+            </form>
+            <div id="tradeFormStatus" class="form-status" aria-live="polite"></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>股票</th>
+                    <th>持仓</th>
+                    <th>成本</th>
+                    <th>当前价</th>
+                    <th>盈利金额</th>
+                    <th>收益率</th>
+                  </tr>
+                </thead>
+                <tbody id="holdingRows"></tbody>
+              </table>
+            </div>
+            <div class="trade-detail-panel">
+              <button id="toggleTradeDetails" class="ghost-action small" type="button" aria-expanded="false">展开流水和K线</button>
+              <div id="tradeDetails" class="trade-details" hidden>
+                <div class="curve-panel compact">
+                  <div class="curve-head">
+                    <div>
+                      <p class="eyebrow">Position K-line</p>
+                      <h4>持仓K线与B/S</h4>
+                    </div>
+                    <span class="confidence">按当前选中持仓显示</span>
+                  </div>
+                  <canvas id="positionKline" class="position-kline" width="1200" height="320"></canvas>
+                </div>
+                <div class="table-wrap compact-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>日期</th>
+                        <th>股票</th>
+                        <th>B/S</th>
+                        <th>数量</th>
+                        <th>价格</th>
+                        <th>费用</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tradeRows"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="app-footer">研究辅助，不构成投资建议。真实版本必须接入授权数据源并保留审计记录。</footer>
+      </main>
+    </div>
+
+    <nav class="mobile-tabbar" aria-label="iPhone 底部导航">
+      <a href="#filters" class="nav-item tabbar-item active"><span class="tab-icon filter-icon"></span><span>筛选</span></a>
+      <a href="#health" class="nav-item tabbar-item"><span class="tab-icon health-icon"></span><span>健康</span></a>
+      <a href="#daily" class="nav-item tabbar-item"><span class="tab-icon daily-icon"></span><span>观察</span></a>
+      <a href="#anomalies" class="nav-item tabbar-item"><span class="tab-icon anomaly-icon"></span><span>异动</span></a>
+      <a href="#favorites" class="nav-item tabbar-item"><span class="tab-icon favorite-icon"></span><span>关注</span></a>
+      <a href="#holdings" class="nav-item tabbar-item"><span class="tab-icon holdings-icon"></span><span>持仓</span></a>
+    </nav>
+
+    <div id="singleDrawer" class="analysis-drawer-shell" hidden>
+      <div class="analysis-drawer-backdrop" data-close-drawer></div>
+      <section class="analysis-drawer" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <header class="drawer-head">
+          <button class="icon-button drawer-close-button" data-close-drawer type="button" aria-label="关闭单股分析">×</button>
+          <div class="drawer-title-block">
+            <p class="eyebrow">Single stock</p>
+            <h3 id="detailTitle">个股分析</h3>
+          </div>
+          <span id="detailAction" class="action-pill drawer-action-pill">等待选择</span>
+        </header>
+        <div class="analysis-layout drawer-layout">
+          <article class="analysis-main">
+            <div id="detailBody" class="detail-body"></div>
+          </article>
+          <aside class="side-stack">
+            <div class="reflection-panel">
+              <div class="section-title compact">
+                <div>
+                  <p class="eyebrow">Reflection</p>
+                  <h3>3 轮反思</h3>
+                </div>
+              </div>
+              <div id="reflectionList" class="reflection-list"></div>
+            </div>
+
+            <div class="memory-panel">
+              <div class="section-title compact">
+                <div>
+                  <p class="eyebrow">Memory</p>
+                  <h3>分析记忆</h3>
+                </div>
+                <button id="updateMemory" class="ghost-action small" type="button">更新</button>
+              </div>
+              <div id="memoryList" class="memory-list"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+
+    <div id="detailModal" class="modal-shell" hidden>
+      <div class="modal-backdrop" data-close-modal></div>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <header class="modal-head">
+          <div>
+            <p id="modalKicker" class="eyebrow">Detail</p>
+            <h3 id="modalTitle">详情</h3>
+          </div>
+          <button class="icon-button" data-close-modal type="button" aria-label="关闭">×</button>
+        </header>
+        <div id="modalBody" class="modal-body"></div>
+      </section>
+    </div>
+  </body>
+</html>

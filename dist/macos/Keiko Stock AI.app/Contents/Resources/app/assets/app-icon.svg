@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Keiko Stock AI icon">
+  <rect width="512" height="512" rx="96" fill="#172026"/>
+  <path d="M114 334h284" stroke="#dbe2e7" stroke-width="24" stroke-linecap="round"/>
+  <path d="M128 300l72-76 62 44 104-118" fill="none" stroke="#51b794" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="128" cy="300" r="22" fill="#2364aa"/>
+  <circle cx="200" cy="224" r="22" fill="#2364aa"/>
+  <circle cx="262" cy="268" r="22" fill="#2364aa"/>
+  <circle cx="366" cy="150" r="22" fill="#2364aa"/>
+  <text x="112" y="410" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="900">K</text>
+</svg>
