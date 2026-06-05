@@ -20,8 +20,7 @@
 - 后端刷新盈利：`/api/data/refresh` 支持账户级 portfolio mock 价格刷新和重算。
 - Phase 1C iPhone 原型：已加入 PWA manifest、service worker、mobile web app meta、手机底部导航和 iOS 安全区适配。
 - Phase 1C 局域网预览：可用 `--host 0.0.0.0 --port 8101` 让同一 Wi-Fi 的 iPhone 访问。
-- Phase 1D 打包：已生成 Mac 后端 mock `.app`、Mac 离线 Universal mock `.app`、Mac zip、iPhone SwiftUI/WKWebView mock 源码包和 iPhone zip。
-- Phase 1D 兼容性：Mac mock 包已设置最低 macOS 12.0，并同时包含 Apple Silicon 与 Intel 架构。
+- Phase 1D 打包：已生成 Mac mock `.app`、Mac zip、iPhone SwiftUI/WKWebView mock 源码包和 iPhone zip。
 
 ## 1. 技术架构 TODO
 
@@ -202,32 +201,15 @@
 
 - [ ] 前端迁移到 Vite/React。
 - [x] 后端 FastAPI 打包成本地 sidecar，监听 `127.0.0.1` 随 app 启动。当前为 Objective-C/WKWebView mock 壳。
-- [x] 生成离线 mock 演示包，不依赖目标机器安装 Python 或 uvicorn。
 - [ ] Tauri 负责窗口、菜单、托盘、权限、自动更新。
 - [x] SQLite 数据库放在 app data 目录。当前使用 `~/Library/Application Support/Keiko Stock AI/data`。
 - [ ] API key 放 macOS Keychain。
 - [x] 生成 mock `.app`：`dist/macos/Keiko Stock AI.app`。
 - [x] 生成 mock zip：`dist/macos/KeikoStockAI-mac-mock.zip`。
-- [x] 生成离线 Universal mock zip：`dist/macos-offline/KeikoStockAI-mac-mock-offline-universal.zip`。
-- [x] 设置 mock 包最低系统版本为 macOS 12.0。
-- [x] 同时输出 Apple Silicon `arm64` 和 Intel `x86_64` 架构。
 - [x] 修复 Mac 壳重新打开行为：关闭窗口后再次点击 App 会重新显示窗口。
 - [x] 修复 Mac 壳端口占用问题：默认从 `8123` 开始自动选择可用端口。
 - [ ] 使用 Tauri 打包正式 `.app` 和 `.dmg`。
-- [ ] 用 Developer ID Application 证书签名官网分发版。
-- [ ] 启用 Hardened Runtime，并配置必要 entitlement。
-- [ ] 使用 Apple notary service 做 notarization。
-- [ ] stapling 公证票据到 `.app` / `.dmg`。
-- [ ] 生成正式 `.dmg` 或 `.pkg`，并验证 Gatekeeper 首次打开体验。
-- [ ] 增加自动更新。官网分发可评估 Sparkle 或 Tauri updater。
-- [ ] 如果走 Mac App Store，启用 App Sandbox，拆清本地服务、文件访问、网络访问和通知权限。
-- [ ] 如果走 Mac App Store，准备 App Store Connect 信息、截图、隐私标签、审核说明和测试账号。
-
-### 不能继续使用当前 zip 的场景
-
-- [ ] 公开分发给真实用户：不能只用 ad-hoc 签名 zip，需要 Developer ID 签名和 notarization。
-- [ ] Mac App Store 上架：不能直接上传当前 `.app` zip，需要 sandboxed、signed、archived 的 Xcode/Tauri 正式产物。
-- [ ] iPhone 上架：不能把本地 Python/FastAPI 服务作为用户安装依赖，需要原生包或 WebView 调云端 API。
+- [ ] 后续增加签名、公证、自动更新。
 
 备选路线：
 
@@ -245,22 +227,16 @@
 - [x] 增加局域网预览说明：iPhone 使用 Mac IP 访问，不使用 `localhost`。
 - [x] 生成 iPhone SwiftUI/WKWebView mock 源码包：`dist/iphone/KeikoStockAI-iPhone-Mock-Source.zip`。
 - [ ] 在完整 Xcode + Apple Developer Team 环境中生成可安装 `.ipa`。
-- [ ] 创建正式 Bundle ID、App Group/Keychain Sharing 等需要的 capability。
-- [ ] 配置 Apple Developer 证书和 provisioning profile。
-- [ ] 用 Xcode Archive 上传到 App Store Connect。
-- [ ] 先走 TestFlight 内测，再决定是否提交 App Review。
 - [ ] 生成正式 Apple touch icon PNG 和完整 icon set。
 - [ ] 设计移动端信息架构：把复杂表格拆成卡片式持仓、交易流水、claim 详情。
 - [ ] 做 iPhone 登录/账户切换体验。
 - [ ] 做云同步策略：iPhone 不直接访问 Mac 本机数据库，建议通过 Cloudflare/API 同步共享分析与账户私有数据。
-- [ ] 正式 iPhone 版不依赖 Mac 局域网地址；所有共享分析、异动分析和账户数据通过云端 API 或用户选择的同步后端访问。
 - [ ] 评估正式 iOS 包路线：
   - PWA：最快，适合自用和内测；推送、后台能力、App Store 分发有限。
   - Tauri iOS：可复用 Web 前端，适合和 Mac app 共用技术栈。
   - SwiftUI：体验最好，但开发成本更高。
   - React Native：移动端生态成熟，但和当前 Web demo 复用需要重新组织组件。
 - [ ] 如果上架 App Store，补充隐私政策、投资风险披露、数据授权说明和账户数据删除机制。
-- [ ] 如果涉及真实资金、券商连接、投资建议或金融交易，准备对应地区的资质/许可说明和审核材料。
 
 ## 7. 开发阶段 TODO
 

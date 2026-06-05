@@ -30,13 +30,23 @@ open /Users/admin/Documents/keiko_stock/index.html
 
 ## Mock App 打包
 
-Mac mock app 已生成：
+当前打包产物适合做 mock 演示、团队内测和兼容性验证，不是正式上架包。
+
+推荐发给别人试用的离线演示包：
+
+- App：`dist/macos-offline/Keiko Stock AI.app`
+- Zip：`dist/macos-offline/KeikoStockAI-mac-mock-offline-universal.zip`
+- 打包脚本：`scripts/package_mac_offline_app.sh`
+
+这个包是 Objective-C + WKWebView 壳，直接打开内置静态页面和 mock 数据，不依赖对方电脑安装 Python、uvicorn 或后端依赖。当前已按 Universal binary 打包，包含 Apple Silicon 和 Intel 两个架构，并把最低系统版本设置为 macOS 12.0。它仍然只是 ad-hoc 签名，未做 Apple notarization，所以适合内测，不适合公开分发或上架。
+
+开发调试用的本地后端包：
 
 - App：`dist/macos/Keiko Stock AI.app`
 - Zip：`dist/macos/KeikoStockAI-mac-mock.zip`
 - 打包脚本：`scripts/package_mac_app.sh`
 
-Mac app 当前是 Objective-C + WKWebView 壳，会启动本地 FastAPI mock 后端，再在 app 窗口中打开页面。SQLite 会写入 `~/Library/Application Support/Keiko Stock AI/data`，不会写进 `.app` 资源目录。当前包是 ad-hoc 签名，未做 Apple notarization。
+这个包会启动本地 FastAPI mock 后端，再在 app 窗口中打开页面。SQLite 会写入 `~/Library/Application Support/Keiko Stock AI/data`，不会写进 `.app` 资源目录。它更适合本机开发调试；如果发给别人，对方机器仍可能缺少 Python 或 Python 依赖。
 
 Mac app 壳已处理两个启动稳定性问题：如果关闭窗口后再次打开 App，会重新显示窗口；如果默认 `8123` 端口被占用，会自动选择后续可用端口启动后端。
 
@@ -47,6 +57,21 @@ iPhone mock app 已生成源码包：
 - 打包脚本：`scripts/package_ios_mock_source.sh`
 
 当前机器只有 Command Line Tools，没有完整 Xcode、iOS SDK、模拟器和 Apple 签名环境，所以这里不能直接产出可安装 `.ipa`。iPhone 版本先提供两种方式：Safari 添加到主屏幕的 PWA；或者把源码包放进完整 Xcode 项目后签名运行。
+
+## 正式上架与公开分发
+
+如果目标是上架或公开发给用户，不能直接用现在这种 ad-hoc zip。
+
+Mac 公开分发有两条路线：
+
+1. Mac App Store：需要完整 Xcode 工程、Apple Developer Program、Bundle ID、正式签名、App Sandbox、权限说明、App Store Connect 提交和 App Review。Apple 明确要求通过 Mac App Store 分发的 macOS app 启用 App Sandbox。
+2. 官网下载：不走 App Review，但也要用 Developer ID 签名、Hardened Runtime、notarization、公证票据 stapling，再做 `.dmg` 或 `.pkg`。Apple 的 notarization 不是 App Review，但会检查恶意内容和签名问题，Gatekeeper 会据此判断用户是否能放心打开。
+
+iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/TestFlight/App Review。不能靠把 zip 或本地 Python 服务塞给用户安装；正式 iPhone 版应改成原生壳或 WebView 调云端 API，账户数据和共享分析通过后端同步。
+
+股票/投资类软件还要额外准备：隐私政策、数据授权证明、投资风险披露、用户数据删除机制、模型免责声明，以及各市场行情/资讯 API 的商业授权。Apple App Review Guidelines 对金融、投资、资金管理类 app 有更严格的资质和许可要求。
+
+参考 Apple 官方文档：[Notarizing macOS software](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)、[Developer ID](https://developer.apple.com/support/developer-id/)、[App Sandbox](https://developer.apple.com/documentation/security/app_sandbox)、[TestFlight](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/)、[App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)。
 
 ## 当前内容
 
@@ -59,6 +84,7 @@ iPhone mock app 已生成源码包：
 - `packaging/mac/`：Mac WKWebView app 壳和 Info.plist。
 - `ios/KeikoStockAI/`：iPhone SwiftUI/WKWebView mock app 源码壳。
 - `scripts/package_mac_app.sh`：生成 Mac `.app` 和 zip。
+- `scripts/package_mac_offline_app.sh`：生成不依赖 Python 后端的 Mac 离线 mock `.app` 和 zip。
 - `scripts/package_ios_mock_source.sh`：生成 iPhone mock 源码包。
 - `backend/app.py`：FastAPI mock 后端，提供账户、关注、交易、共享分析和异动分析 API。
 - `backend/accounts.py`：账户私有关注和交易流水服务。
@@ -98,8 +124,9 @@ iPhone mock app 已生成源码包：
 - Phase 1B：已实现后端持仓收益计算、`account_positions_cache`、portfolio API 和 mock 价格刷新。
 - Phase 1C：已加入 iPhone/PWA app shell 和移动端底部导航。
 - Phase 1C：已支持局域网预览方式，iPhone 可通过 Mac IP + `8101` 打开。
-- Phase 1D：已生成 Mac mock `.app` 和 iPhone mock SwiftUI/WKWebView 源码包。
-- 待做：真实数据 provider、真实数据库迁移、LLM 分析服务、正式 iOS `.ipa` 签名/上架暂未接入。
+- Phase 1D：已生成 Mac mock `.app`、Mac 离线 Universal mock `.app` 和 iPhone mock SwiftUI/WKWebView 源码包。
+- Phase 1D：已把 Mac mock 包最低系统版本降到 macOS 12.0，并同时支持 Apple Silicon 与 Intel。
+- 待做：真实数据 provider、真实数据库迁移、LLM 分析服务、Developer ID 签名/公证、Mac App Store/iOS App Store 上架流程暂未接入。
 
 ## 后续真实版本方向
 
@@ -107,8 +134,8 @@ iPhone mock app 已生成源码包：
 2. 用 Tushare/AkShare 做原型数据，生产环境补齐授权行情供应商。
 3. 官方公告优先接入 CNINFO、上交所/深交所、HKEXnews、SEC EDGAR。
 4. 每条 AI 结论必须绑定数据快照、来源等级和反思记录。
-5. Mac 安装版建议用 Tauri 包装本地前端和 Python 后端。
-6. iPhone 版短期建议先走 PWA/移动 Web；后续根据上架、推送、后台任务需求，再评估 Tauri iOS、SwiftUI 或 React Native。
+5. Mac 安装版建议用 Tauri 或原生壳包装前端和后端 sidecar；正式分发时必须做签名、公证和自动更新。
+6. iPhone 版短期建议先走 PWA/移动 Web；正式上架时改成 SwiftUI、React Native 或 Tauri iOS，并调用云端 API。
 
 ## 工程 TODO
 
