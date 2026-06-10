@@ -654,6 +654,16 @@ let backtestPayload = null;
 let backtestLoading = false;
 let backtestError = "";
 let dataJobPoller = null;
+const stockDetailCache = new Map();
+const stockDetailLoading = new Set();
+const stockDetailErrors = new Map();
+const stockDetailPeriods = new Map();
+const stockDetailPeriodOptions = [
+  { id: "daily", label: "日K" },
+  { id: "weekly", label: "周K" },
+  { id: "monthly", label: "月K" },
+  { id: "quarterly", label: "季K" }
+];
 const apiState = {
   connected: false,
   accountId: "acct-admin",
@@ -2119,6 +2129,11 @@ function closeSingleDrawer() {
 }
 
 function renderDetails(stock) {
+  const shouldLoadDetail = shouldLoadStockDetail(stock.symbol);
+  if (shouldLoadDetail) {
+    stockDetailLoading.add(stock.symbol);
+    void loadStockDetail(stock.symbol, stock.market);
+  }
   detailTitle.textContent = `${stock.symbol} · ${stock.name}`;
   detailAction.textContent = stock.action;
   detailAction.className = `action-pill drawer-action-pill ${stock.freshnessStatus}`;
@@ -2128,6 +2143,7 @@ function renderDetails(stock) {
       <div class="metric-box"><span>证据可信度</span><strong>${stock.truthScore}%</strong></div>
       <div class="metric-box"><span>数据时间</span><strong>${formatAsOf(stock.lagMinutes)}</strong></div>
     </div>
+    ${renderStockDetailPanel(stock)}
     ${renderPositionPanel(stock)}
     <p class="thesis">${stock.thesis}</p>
     <div class="uncertainty-list">
@@ -2155,6 +2171,7 @@ function renderDetails(stock) {
   `;
   reflectionList.innerHTML = stock.reflection.map(renderReflection).join("");
   renderMemory(stock);
+  requestAnimationFrame(drawStockDetailCharts);
 }
 
 function renderPositionPanel(stock) {
@@ -2178,6 +2195,263 @@ function renderPositionPanel(stock) {
       </div>
     </section>
   `;
+}
+
+function shouldLoadStockDetail(symbol) {
+  return apiState.connected
+    && symbol
+    && !stockDetailCache.has(symbol)
+    && !stockDetailLoading.has(symbol)
+    && !stockDetailErrors.has(symbol);
+}
+
+async function loadStockDetail(symbol, market = "all") {
+  try {
+    const params = new URLSearchParams({
+      market: market || "all",
+      limit: "520"
+    });
+    const payload = await apiRequest(`/api/stocks/${encodeURIComponent(symbol)}/detail?${params.toString()}`);
+    stockDetailCache.set(symbol, payload);
+    stockDetailErrors.delete(symbol);
+    if (!stockDetailPeriods.has(symbol)) {
+      stockDetailPeriods.set(symbol, preferredStockDetailPeriod(payload));
+    }
+  } catch (error) {
+    stockDetailErrors.set(symbol, error.message);
+  } finally {
+    stockDetailLoading.delete(symbol);
+    const current = stockBySymbol(symbol);
+    if (current && selectedSymbol === symbol && !singleDrawer.hidden) {
+      renderDetails(current);
+    }
+  }
+}
+
+function preferredStockDetailPeriod(payload) {
+  const periods = payload?.market_data?.periods ?? {};
+  const available = stockDetailPeriodOptions.find((item) => (periods[item.id]?.bars ?? []).length);
+  return available?.id ?? "daily";
+}
+
+function activeStockDetailPeriod(symbol, payload) {
+  const requested = stockDetailPeriods.get(symbol);
+  const periods = payload?.market_data?.periods ?? {};
+  if (requested && (periods[requested]?.bars ?? []).length) return requested;
+  const fallback = preferredStockDetailPeriod(payload);
+  stockDetailPeriods.set(symbol, fallback);
+  return fallback;
+}
+
+function renderStockDetailPanel(stock) {
+  const detail = stockDetailCache.get(stock.symbol);
+  const loading = stockDetailLoading.has(stock.symbol);
+  const error = stockDetailErrors.get(stock.symbol);
+
+  if (!apiState.connected) {
+    return `
+      <section class="stock-detail-panel empty">
+        <div class="stock-detail-empty">
+          <strong>数据库行情详情未连接</strong>
+          <span>启动后端后，这里会从 SQLite 的 daily_bars 和 financial_metrics_history 拉取 K 线、成交额和季度财务。</span>
+        </div>
+      </section>
+    `;
+  }
+
+  if (loading && !detail) {
+    return `
+      <section class="stock-detail-panel">
+        <div class="stock-detail-empty">
+          <strong>正在读取数据库 K 线</strong>
+          <span>从 daily_bars 聚合日K、周K、月K、季K，并读取季度财务。</span>
+        </div>
+      </section>
+    `;
+  }
+
+  if (error && !detail) {
+    return `
+      <section class="stock-detail-panel empty">
+        <div class="stock-detail-empty warn">
+          <strong>行情详情加载失败</strong>
+          <span>${escapeHTML(error)}</span>
+        </div>
+      </section>
+    `;
+  }
+
+  if (!detail) {
+    return "";
+  }
+
+  const symbol = detail.symbol ?? stock;
+  const summary = detail.summary ?? {};
+  const period = activeStockDetailPeriod(stock.symbol, detail);
+  const periodPayload = detail.market_data?.periods?.[period] ?? {};
+  const bars = periodPayload.bars ?? [];
+  const changePct = Number(summary.change_pct ?? 0);
+  const changeClass = changePct >= 0 ? "cn-up" : "cn-down";
+  const periodButtons = stockDetailPeriodOptions.map((item) => {
+    const rows = detail.market_data?.periods?.[item.id]?.rows ?? 0;
+    return `
+      <button class="kline-period ${item.id === period ? "active" : ""}" data-detail-period="${item.id}" type="button" ${rows ? "" : "disabled"}>
+        ${item.label}
+      </button>
+    `;
+  }).join("");
+
+  return `
+    <section class="stock-detail-panel">
+      <div class="stock-quote-head">
+        <div class="stock-quote-title">
+          <strong>${escapeHTML(symbol.name ?? stock.name)}</strong>
+          <span>${escapeHTML(symbol.symbol ?? stock.symbol)} · ${escapeHTML(symbol.exchange ?? stock.marketLabel ?? stock.market)} · ${escapeHTML(symbol.industry ?? "行业未分类")}</span>
+        </div>
+        <div class="stock-quote-source">
+          <span>${escapeHTML(detail.market_data?.latest_provider ?? "daily_bars")}</span>
+          <span>${escapeHTML(detail.market_data?.preferred_adjust || "未复权")}</span>
+        </div>
+      </div>
+      <div class="stock-quote-price-row">
+        <strong>${formatDetailPrice(summary.price, summary.currency)}</strong>
+        <span class="${changeClass}">${formatSignedNumber(summary.change, 2)} / ${formatSignedNumber(summary.change_pct, 2, "%")}</span>
+        <em>${escapeHTML(summary.latest_trade_date ?? "暂无交易日")}</em>
+      </div>
+      <div class="stock-quote-grid">
+        ${renderQuoteMetric("今开", formatDetailNumber(summary.open, 2))}
+        ${renderQuoteMetric("最高", formatDetailNumber(summary.high, 2), "cn-up")}
+        ${renderQuoteMetric("最低", formatDetailNumber(summary.low, 2), "cn-down")}
+        ${renderQuoteMetric("昨收", formatDetailNumber(summary.pre_close, 2))}
+        ${renderQuoteMetric("成交量", formatShareVolume(summary.volume))}
+        ${renderQuoteMetric("成交额", formatLargeMoney(summary.amount, summary.currency))}
+        ${renderQuoteMetric("换手", formatDetailNumber(summary.turnover_rate, 2, "%"))}
+        ${renderQuoteMetric("PE(TTM)", formatDetailNumber(summary.pe_ttm, 2))}
+        ${renderQuoteMetric("PB", formatDetailNumber(summary.pb, 2))}
+        ${renderQuoteMetric("PS(TTM)", formatDetailNumber(summary.ps_ttm, 2))}
+        ${renderQuoteMetric("52周最高", formatDetailNumber(summary.high_52w, 2))}
+        ${renderQuoteMetric("52周最低", formatDetailNumber(summary.low_52w, 2))}
+        ${renderQuoteMetric("总股本", formatShareVolume(summary.total_share))}
+        ${renderQuoteMetric("总市值", formatLargeMoney(summary.market_cap, summary.currency))}
+        ${renderQuoteMetric("流通值", formatLargeMoney(summary.float_market_cap, summary.currency))}
+        ${renderQuoteMetric("财报期", summary.latest_financial_period ? escapeHTML(summary.latest_financial_period) : "暂无")}
+      </div>
+      <div class="stock-kline-block">
+        <div class="kline-toolbar">
+          <div class="kline-periods">${periodButtons}</div>
+          <div class="kline-toolbar-meta">
+            <span>${escapeHTML(periodPayload.label ?? "K线")}</span>
+            <span>${bars.length} 条</span>
+          </div>
+        </div>
+        ${bars.length ? `
+          <canvas class="stock-kline-canvas" width="1200" height="620" data-stock-kline="${escapeHTML(stock.symbol)}" data-period="${escapeHTML(period)}"></canvas>
+        ` : `
+          <div class="stock-detail-empty">
+            <strong>暂无 K 线数据</strong>
+            <span>当前股票在 daily_bars 中没有可展示的行情行。</span>
+          </div>
+        `}
+      </div>
+      ${renderFinancialQuarterPanel(detail)}
+    </section>
+  `;
+}
+
+function renderQuoteMetric(label, value, valueClass = "") {
+  return `
+    <div class="quote-metric">
+      <span>${escapeHTML(label)}</span>
+      <strong class="${valueClass}">${value}</strong>
+    </div>
+  `;
+}
+
+function renderFinancialQuarterPanel(detail) {
+  const quarters = detail.financials?.quarters ?? [];
+  if (!quarters.length) {
+    return `
+      <div class="financial-quarter-panel empty">
+        <div class="stock-detail-empty">
+          <strong>暂无季度财务</strong>
+          <span>financial_metrics_history 中还没有这只股票的可用季度指标。</span>
+        </div>
+      </div>
+    `;
+  }
+  return `
+    <div class="financial-quarter-panel">
+      <div class="financial-quarter-head">
+        <strong>季度财务</strong>
+        <span>${escapeHTML(quarters[0].provider ?? "financial_metrics_history")} · ${quarters.length} 期</span>
+      </div>
+      <div class="financial-quarter-table-wrap">
+        <table class="financial-quarter-table">
+          <thead>
+            <tr>
+              <th>报告期</th>
+              <th>ROE</th>
+              <th>毛利率</th>
+              <th>净利率</th>
+              <th>负债率</th>
+              <th>净利润</th>
+              <th>EPS(TTM)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${quarters.slice(0, 8).map((item) => `
+              <tr>
+                <td>${escapeHTML(item.period ?? item.report_period ?? "")}</td>
+                <td>${formatDetailNumber(item.roe, 2, "%")}</td>
+                <td>${formatDetailNumber(item.gross_margin, 2, "%")}</td>
+                <td>${formatDetailNumber(item.net_margin, 2, "%")}</td>
+                <td>${formatDetailNumber(item.debt_ratio, 2, "%")}</td>
+                <td>${formatLargeMoney(item.net_profit, "CNY")}</td>
+                <td>${formatDetailNumber(item.eps_ttm, 3)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function formatDetailPrice(value, currency = "CNY") {
+  if (!hasMetric(Number(value))) return "暂无";
+  if (currency === "CNY") return `¥${Number(value).toFixed(2)}`;
+  return formatMoney(Number(value), currency);
+}
+
+function formatDetailNumber(value, digits = 2, suffix = "") {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? `${numeric.toFixed(digits)}${suffix}` : "暂无";
+}
+
+function formatSignedNumber(value, digits = 2, suffix = "") {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "暂无";
+  const sign = numeric > 0 ? "+" : "";
+  return `${sign}${numeric.toFixed(digits)}${suffix}`;
+}
+
+function formatLargeMoney(value, currency = "CNY") {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "暂无";
+  const prefix = currency === "CNY" ? "" : `${currency} `;
+  const absolute = Math.abs(numeric);
+  if (absolute >= 1000000000000) return `${prefix}${(numeric / 1000000000000).toFixed(2)}万亿`;
+  if (absolute >= 100000000) return `${prefix}${(numeric / 100000000).toFixed(2)}亿`;
+  if (absolute >= 10000) return `${prefix}${(numeric / 10000).toFixed(2)}万`;
+  return `${prefix}${numeric.toFixed(2)}`;
+}
+
+function formatShareVolume(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "暂无";
+  if (Math.abs(numeric) >= 100000000) return `${(numeric / 100000000).toFixed(2)}亿`;
+  if (Math.abs(numeric) >= 10000) return `${(numeric / 10000).toFixed(2)}万`;
+  return numeric.toFixed(0);
 }
 
 function renderUncertainty(stock) {
