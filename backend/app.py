@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import Body, FastAPI, HTTPException, Query, Request
+from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -15,6 +15,18 @@ from .data_sources import DEFAULT_ACCOUNT_ID, alpha_vantage_token, list_data_sou
 from .db import ROOT_DIR, get_db, init_db
 from .finnhub_service import finnhub_status, refresh_finnhub_data
 from .filings import filing_sources_payload, search_filing_documents
+from .history import (
+    create_baostock_backfill_job,
+    create_baostock_financial_backfill_job,
+    ensure_query_data,
+    ingestion_run_payload,
+    refresh_akshare_data,
+    refresh_baostock_data,
+    run_baostock_backfill_job,
+    run_baostock_financial_backfill_job,
+    screen_from_database,
+    warehouse_summary,
+)
 from .portfolio import account_portfolio, refresh_mock_prices, symbols_for_account
 from .providers.akshare_provider import (
     akshare_status,
@@ -49,12 +61,13 @@ from .schemas import (
     TradeInput,
 )
 from .search_history import list_search_history, record_search
+from .stock_detail import stock_detail_payload
 from .stocks import run_screener, search_stocks, stock_memory
 from .symbol_resolver import normalize_symbol_query
 from .tushare_service import refresh_tushare_data, tushare_status
 
 
-app = FastAPI(title="聚宝盆 Mock Backend")
+app = FastAPI(title="聚宝盆 Data Backend")
 
 app.add_middleware(
     CORSMiddleware,
@@ -133,9 +146,23 @@ def create_anomaly(payload: AnomalyInput) -> dict[str, Any]:
 @app.get("/api/stocks/search")
 def api_stock_search(q: str = "", market: str = "all", account_id: str = DEFAULT_ACCOUNT_ID) -> dict[str, Any]:
     with get_db() as conn:
+        ingest_result = ensure_query_data(conn, q, market) if q.strip() else None
         if q.strip():
             record_search(conn, account_id=account_id, surface="stock_analysis", query=q, metadata={"market": market})
-        return search_stocks(conn, q, market, account_id)
+        result = search_stocks(conn, q, market, account_id)
+        if ingest_result:
+            result["ingestion"] = ingest_result
+        return result
+
+
+@app.get("/api/stocks/{symbol}/detail")
+def api_stock_detail(
+    symbol: str,
+    market: str = "all",
+    limit: int = Query(520, ge=20, le=1200),
+) -> dict[str, Any]:
+    with get_db() as conn:
+        return stock_detail_payload(conn, symbol, market=market, limit=limit)
 
 
 @app.get("/stocks/search")
@@ -146,7 +173,25 @@ def stock_search(q: str = "", market: str = "all", account_id: str = DEFAULT_ACC
 @app.post("/api/screeners/run")
 def api_run_screener(payload: ScreenerInput) -> dict[str, Any]:
     with get_db() as conn:
-        return run_screener(conn, payload)
+        rows = screen_from_database(conn, payload.market, payload.filter_ids, payload.mode, payload.natural_query)
+        if rows:
+            stocks = []
+            for row in rows:
+                item = search_stocks(conn, query=row["symbol"], market=payload.market, account_id=payload.account_id)["stocks"]
+                if item:
+                    stocks.append(item[0])
+            return {
+                "stocks": stocks,
+                "rows": rows,
+                "mode": "database-screener",
+                "count": len(stocks),
+                "applied_filters": payload.filter_ids,
+                "filter_mode": payload.mode,
+                "natural_query": payload.natural_query,
+                "warehouse": warehouse_summary(conn),
+            }
+        fallback = run_screener(conn, payload)
+        return {**fallback, "mode": "database-screener-empty", "rows": [], "warehouse": warehouse_summary(conn)}
 
 
 @app.post("/screeners/run")
@@ -156,7 +201,8 @@ def public_run_screener(payload: ScreenerInput) -> dict[str, Any]:
 
 @app.post("/api/backtests/run")
 def api_run_backtest(payload: BacktestInput) -> dict[str, Any]:
-    return run_backtest(payload)
+    with get_db() as conn:
+        return run_backtest(payload, conn)
 
 
 @app.get("/api/memory/stocks/{symbol}")
@@ -304,6 +350,44 @@ def api_refresh_tushare(payload: DataRefreshInput | None = Body(default=None)) -
     payload = payload or DataRefreshInput(provider="tushare")
     with get_db() as conn:
         return refresh_tushare_data(conn, payload.symbols, payload.refresh_universe, payload.account_id or DEFAULT_ACCOUNT_ID)
+
+
+@app.post("/api/data/baostock/refresh")
+def api_refresh_baostock(
+    background_tasks: BackgroundTasks,
+    payload: DataRefreshInput | None = Body(default=None),
+) -> dict[str, Any]:
+    payload = payload or DataRefreshInput(provider="baostock")
+    with get_db() as conn:
+        result = create_baostock_backfill_job(conn, payload.symbols, payload.refresh_universe)
+    if not result.get("already_running"):
+        background_tasks.add_task(run_baostock_backfill_job, result["run_id"], payload.symbols, payload.refresh_universe)
+    return result
+
+
+@app.post("/api/data/baostock/financials/refresh")
+def api_refresh_baostock_financials(
+    background_tasks: BackgroundTasks,
+    payload: DataRefreshInput | None = Body(default=None),
+) -> dict[str, Any]:
+    payload = payload or DataRefreshInput(provider="baostock", scope="quarterly-financials")
+    with get_db() as conn:
+        result = create_baostock_financial_backfill_job(conn, payload.symbols, payload.refresh_universe)
+    if not result.get("already_running"):
+        background_tasks.add_task(run_baostock_financial_backfill_job, result["run_id"], payload.symbols, payload.refresh_universe)
+    return result
+
+
+@app.get("/api/data/jobs/{run_id}")
+def api_data_job(run_id: int, include_symbols: bool = False, symbol_limit: int = Query(50, ge=0, le=500)) -> dict[str, Any]:
+    with get_db() as conn:
+        return ingestion_run_payload(conn, run_id, include_symbols=include_symbols, symbol_limit=symbol_limit)
+
+
+@app.get("/api/data/warehouse/summary")
+def api_warehouse_summary() -> dict[str, Any]:
+    with get_db() as conn:
+        return {"mode": "history-warehouse", "warehouse": warehouse_summary(conn)}
 
 
 @app.get("/api/data/finnhub/status")
@@ -550,7 +634,10 @@ def add_trade(account_id: str, payload: TradeInput) -> dict[str, Any]:
 
 
 @app.post("/api/data/refresh")
-def refresh_data(payload: DataRefreshInput | None = Body(default=None)) -> dict[str, Any]:
+def refresh_data(
+    background_tasks: BackgroundTasks,
+    payload: DataRefreshInput | None = Body(default=None),
+) -> dict[str, Any]:
     response = refresh_payload()
     payload = payload or DataRefreshInput()
     account_id = payload.account_id
@@ -561,6 +648,21 @@ def refresh_data(payload: DataRefreshInput | None = Body(default=None)) -> dict[
     if payload.provider == "tushare" or scope in {"tushare", "real-data", "cn-real-data"}:
         with get_db() as conn:
             return refresh_tushare_data(conn, payload.symbols, payload.refresh_universe, account_id or DEFAULT_ACCOUNT_ID)
+    if payload.provider == "akshare" or scope in {"akshare", "history", "a-share-history"}:
+        with get_db() as conn:
+            return refresh_akshare_data(conn, payload.symbols, payload.refresh_universe)
+    if payload.provider == "baostock" or scope in {"baostock", "history-backfill", "a-share-backfill"}:
+        with get_db() as conn:
+            result = create_baostock_backfill_job(conn, payload.symbols, payload.refresh_universe)
+        if not result.get("already_running"):
+            background_tasks.add_task(run_baostock_backfill_job, result["run_id"], payload.symbols, payload.refresh_universe)
+        return result
+    if payload.provider == "baostock-financial" or scope in {"baostock-financial", "quarterly-financials", "a-share-quarterly-financials"}:
+        with get_db() as conn:
+            result = create_baostock_financial_backfill_job(conn, payload.symbols, payload.refresh_universe)
+        if not result.get("already_running"):
+            background_tasks.add_task(run_baostock_financial_backfill_job, result["run_id"], payload.symbols, payload.refresh_universe)
+        return result
     if scope == "portfolio" and account_id:
         with get_db() as conn:
             updated_prices = refresh_mock_prices(symbols_for_account(conn, account_id))

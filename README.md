@@ -1,12 +1,12 @@
 # 聚宝盆
 
-本地安装型选股研究台原型。当前版本使用 mock 数据，重点验证产品结构：每日观察名单、关注池买卖复核、手动输入股票分析、数据实时性检测、证据链、最多 3 轮反思，以及“共享分析 + 多账户私有持仓/关注”的软件边界。
+本地安装型选股研究台原型。当前版本已从纯 mock 演示推进到“本地 SQLite 历史数据仓库 + 真实/缓存数据源”方向：支持 BaoStock 历史日线回刷、Tushare/AKShare/Finnhub/Alpha Vantage 等数据源配置、股票搜索、数据库筛选、回测和共享分析记忆；LLM 投研结论仍处于研究辅助原型阶段。
 
 > 这是研究辅助软件原型，不构成投资建议。真实交易前必须接入授权数据源，并由用户独立复核。
 
 ## 立即预览
 
-推荐使用本地 Mock 后端启动，这样可以验证多账户、SQLite 种子库和共享分析缓存：
+推荐使用本地 FastAPI 后端启动，这样可以验证多账户、SQLite 历史仓库、共享分析缓存和真实/缓存数据源：
 
 ```bash
 python3 -B -m uvicorn backend.app:app --host 127.0.0.1 --port 8100
@@ -20,7 +20,7 @@ python3 -B -m uvicorn backend.app:app --host 127.0.0.1 --port 8100
 python3 -m pip install -r requirements.txt
 ```
 
-当前 AKShare 模块不会替代主界面的 mock 分析链路，而是在设置页提供“AKShare 数据探索”面板，并暴露独立 API 方便查看能拉到哪些字段：
+AKShare 当前主要用于数据探索和部分 A 股历史行情 fallback，并暴露独立 API 方便查看能拉到哪些字段：
 
 - `GET /api/akshare/status`：检查当前 Python 环境是否已安装 AKShare。
 - `GET /api/akshare/capabilities`：查看已登记能力、分类、AKShare 函数名、示例参数和当前版本是否支持。
@@ -36,6 +36,81 @@ python3 -m pip install -r requirements.txt
 - `GET /api/data/finnhub/status?account_id=acct-admin`：查看 admin 账户下 Finnhub key 和三个数据源是否生效。
 - `POST /api/data/finnhub/refresh`：刷新美股数据，例如 body 为 `{"provider":"finnhub","account_id":"acct-admin","symbols":["AAPL","NVDA"]}`。
 - 也可以在设置页的 admin 账户下保存 Finnhub key；环境变量 `KEIKO_FINNHUB_TOKEN` 或 `FINNHUB_API_KEY` 也会被识别。
+
+## BaoStock 历史数据仓库
+
+BaoStock 用作 A 股、ETF、指数的历史回刷源，不作为实时行情源。已接入：
+
+- `query_all_stock`：写入 `symbols` 和 `symbol_aliases`，用于股票名/代码搜索。
+- `query_history_k_data_plus`：写入 `daily_bars` 和最新 `market_snapshots`，字段包括 OHLC、成交量、成交额、换手率、`peTTM`、`pbMRQ`、`psTTM`、`pcfNcfTTM`、`isST`。
+- 季频财务指标：`query_profit_data`、`query_operation_data`、`query_growth_data`、`query_balance_data`、`query_cash_flow_data`、`query_dupont_data` 写入 `financial_metrics_history`。
+- 季频公司报告：`query_performance_express_report`、`query_forecast_report` 写入 `company_reports_history`。
+- 后台长任务：点击设置页 BaoStock “刷新数据”或调用 `/api/data/refresh` 后立即返回 `run_id`，后端按批继续回刷；网络接收错误会自动等待、重新登录并重试，长时间没有心跳的旧 `running` 任务会标记为 `interrupted` 后按缺口继续。
+
+启动后台回刷：
+
+```bash
+curl -sS http://127.0.0.1:8100/api/data/refresh \
+  -H 'Content-Type: application/json' \
+  -d '{"provider":"baostock","scope":"baostock","account_id":"acct-admin","refresh_universe":true}'
+```
+
+查询任务：
+
+```bash
+curl -sS http://127.0.0.1:8100/api/data/jobs/<run_id>
+```
+
+后台/定时任务也可以直接跑脚本：
+
+```bash
+python3 scripts/run_baostock_backfill.py --days 260 --batch-size 30
+```
+
+季度财务/公司报告回刷：
+
+```bash
+python3 scripts/run_baostock_financial_backfill.py --quarters 12 --batch-size 10
+```
+
+或走接口：
+
+```bash
+curl -sS http://127.0.0.1:8100/api/data/refresh \
+  -H 'Content-Type: application/json' \
+  -d '{"provider":"baostock-financial","scope":"quarterly-financials","account_id":"acct-admin","refresh_universe":true}'
+```
+
+季度任务按 A 股披露截止日选择成熟季度。例如 2026-06-07 会从 2026Q1 开始，不会提前把未披露的 2026Q2 写成空数据。ETF/指数等无季报证券会写 `raw_json.status = "no_data"` 的空指标占位，避免全市场任务重复刷同一批无数据标的。
+
+BaoStock 季频财务和公司报告批次通过子进程执行；如果 SDK 网络接收卡住，父进程会按批次规模超时终止子进程并把 run 标记为 `partial`/`failed`，不会让后台任务无限挂住。
+
+本机已安装 macOS LaunchAgent：
+
+- `com.keiko.baostock-nightly`：每天 00:00 运行日线回刷，日志位于 `logs/baostock-nightly.log` 和 `logs/baostock-nightly.err.log`。项目内配置文件是 `scripts/com.keiko.baostock-nightly.plist`。
+- `com.keiko.baostock-financial-nightly`：每天 02:30 运行季频财务/公司报告回刷，日志位于 `logs/baostock-financial-nightly.log` 和 `logs/baostock-financial-nightly.err.log`。项目内配置文件是 `scripts/com.keiko.baostock-financial-nightly.plist`。
+
+本地仓库诊断脚本：
+
+```bash
+python3 scripts/debug_warehouse.py summary
+python3 scripts/debug_warehouse.py coverage
+python3 scripts/debug_warehouse.py providers
+python3 scripts/debug_warehouse.py daily-symbol 600519.SH
+python3 scripts/debug_warehouse.py financials
+python3 scripts/debug_warehouse.py financial-symbol 600519.SH --quarters 12
+python3 scripts/debug_warehouse.py missing-bars --limit 50
+python3 scripts/debug_warehouse.py symbol 中金黄金 --limit 20
+```
+
+字段说明见 `docs/warehouse-schema.md`，调试脚本说明见 `scripts/debug_warehouse.README.md`。
+
+改动 BaoStock 仓库逻辑后先跑：
+
+```bash
+python3 scripts/test_warehouse_guards.py
+python3 -m compileall backend scripts
+```
 
 ## Alpha Vantage 美股接入
 
@@ -96,7 +171,7 @@ open /Users/admin/Documents/keiko_stock/index.html
 - Zip：`dist/macos/KeikoStockAI-mac-mock.zip`
 - 打包脚本：`scripts/package_mac_app.sh`
 
-这个包会启动本地 FastAPI mock 后端，再在 app 窗口中打开页面。SQLite 会写入 `~/Library/Application Support/Keiko Stock AI/data`，不会写进 `.app` 资源目录。它更适合本机开发调试；如果发给别人，对方机器仍可能缺少 Python 或 Python 依赖。
+这个包会启动本地 FastAPI 后端，再在 app 窗口中打开页面。SQLite 会写入 `~/Library/Application Support/Keiko Stock AI/data`，不会写进 `.app` 资源目录。它更适合本机开发调试；如果发给别人，对方机器仍可能缺少 Python 或 Python 依赖。
 
 Mac app 壳已处理两个启动稳定性问题：如果关闭窗口后再次打开 App，会重新显示窗口；如果默认 `8123` 端口被占用，会自动选择后续可用端口启动后端。
 
@@ -127,7 +202,7 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 
 - `index.html`：本地单页应用入口。
 - `styles.css`：响应式界面样式。
-- `app.js`：mock 股票数据、评分、搜索分析、数据健康和反思渲染逻辑。
+- `app.js`：前端交互、API 调用、fallback 股票数据、筛选、分析、数据健康和反思渲染逻辑。
 - `manifest.webmanifest`：iPhone/PWA 安装入口元数据。
 - `service-worker.js`：PWA app shell 缓存，API 请求仍走实时后端。
 - `assets/app-icon.svg`：当前原型图标，后续打包阶段替换为正式 PNG/icon set。
@@ -136,24 +211,31 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 - `scripts/package_mac_app.sh`：生成 Mac `.app` 和 zip。
 - `scripts/package_mac_offline_app.sh`：生成不依赖 Python 后端的 Mac 离线 mock `.app` 和 zip。
 - `scripts/package_ios_mock_source.sh`：生成 iPhone mock 源码包。
-- `backend/app.py`：FastAPI mock 后端，提供账户、关注、交易、共享分析和异动分析 API。
+- `backend/app.py`：FastAPI 后端，提供账户、关注、交易、共享分析、异动分析、数据源刷新和历史仓库 API。
 - `backend/accounts.py`：账户私有关注和交易流水服务。
 - `backend/analysis.py`：共享单股分析、共享异动分析和共享缓存统计。
 - `backend/portfolio.py`：账户级持仓、收益率、盈利金额和持仓缓存计算。
-- `backend/data_quality.py`：Mock 数据健康检查和刷新任务响应。
+- `backend/data_quality.py`：数据健康检查和刷新任务基础响应。
 - `backend/db.py`：SQLite 连接、schema 初始化和种子库写入。
 - `backend/seed_data.py`：SQLite 种子数据，模拟多账户与共享分析缓存。
-- `backend/providers/`：Phase 1E mock provider，生成行情、财务、新闻、claim 和因子快照。
+- `backend/providers/`：数据源 provider，包含 mock fallback、Tushare、AKShare、Alpha Vantage、Finnhub、BaoStock 和公告适配器。
 - `backend/providers/tushare.py`：Tushare Pro HTTP 客户端，按官方 Pro 协议调用 `stock_basic`、`daily`、`daily_basic`、`income`、`fina_indicator`。
 - `backend/tushare_service.py`：Tushare A 股刷新服务，把真实行情和财务快照写入 SQLite 缓存。
+- `backend/history.py`：历史数据仓库服务，负责 AKShare/BaoStock/Tushare fallback、BaoStock 后台回刷、数据库筛选和回测日线读取。
+- `backend/providers/baostock_provider.py`：BaoStock 适配器，封装 `query_all_stock`、`query_history_k_data_plus` 等接口。
 - `backend/providers/filings.py`：CNINFO、上交所、深交所、HKEXnews 公告/披露查询适配器。
 - `backend/filings.py`：公告来源选择、日期校验和统一返回结构。
-- `backend/data_sources.py`：网页版数据源配置服务，控制哪些 mock 来源进入分析。
-- `backend/stocks.py`：股票搜索、筛选和记忆 API 的 mock 服务。
-- `backend/backtesting.py`：回测平台 mock 研究引擎，输出收益曲线、回撤、调仓记录和研究限制。
+- `backend/data_sources.py`：网页版数据源配置服务，控制哪些来源进入分析。
+- `backend/stocks.py`：股票搜索、筛选、分析展示和记忆 API 服务。
+- `backend/backtesting.py`：回测平台研究引擎，优先使用 `daily_bars`，数据不足时回退到研究 mock。
 - `scripts/fetch_filings.py`：命令行查询官方公告/披露数据。
+- `scripts/run_baostock_backfill.py`：后台/定时 BaoStock 回刷入口，复用 `ingestion_runs` 和 SQLite 历史仓库，可断点续跑。
+- `scripts/run_baostock_financial_backfill.py`：BaoStock 季频财务指标和公司报告后台回刷入口。
+- `scripts/debug_warehouse.py`：只读调试 SQLite 历史数据仓库，查看 provider 覆盖、BaoStock 缺口、PE/PB 和 ingestion 任务。
+- `scripts/debug_warehouse.README.md`：debug 脚本和 BaoStock 后台任务使用说明。
 - `requirements.txt`：后端运行依赖。
 - `docs/official-filings-data.md`：真实公告数据源接入说明和 API/CLI 示例。
+- `docs/warehouse-schema.md`：SQLite 历史数据仓库字段字典和 provider 原始字段映射。
 - `docs/research-report.md`：数据源、资讯源、真实性判断、情绪面、AI 反思和落地路线报告。
 - `docs/engineering-todo.md`：后端、数据库、API key、自动化、多账户和打包 TODO。
 - `docs/handoff.md`：换电脑或开启新 Codex 会话时的交接说明。
@@ -170,15 +252,17 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 - 关注/持仓拆分：关注列表和持仓列表是两个独立页面；关注列表使用股票卡片，持仓列表支持收益、刷新股价、折叠流水和带 B/S 标记的 K 线。
 - 异动分析：支持从今日观察、关注列表和持仓列表生成股票池，点击股票查看异动报告，也支持自然语言询问大盘或板块异动。
 - 单股分析浮层：点击任意股票的“查看分析”后打开较轻量的浮动分析界面，关闭按钮放在左上角，更贴近 Mac 使用习惯。
-- Mock 后端：页面启动时优先读取 `/api/bootstrap`；后端不可用时保持本地 fallback。
+- 本地后端：页面启动时优先读取 `/api/bootstrap`；后端不可用时保持本地 fallback。
 - 多账户原型：账户 A/B 可切换；股票分析、异动分析、记忆共享；关注列表和持仓流水按账户隔离。
 - 后端持仓计算：`/api/accounts/{account_id}/portfolio` 返回账户级持仓、盈亏、收益率和币种汇总。
 - 后端刷新盈利：点击“刷新股价”会调用 `/api/data/refresh`，用 mock 最新价重算 portfolio。
 - iPhone/PWA 原型：支持 mobile web app meta、manifest、service worker 和手机底部导航。
 - 网页版 tab：左侧导览切换后只显示当前 tab 内容，不再把后续页面连续接在下面。
-- 设置页：按 A/HK/US 市场配置行情、财务、公告、新闻情绪 mock 数据源；未启用或未配置的数据源不会进入后续 mock 分析。
-- 回测平台：支持选择策略模板、市场、区间、持仓数、调仓频率、手续费和滑点，生成 mock 研究回测报告。
+- 设置页：按 A/HK/US 市场配置行情、财务、公告、新闻情绪数据源；未启用或未配置的数据源不会进入后续分析。
+- 回测平台：支持选择策略模板、市场、区间、持仓数、调仓频率、手续费和滑点，优先基于数据库历史日线生成研究回测。
 - Tushare Pro：支持账户级 token 配置，刷新 A 股行情/每日指标/利润表/财务指标，搜索和持仓价格优先使用 Tushare 缓存。
+- BaoStock：支持 A 股/ETF/指数代码宇宙回刷、历史 K 线后台长任务、PE/PB 缓存和 SQLite 仓库覆盖率诊断。
+- 数据库筛选：筛选股票“应用”直接查 `daily_bars`，自然语言如 `PE<10` 会作为独立 SQL 条件，不会自动勾选复选框。
 
 ## Tushare Pro A 股接入
 
@@ -216,13 +300,14 @@ Tushare Pro 不同账号有接口频率限制。刷新服务会逐只股票返�
 - Phase 1D：已把 Mac mock 包最低系统版本降到 macOS 12.0，并同时支持 Apple Silicon 与 Intel。
 - Phase 1E：已加入 mock provider、共享快照表、数据源配置表、股票搜索/筛选/记忆 API、网页版设置页和回测平台。
 - Phase 1F：已接入 Tushare Pro A 股行情/财务缓存，支持账户级 token 配置、真实刷新、搜索展示和持仓价格覆盖。
+- Phase 1G：已接入历史数据仓库、BaoStock 回刷、数据库筛选、数据库回测和 `debug_warehouse` 诊断脚本；BaoStock 全量回刷改为后台长任务。
 - 当前优先：先开发网页版；macOS 和 iPhoneOS 打包暂缓。
-- 待做：真实数据 provider、真实数据库迁移、LLM 分析服务、Developer ID 签名/公证、Mac App Store/iOS App Store 上架流程暂未接入。
+- 待做：持久化任务队列/断点续跑、DuckDB/Parquet 大批量历史数据层、真实 LLM 分析服务、Developer ID 签名/公证、Mac App Store/iOS App Store 上架流程暂未接入。
 
 ## 后续真实版本方向
 
 1. 用 FastAPI + SQLite/DuckDB 做本地后端和缓存。
-2. 用 Tushare/AkShare 做原型数据，生产环境补齐授权行情供应商。
+2. 用 BaoStock/Tushare/AKShare 做原型历史数据，生产环境补齐授权行情供应商和更稳定的批量任务队列。
 3. 官方公告优先接入 CNINFO、上交所/深交所、HKEXnews、SEC EDGAR。当前已新增 `/api/filings/search` 和 `scripts/fetch_filings.py`，可查询 CNINFO、上交所、深交所、HKEXnews 的公开公告入口。
 4. 每条 AI 结论必须绑定数据快照、来源等级和反思记录。
 5. Mac 安装版建议用 Tauri 或原生壳包装前端和后端 sidecar；正式分发时必须做签名、公证和自动更新。
@@ -232,5 +317,7 @@ Tushare Pro 不同账号有接口频率限制。刷新服务会逐只股票返�
 
 下一阶段的后端、数据库、API key、自动化、多账户和打包计划见：
 
-- [docs/engineering-todo.md](/Users/admin/Documents/keiko_stock/docs/engineering-todo.md)
-- [docs/handoff.md](/Users/admin/Documents/keiko_stock/docs/handoff.md)
+- [docs/engineering-todo.md](docs/engineering-todo.md)
+- [docs/handoff.md](docs/handoff.md)
+- [docs/warehouse-schema.md](docs/warehouse-schema.md)
+- [scripts/debug_warehouse.README.md](scripts/debug_warehouse.README.md)

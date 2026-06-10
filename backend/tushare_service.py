@@ -61,15 +61,12 @@ def refresh_tushare_data(
     market_count = 0
     financial_count = 0
 
-    try:
-        basics = client.stock_basic()
-    except TushareError as exc:
-        raise HTTPException(status_code=502, detail=f"Tushare stock_basic 失败：{exc}") from exc
-
     if refresh_universe:
+        try:
+            basics = client.stock_basic()
+        except TushareError as exc:
+            raise HTTPException(status_code=502, detail=f"Tushare stock_basic 失败：{exc}") from exc
         upsert_symbols(conn, basics)
-    else:
-        upsert_symbols(conn, [item for item in basics if item.get("ts_code") in target_symbols])
 
     daily_start, daily_end = recent_tushare_date_window(20)
     financial_start, financial_end = financial_date_window()
@@ -81,7 +78,11 @@ def refresh_tushare_data(
 
         try:
             daily_rows = client.daily(symbol, daily_start, daily_end)
-            daily_basic_rows = client.daily_basic(symbol, daily_start, daily_end)
+            daily_basic_rows: list[dict[str, Any]] = []
+            try:
+                daily_basic_rows = client.daily_basic(symbol, daily_start, daily_end)
+            except TushareError as exc:
+                errors.append({"symbol": symbol, "error": f"Tushare daily_basic 暂不可用：{exc}"})
             daily = latest_row(daily_rows, "trade_date")
             daily_basic = latest_row(daily_basic_rows, "trade_date")
             if not daily:
@@ -93,15 +94,18 @@ def refresh_tushare_data(
                 market_count += 1
 
             if financial_active:
-                indicator_rows = client.fina_indicator(symbol, financial_start, financial_end)
-                income_rows = client.income(symbol, financial_start, financial_end)
-                indicator = latest_row(indicator_rows, "end_date")
-                income = latest_row(income_rows, "end_date")
-                if indicator or income:
-                    insert_financial_snapshot(conn, symbol, indicator, income, daily_basic)
-                    financial_count += 1
-                else:
-                    errors.append({"symbol": symbol, "error": "Tushare 财务接口无返回数据"})
+                try:
+                    indicator_rows = client.fina_indicator(symbol, financial_start, financial_end)
+                    income_rows = client.income(symbol, financial_start, financial_end)
+                    indicator = latest_row(indicator_rows, "end_date")
+                    income = latest_row(income_rows, "end_date")
+                    if indicator or income:
+                        insert_financial_snapshot(conn, symbol, indicator, income, daily_basic)
+                        financial_count += 1
+                    else:
+                        errors.append({"symbol": symbol, "error": "Tushare 财务接口无返回数据"})
+                except TushareError as exc:
+                    errors.append({"symbol": symbol, "error": f"Tushare 财务接口暂不可用：{exc}"})
 
             updated_symbols.append(symbol)
         except TushareError as exc:

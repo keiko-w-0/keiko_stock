@@ -34,8 +34,12 @@ FILTERS: dict[str, Callable[[dict[str, Any]], bool]] = {
 PROVIDER_LABELS = {
     "tushare-market": "Tushare Pro 行情",
     "tushare-financial": "Tushare Pro 财务指标",
+    "akshare-market": "AKShare A股行情",
+    "baostock-market": "BaoStock 历史日线",
     "finnhub-market": "Finnhub 美股行情",
     "finnhub-financial": "Finnhub 基本面",
+    "finnhub-news": "Finnhub 公司新闻",
+    "alpha_vantage-news": "Alpha Vantage 新闻情绪",
 }
 
 
@@ -60,7 +64,7 @@ def search_stocks(conn: sqlite3.Connection, query: str = "", market: str = "all"
             or normalized_query in stock["name"].lower()
             or (resolved_symbol and stock["symbol"].upper() == resolved_symbol)
         ]
-    mode = "provider-cached" if any(stock["sourceStatus"]["mode"] == "provider-cached" for stock in stocks) else "mock-provider"
+    mode = "provider-cached" if any(stock["sourceStatus"]["mode"] == "provider-cached" for stock in stocks) else "provider-configured"
     return {
         "stocks": stocks,
         "mode": mode,
@@ -124,14 +128,19 @@ def all_stock_payloads(conn: sqlite3.Connection, query: str = "", account_id: st
     source_ids = active_source_ids(conn, account_id)
     market_snapshots: dict[str, dict[str, Any]] = {}
     financial_snapshots: dict[str, dict[str, Any]] = {}
+    news_snapshots: dict[str, dict[str, Any]] = latest_news_snapshots(conn)
+    if "cn-baostock-history" in source_ids:
+        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "baostock-market"))
     if "cn-tushare-market" in source_ids:
-        market_snapshots.update(latest_snapshots(conn, "market_snapshots", "tushare-market"))
+        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "tushare-market"))
+    if "cn-akshare-market" in source_ids:
+        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "akshare-market"))
     if "us-finnhub-market" in source_ids:
-        market_snapshots.update(latest_snapshots(conn, "market_snapshots", "finnhub-market"))
+        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "finnhub-market"))
     if "cn-tushare-financial" in source_ids:
-        financial_snapshots.update(latest_snapshots(conn, "financial_snapshots", "tushare-financial"))
+        merge_snapshots(financial_snapshots, latest_snapshots(conn, "financial_snapshots", "tushare-financial"))
     if "us-finnhub-financial" in source_ids:
-        financial_snapshots.update(latest_snapshots(conn, "financial_snapshots", "finnhub-financial"))
+        merge_snapshots(financial_snapshots, latest_snapshots(conn, "financial_snapshots", "finnhub-financial"))
     symbols = {
         row["symbol"]: row_to_dict(row)
         for row in conn.execute("select * from symbols order by market, symbol")
@@ -140,7 +149,15 @@ def all_stock_payloads(conn: sqlite3.Connection, query: str = "", account_id: st
     for symbol in seed_data.STOCK_PROFILES:
         if symbol not in symbols:
             continue
-        payloads.append(build_stock_payload(symbols[symbol], active_sources, market_snapshots.get(symbol), financial_snapshots.get(symbol)))
+        payloads.append(
+            build_stock_payload(
+                symbols[symbol],
+                active_sources,
+                market_snapshots.get(symbol),
+                financial_snapshots.get(symbol),
+                news_snapshots.get(symbol),
+            )
+        )
 
     if query:
         existing_symbols = {item["symbol"] for item in payloads}
@@ -149,7 +166,15 @@ def all_stock_payloads(conn: sqlite3.Connection, query: str = "", account_id: st
                 continue
             if query not in symbol.lower() and query not in row["name"].lower():
                 continue
-            payloads.append(build_stock_payload(row, active_sources, market_snapshots.get(symbol), financial_snapshots.get(symbol)))
+            payloads.append(
+                build_stock_payload(
+                    row,
+                    active_sources,
+                    market_snapshots.get(symbol),
+                    financial_snapshots.get(symbol),
+                    news_snapshots.get(symbol),
+                )
+            )
     return payloads
 
 
@@ -158,12 +183,20 @@ def build_stock_payload(
     active_sources: dict[str, set[str]],
     market_snapshot: dict[str, Any] | None = None,
     financial_snapshot: dict[str, Any] | None = None,
+    news_snapshot: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     symbol = symbol_row["symbol"]
     profile = deepcopy(seed_data.STOCK_PROFILES.get(symbol) or default_profile(symbol_row))
     market = symbol_row["market"]
     active_kinds = active_sources.get(market, set())
-    missing_kinds = [kind for kind in ["market", "financial", "filing", "news"] if kind not in active_kinds]
+    analysis_kinds = set(active_kinds)
+    if "market" in analysis_kinds and not market_snapshot:
+        analysis_kinds.remove("market")
+    if "financial" in analysis_kinds and not financial_snapshot:
+        analysis_kinds.remove("financial")
+    if "news" in analysis_kinds and not news_snapshot:
+        analysis_kinds.remove("news")
+    missing_kinds = [kind for kind in ["market", "financial", "filing", "news"] if kind not in analysis_kinds]
     real_sources: list[str] = []
 
     if market_snapshot:
@@ -172,12 +205,15 @@ def build_stock_payload(
     if financial_snapshot:
         apply_financial_snapshot(profile, financial_snapshot)
         real_sources.append(financial_snapshot.get("provider") or "financial")
+    if news_snapshot:
+        apply_news_snapshot(profile, news_snapshot)
+        real_sources.append(news_snapshot.get("provider") or "news")
     if real_sources:
         profile["factors"] = score_metrics(profile["metrics"], profile["factors"])
         profile["score"] = round(sum(profile["factors"].values()) / len(profile["factors"]))
         profile["truth_score"] = min(96, max(profile["truth_score"], 82 + 5 * len(real_sources)))
         profile["action"] = action_for_score(profile["score"])
-        profile["thesis"] = real_data_thesis(profile, market_snapshot, financial_snapshot)
+        profile["thesis"] = real_data_thesis(profile, market_snapshot, financial_snapshot, news_snapshot)
 
     factors = profile["factors"]
     if "financial" in missing_kinds:
@@ -191,12 +227,21 @@ def build_stock_payload(
     if "news" in missing_kinds:
         factors["催化"] = min(factors["催化"], 50)
         factors["情绪"] = min(factors["情绪"], 45)
+    if not financial_snapshot:
+        clear_fundamental_metrics(profile["metrics"])
+        if not market_snapshot:
+            clear_valuation_metrics(profile["metrics"])
+    if not news_snapshot:
+        clear_news_metrics(profile["metrics"])
 
     evidence = [
-        item
+        normalize_evidence_item(item, market)
         for item in profile["evidence"]
-        if claim_allowed(item["source"], active_kinds)
+        if not template_evidence(item)
+        and claim_allowed(item["source"], analysis_kinds)
     ]
+    if "filing" in analysis_kinds:
+        evidence.append(filing_source_status_evidence(market))
     if not evidence:
         evidence = [
             {
@@ -215,8 +260,8 @@ def build_stock_payload(
     action = "等待数据源" if blocked else profile["action"]
     thesis = profile["thesis"]
     if missing_kinds:
-        missing_text = "、".join(SOURCE_KIND_LABELS.get(kind, kind) for kind in missing_kinds)
-        thesis = f"未启用或未配置{missing_text}数据源；本次 mock 分析不会使用这些来源。{thesis}"
+        missing_text = "、".join(missing_kind_label(kind, market_snapshot, financial_snapshot) for kind in missing_kinds)
+        thesis = f"缺少可用于本次分析的{missing_text}数据；本次分析不会使用这些来源。{thesis}"
 
     return {
         "symbol": symbol,
@@ -233,21 +278,93 @@ def build_stock_payload(
         "truthScore": truth_score,
         "factors": factors,
         "spark": profile["spark"],
-        "thesis": thesis,
-        "reasons": profile["reasons"],
-        "risks": profile["risks"],
+        "thesis": clean_analysis_text(thesis),
+        "reasons": [clean_analysis_text(item) for item in profile["reasons"]],
+        "risks": [clean_analysis_text(item) for item in profile["risks"]],
         "evidence": evidence,
-        "reflection": profile["reflection"],
+        "reflection": [normalize_reflection_item(item) for item in profile["reflection"]],
         "metrics": camel_metrics(profile["metrics"]),
         "sourceStatus": {
             "activeKinds": sorted(active_kinds),
+            "analysisKinds": sorted(analysis_kinds),
             "missingKinds": missing_kinds,
-            "mode": "provider-cached" if real_sources else "mock-configured",
-            "providers": real_sources or ["mock"],
+            "mode": "provider-cached" if real_sources else "provider-configured",
+            "providers": real_sources,
             "marketSnapshot": snapshot_meta(market_snapshot),
             "financialSnapshot": snapshot_meta(financial_snapshot),
+            "newsSnapshot": snapshot_meta(news_snapshot),
+            "valuationBasis": valuation_basis(market_snapshot, financial_snapshot),
         },
     }
+
+
+def normalize_evidence_item(item: dict[str, Any], market: str) -> dict[str, Any]:
+    source = str(item.get("source") or "")
+    return {
+        **item,
+        "source": normalize_evidence_source(source, market),
+    }
+
+
+def template_evidence(item: dict[str, Any]) -> bool:
+    source = str(item.get("source") or "")
+    return "Mock" in source or "mock" in source
+
+
+def filing_source_status_evidence(market: str) -> dict[str, Any]:
+    source = {
+        "A": "CNINFO / 交易所公告",
+        "HK": "HKEXnews 公告",
+        "US": "SEC EDGAR 披露",
+    }.get(market, "公告/披露数据源")
+    return {
+        "tier": "G",
+        "source": source,
+        "claim": "公告/披露数据源已启用；原文标题与链接需要在数据健康的公告/披露测试结果中核验。",
+        "confidence": 0.55,
+    }
+
+
+def missing_kind_label(
+    kind: str,
+    market_snapshot: dict[str, Any] | None,
+    financial_snapshot: dict[str, Any] | None,
+) -> str:
+    if kind == "financial" and market_snapshot and not financial_snapshot:
+        return "财报财务快照（ROE/收入/现金流）"
+    return SOURCE_KIND_LABELS.get(kind, kind)
+
+
+def normalize_evidence_source(source: str, market: str) -> str:
+    if "Mock" not in source and "mock" not in source:
+        return source
+    if "公告" in source or "HKEX" in source or "SEC" in source:
+        if market == "HK":
+            return "HKEXnews 公告"
+        if market == "US":
+            return "SEC EDGAR 披露"
+        return "CNINFO / 交易所公告"
+    if "财务" in source or "基本面" in source or "IR" in source:
+        return "财务/估值数据源"
+    if "新闻" in source or "情绪" in source or "社媒" in source:
+        return "新闻情绪数据源"
+    return source.replace(" Mock", "").replace(" mock", "").strip() or "数据源"
+
+
+def normalize_reflection_item(item: dict[str, Any]) -> dict[str, Any]:
+    return {**item, "text": clean_analysis_text(str(item.get("text") or ""))}
+
+
+def clean_analysis_text(text: str) -> str:
+    return (
+        text.replace(" Mock", "")
+        .replace(" mock ", " 数据源")
+        .replace("mock ", "数据源")
+        .replace("本原型", "当前环境")
+        .replace("原型演示", "数据闸门")
+        .replace("真实版本", "当前版本")
+        .strip()
+    )
 
 
 def claim_allowed(source: str, active_kinds: set[str]) -> bool:
@@ -286,24 +403,94 @@ def camel_metrics(metrics: dict[str, Any]) -> dict[str, Any]:
 
 
 def latest_snapshots(conn: sqlite3.Connection, table: str, provider: str) -> dict[str, dict[str, Any]]:
-    rows = conn.execute(
-        f"""
-        select *
-        from {table}
-        where provider = ? and id in (
-          select max(id)
-          from {table}
-          where provider = ?
-          group by symbol
+    if table == "financial_snapshots":
+        rows = conn.execute(
+            """
+            with ranked as (
+              select *,
+                row_number() over (
+                  partition by symbol
+                  order by period desc, id desc
+                ) as rn
+              from financial_snapshots
+              where provider = ?
+            )
+            select * from ranked where rn = 1
+            """,
+            (provider,),
         )
-        """,
-        (provider, provider),
-    )
+    else:
+        rows = conn.execute(
+            """
+            with ranked as (
+              select *,
+                row_number() over (
+                  partition by symbol
+                  order by as_of desc, fetched_at desc, id desc
+                ) as rn
+              from market_snapshots
+              where provider = ?
+            )
+            select * from ranked where rn = 1
+            """,
+            (provider,),
+        )
     snapshots: dict[str, dict[str, Any]] = {}
     for row in rows:
         item = row_to_dict(row)
         if "raw_json" in item:
             item["raw"] = parse_json(item["raw_json"])
+        snapshots[item["symbol"]] = item
+    return snapshots
+
+
+def merge_snapshots(target: dict[str, dict[str, Any]], incoming: dict[str, dict[str, Any]]) -> None:
+    for symbol, snapshot in incoming.items():
+        current = target.get(symbol)
+        if current is None or snapshot_sort_key(snapshot) > snapshot_sort_key(current):
+            target[symbol] = snapshot
+
+
+def snapshot_sort_key(snapshot: dict[str, Any]) -> tuple[str, int, str, int]:
+    provider = str(snapshot.get("provider") or "")
+    freshness = str(snapshot.get("as_of") or snapshot.get("period") or "")
+    fetched_at = str(snapshot.get("fetched_at") or "")
+    row_id = int(snapshot.get("id") or 0)
+    return (freshness, provider_priority(provider), fetched_at, row_id)
+
+
+def provider_priority(provider: str) -> int:
+    return {
+        "tushare-market": 50,
+        "akshare-market": 40,
+        "baostock-market": 30,
+        "finnhub-market": 30,
+        "tushare-financial": 50,
+        "finnhub-financial": 40,
+        "alpha_vantage-news": 40,
+    }.get(provider, 10)
+
+
+def latest_news_snapshots(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
+    rows = conn.execute(
+        """
+        select
+          symbol,
+          count(*) as count,
+          max(published_at) as as_of,
+          avg(sentiment_score) as sentiment_score,
+          group_concat(distinct source) as sources
+        from news_items
+        where lower(source) not like '%mock%'
+        group by symbol
+        """
+    )
+    snapshots: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        item = row_to_dict(row)
+        sources = [source for source in str(item.get("sources") or "").split(",") if source]
+        item["provider"] = sources[0] if sources else "news"
+        item["sources"] = sources
         snapshots[item["symbol"]] = item
     return snapshots
 
@@ -413,6 +600,44 @@ def apply_financial_snapshot(profile: dict[str, Any], snapshot: dict[str, Any]) 
     )
 
 
+def apply_news_snapshot(profile: dict[str, Any], snapshot: dict[str, Any]) -> None:
+    metrics = profile["metrics"]
+    count = int(snapshot.get("count") or 0)
+    sentiment_score = float(snapshot.get("sentiment_score") or 0)
+    metrics["news_count_72h"] = count
+    metrics["sentiment_score"] = sentiment_score
+    profile["evidence"].append(
+        {
+            "tier": "B",
+            "source": provider_label(snapshot.get("provider")),
+            "claim": f"新闻缓存包含 {count} 条，最新发布时间 {snapshot.get('as_of')}，平均情绪分 {round(sentiment_score, 2)}。",
+            "confidence": 0.72,
+            "rawFields": {
+                "provider": snapshot.get("provider"),
+                "sources": snapshot.get("sources"),
+                "latest_published_at": snapshot.get("as_of"),
+            },
+        }
+    )
+
+
+def clear_fundamental_metrics(metrics: dict[str, Any]) -> None:
+    for key in ["roe", "revenue_growth", "fcf_margin", "debt_ratio"]:
+        metrics[key] = None
+
+
+def clear_valuation_metrics(metrics: dict[str, Any]) -> None:
+    for key in ["pe", "pe_percentile", "pb"]:
+        metrics[key] = None
+
+
+def clear_news_metrics(metrics: dict[str, Any]) -> None:
+    metrics["news_count_72h"] = 0
+    metrics["verified_catalyst_ratio"] = None
+    metrics["sentiment_score"] = None
+    metrics["unverified_ratio"] = None
+
+
 def score_metrics(metrics: dict[str, Any], previous: dict[str, int]) -> dict[str, int]:
     return {
         "基本面": round(
@@ -479,11 +704,12 @@ def real_data_thesis(
     profile: dict[str, Any],
     market_snapshot: dict[str, Any] | None,
     financial_snapshot: dict[str, Any] | None,
+    news_snapshot: dict[str, Any] | None,
 ) -> str:
     providers = sorted(
         {
             provider_label(snapshot.get("provider"))
-            for snapshot in [market_snapshot, financial_snapshot]
+            for snapshot in [market_snapshot, financial_snapshot, news_snapshot]
             if snapshot and snapshot.get("provider")
         }
     )
@@ -492,7 +718,9 @@ def real_data_thesis(
         parts.append(f"行情截至 {market_snapshot.get('as_of')}")
     if financial_snapshot:
         parts.append(f"财务期末 {financial_snapshot.get('period')}")
-    return "，".join(parts) + f"。当前综合评分 {profile['score']}，结论仍需结合公告和新闻证据复核。"
+    if news_snapshot:
+        parts.append(f"新闻最新 {news_snapshot.get('as_of')}")
+    return "，".join(parts) + "。结论仍需结合公告、财务和新闻证据复核。"
 
 
 def snapshot_meta(snapshot: dict[str, Any] | None) -> dict[str, Any] | None:
@@ -503,6 +731,26 @@ def snapshot_meta(snapshot: dict[str, Any] | None) -> dict[str, Any] | None:
         "asOf": snapshot.get("as_of") or snapshot.get("period"),
         "fetchedAt": snapshot.get("fetched_at"),
     }
+
+
+def valuation_basis(
+    market_snapshot: dict[str, Any] | None,
+    financial_snapshot: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if financial_snapshot:
+        return {
+            "mode": "financial-snapshot",
+            "label": provider_label(financial_snapshot.get("provider")),
+            "asOf": financial_snapshot.get("period"),
+        }
+    if market_snapshot:
+        return {
+            "mode": "latest-market-with-prior-valuation",
+            "label": "上一估值基线 + 最新行情",
+            "asOf": market_snapshot.get("as_of"),
+            "marketProvider": provider_label(market_snapshot.get("provider")),
+        }
+    return None
 
 
 def lag_minutes(as_of: str | None) -> int:

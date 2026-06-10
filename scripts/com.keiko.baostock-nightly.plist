@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.keiko.baostock-nightly</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/wangwenhui/miniconda3/bin/python3</string>
+    <string>scripts/run_baostock_backfill.py</string>
+    <string>--days</string>
+    <string>260</string>
+    <string>--batch-size</string>
+    <string>30</string>
+    <string>--json</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock</string>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>0</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log</string>
+
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

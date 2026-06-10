@@ -1,0 +1,185 @@
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 20,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background:universe",
+  "status": "partial",
+  "started_at": "2026-06-09T02:30:08",
+  "finished_at": "2026-06-09T03:16:42",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 7260,
+    "financial_metrics": 0,
+    "company_reports": 0,
+    "batches": 3,
+    "batch_size": 10,
+    "quarters": 12,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2",
+      "2025Q1",
+      "2024Q4",
+      "2024Q3",
+      "2024Q2",
+      "2024Q1",
+      "2023Q4",
+      "2023Q3",
+      "2023Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30",
+      "2025-03-31",
+      "2024-12-31",
+      "2024-09-30",
+      "2024-06-30",
+      "2024-03-31",
+      "2023-12-31",
+      "2023-09-30",
+      "2023-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "remaining_candidates": 7578,
+    "last_progress_at": "2026-06-09T03:16:42",
+    "last_batch_symbol_count": 10,
+    "consecutive_error_batches": 3,
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 900s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 900s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 900s"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7582,
+    "aliases": 30113,
+    "daily_bars": 1100820,
+    "financial_metrics": 10,
+    "filings": 120,
+    "company_reports": 0,
+    "latest_daily_bar": "2026-06-08"
+  }
+}
+{
+  "id": 33,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background:universe",
+  "status": "running",
+  "started_at": "2026-06-10T00:28:24",
+  "finished_at": null,
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 210,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "000402.SZ",
+    "000403.SZ",
+    "000404.SZ",
+    "000407.SZ",
+    "000408.SZ",
+    "000409.SZ",
+    "000410.SZ",
+    "000411.SZ",
+    "000415.SZ",
+    "000417.SZ",
+    "000419.SZ",
+    "000420.SZ",
+    "000421.SZ",
+    "000422.SZ",
+    "000423.SZ",
+    "000425.SZ",
+    "000426.SZ",
+    "000428.SZ",
+    "000429.SZ",
+    "000430.SZ",
+    "000488.SZ",
+    "000498.SZ",
+    "000501.SZ",
+    "000503.SZ",
+    "000504.SZ",
+    "000505.SZ",
+    "000506.SZ",
+    "000507.SZ",
+    "000509.SZ",
+    "000510.SZ",
+    "000513.SZ",
+    "000514.SZ",
+    "000516.SZ",
+    "000517.SZ",
+    "000518.SZ",
+    "000519.SZ",
+    "000520.SZ",
+    "000521.SZ",
+    "000523.SZ",
+    "000524.SZ",
+    "000525.SZ",
+    "000526.SZ",
+    "000528.SZ",
+    "000529.SZ",
+    "000530.SZ",
+    "000531.SZ",
+    "000532.SZ",
+    "000533.SZ",
+    "000534.SZ",
+    "000536.SZ"
+  ],
+  "counts": {
+    "symbols": 7267,
+    "financial_metrics": 840,
+    "company_reports": 5,
+    "batches": 21,
+    "batch_size": 10,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "remaining_candidates": 7375,
+    "last_progress_at": "2026-06-10T02:26:42",
+    "last_batch_symbol_count": 10,
+    "consecutive_error_batches": 0
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7589,
+    "aliases": 30143,
+    "daily_bars": 1100828,
+    "financial_metrics": 900,
+    "filings": 120,
+    "company_reports": 7,
+    "latest_daily_bar": "2026-06-09"
+  }
+}

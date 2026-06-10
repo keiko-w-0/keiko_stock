@@ -46,7 +46,7 @@ def list_data_sources(conn: sqlite3.Connection, account_id: str = DEFAULT_ACCOUN
         "account_id": account_id,
         "sources": sources,
         "summary": source_summary(sources),
-        "note": "配置会按账户控制真实 provider 或 mock provider 是否进入分析；凭据只保存在本地账户私有表或环境变量中。",
+        "note": "配置会按账户控制 provider 是否进入分析；凭据只保存在本地账户私有表或环境变量中。",
     }
 
 

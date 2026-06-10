@@ -37,6 +37,10 @@ def resolve_symbol(conn: sqlite3.Connection, query: str, market: str = "all") ->
         if row:
             return row
 
+    row = fetch_symbol_by_alias(conn, clean, market_filter)
+    if row:
+        return row
+
     row = fetch_symbol_by_name(conn, clean, market_filter)
     if row:
         return row
@@ -96,6 +100,41 @@ def fetch_symbol_by_name(conn: sqlite3.Connection, query: str, market: str = "AL
         sql += " and upper(market) = ?"
         params = (like, market)
     sql += " order by symbol limit 1"
+    row = conn.execute(sql, params).fetchone()
+    return row_to_dict(row) if row else None
+
+
+def fetch_symbol_by_alias(conn: sqlite3.Connection, query: str, market: str = "ALL") -> dict[str, Any] | None:
+    normalized = compact_query(query).lower()
+    if not normalized:
+        return None
+    sql = """
+        select s.*
+        from symbol_aliases a
+        join symbols s on s.symbol = a.symbol
+        where a.normalized_alias = ?
+    """
+    params: tuple[Any, ...] = (normalized,)
+    if market != "ALL":
+        sql += " and upper(s.market) = ?"
+        params = (normalized, market)
+    sql += " order by s.symbol limit 1"
+    row = conn.execute(sql, params).fetchone()
+    if row:
+        return row_to_dict(row)
+
+    like = f"%{normalized}%"
+    sql = """
+        select s.*
+        from symbol_aliases a
+        join symbols s on s.symbol = a.symbol
+        where a.normalized_alias like ?
+    """
+    params = (like,)
+    if market != "ALL":
+        sql += " and upper(s.market) = ?"
+        params = (like, market)
+    sql += " order by s.symbol limit 1"
     row = conn.execute(sql, params).fetchone()
     return row_to_dict(row) if row else None
 

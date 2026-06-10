@@ -35,6 +35,7 @@ class ScreenerInput(BaseModel):
     market: str = "all"
     filter_ids: list[str] = Field(default_factory=list)
     mode: str = "all"
+    natural_query: str = ""
     account_id: str = "acct-admin"
 
 

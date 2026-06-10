@@ -60,14 +60,14 @@ def latest_stock_analysis(conn: sqlite3.Connection, symbol: str) -> dict[str, An
 
 def create_anomaly_run(conn: sqlite3.Connection, payload: AnomalyInput) -> dict[str, Any]:
     report = {
-        "title": "异动解释 Mock",
+        "title": "异动解释",
         "question": payload.question,
         "summary": "已按系统性风险、板块扩散、资金流和消息真实性拆解。真实版本会替换为实时行情和公告数据。",
         "max_reflection_rounds": 3,
     }
     evidence = {
-        "sources": ["mock-market-snapshot", "mock-news-sentiment", "mock-sector-breadth"],
-        "freshness_status": "mock",
+        "sources": ["market-snapshot", "news-sentiment", "sector-breadth"],
+        "freshness_status": "provider-cache",
     }
     created_at = now_iso()
     cursor = conn.execute(

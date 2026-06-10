@@ -1,4 +1,4 @@
-const CACHE_NAME = "jubao-pen-search-history-v1";
+const CACHE_NAME = "jubao-pen-baostock-background-v1";
 const APP_SHELL = [
   "/",
   "/index.html",

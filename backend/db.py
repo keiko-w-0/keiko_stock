@@ -60,6 +60,133 @@ def init_db() -> None:
               industry text not null
             );
 
+            create table if not exists symbol_aliases (
+              alias text not null,
+              normalized_alias text not null,
+              symbol text not null references symbols(symbol),
+              source text not null default 'system',
+              updated_at text not null,
+              primary key (normalized_alias, symbol)
+            );
+
+            create table if not exists daily_bars (
+              symbol text not null references symbols(symbol),
+              trade_date text not null,
+              provider text not null,
+              adjust text not null default '',
+              open real,
+              high real,
+              low real,
+              close real not null,
+              pre_close real,
+              change_pct real,
+              volume real,
+              amount real,
+              turnover_rate real,
+              pe_ttm real,
+              pb real,
+              ps_ttm real,
+              pcf_ncf_ttm real,
+              is_st integer,
+              trade_status text,
+              raw_json text not null default '{}',
+              fetched_at text not null,
+              primary key (symbol, trade_date, provider, adjust)
+            );
+
+            create table if not exists financial_metrics_history (
+              symbol text not null references symbols(symbol),
+              report_period text not null,
+              provider text not null,
+              announce_date text,
+              revenue_growth real,
+              roe real,
+              fcf_margin real,
+              debt_ratio real,
+              gross_margin real,
+              net_margin real,
+              net_profit real,
+              eps_ttm real,
+              mb_revenue real,
+              total_share real,
+              liqa_share real,
+              nr_turn_ratio real,
+              nr_turn_days real,
+              inv_turn_ratio real,
+              inv_turn_days real,
+              ca_turn_ratio real,
+              asset_turn_ratio real,
+              yoy_equity real,
+              yoy_asset real,
+              yoy_ni real,
+              yoy_eps_basic real,
+              yoy_pni real,
+              current_ratio real,
+              quick_ratio real,
+              cash_ratio real,
+              yoy_liability real,
+              liability_to_asset real,
+              asset_to_equity real,
+              ca_to_asset real,
+              tangible_asset_to_asset real,
+              ebit_to_interest real,
+              operating_cash_flow_to_asset real,
+              operating_cash_flow_to_debt real,
+              dupont_roe real,
+              dupont_asset_to_equity real,
+              dupont_asset_turn real,
+              dupont_pnitoni real,
+              dupont_nitogr real,
+              dupont_tax_burden real,
+              dupont_int_burden real,
+              dupont_ebit_to_gr real,
+              raw_json text not null default '{}',
+              fetched_at text not null,
+              primary key (symbol, report_period, provider)
+            );
+
+            create table if not exists company_reports_history (
+              id integer primary key autoincrement,
+              symbol text not null references symbols(symbol),
+              report_period text not null,
+              provider text not null,
+              report_type text not null,
+              report_key text not null,
+              published_at text not null default '',
+              title text not null default '',
+              summary text not null default '',
+              raw_json text not null default '{}',
+              fetched_at text not null,
+              unique (provider, symbol, report_type, report_key)
+            );
+
+            create table if not exists filings_history (
+              id integer primary key autoincrement,
+              symbol text not null references symbols(symbol),
+              source text not null,
+              published_at text not null,
+              title text not null,
+              url text not null,
+              category text not null default '',
+              source_tier text not null default 'S',
+              raw_json text not null default '{}',
+              fetched_at text not null,
+              unique (source, symbol, url)
+            );
+
+            create table if not exists ingestion_runs (
+              id integer primary key autoincrement,
+              provider text not null,
+              scope text not null,
+              status text not null,
+              started_at text not null,
+              finished_at text,
+              requested_symbols text not null default '[]',
+              updated_symbols text not null default '[]',
+              counts_json text not null default '{}',
+              errors_json text not null default '[]'
+            );
+
             create table if not exists market_snapshots (
               id integer primary key autoincrement,
               symbol text not null references symbols(symbol),
@@ -241,6 +368,30 @@ def init_db() -> None:
 
             create index if not exists idx_search_history_account_surface_created
             on search_history(account_id, surface, created_at desc);
+
+            create index if not exists idx_symbols_market_name
+            on symbols(market, name);
+
+            create index if not exists idx_symbol_aliases_symbol
+            on symbol_aliases(symbol);
+
+            create index if not exists idx_daily_bars_symbol_date
+            on daily_bars(symbol, trade_date desc);
+
+            create index if not exists idx_daily_bars_date_amount
+            on daily_bars(trade_date, amount desc);
+
+            create index if not exists idx_daily_bars_pe
+            on daily_bars(trade_date, pe_ttm);
+
+            create index if not exists idx_financial_metrics_symbol_period
+            on financial_metrics_history(symbol, report_period desc);
+
+            create index if not exists idx_filings_symbol_published
+            on filings_history(symbol, published_at desc);
+
+            create index if not exists idx_company_reports_symbol_period
+            on company_reports_history(symbol, report_period desc, published_at desc);
             """
         )
         seed_if_empty(conn)
@@ -249,8 +400,12 @@ def init_db() -> None:
         sync_seed_memories(conn)
         seed_admin_account(conn)
         migrate_account_scoped_data_sources(conn)
+        migrate_daily_bars_extra_metrics(conn)
+        migrate_financial_metrics_history_columns(conn)
         seed_shared_snapshots_if_empty(conn)
         seed_data_sources(conn)
+        sync_symbol_aliases(conn)
+        backfill_warehouse_from_snapshots(conn)
 
 
 def seed_if_empty(conn: sqlite3.Connection) -> None:
@@ -374,6 +529,149 @@ def sync_seed_symbols(conn: sqlite3.Connection) -> None:
         """,
         seed_data.SYMBOLS,
     )
+
+
+def sync_symbol_aliases(conn: sqlite3.Connection) -> None:
+    updated_at = now_iso()
+    rows = conn.execute("select symbol, name from symbols").fetchall()
+    aliases: list[dict[str, str]] = []
+    for row in rows:
+        symbol = row["symbol"]
+        code = symbol.split(".")[0]
+        name = row["name"]
+        for alias in {symbol, symbol.upper(), code, name}:
+            normalized = normalize_alias(alias)
+            if normalized:
+                aliases.append(
+                    {
+                        "alias": alias,
+                        "normalized_alias": normalized,
+                        "symbol": symbol,
+                        "source": "symbol-sync",
+                        "updated_at": updated_at,
+                    }
+                )
+    conn.executemany(
+        """
+        insert into symbol_aliases (alias, normalized_alias, symbol, source, updated_at)
+        values (:alias, :normalized_alias, :symbol, :source, :updated_at)
+        on conflict(normalized_alias, symbol) do update set
+          alias = excluded.alias,
+          source = excluded.source,
+          updated_at = excluded.updated_at
+        """,
+        aliases,
+    )
+
+
+def normalize_alias(value: str) -> str:
+    return value.strip().lower().replace(" ", "")
+
+
+def backfill_warehouse_from_snapshots(conn: sqlite3.Connection) -> None:
+    fetched_at = now_iso()
+    for row in conn.execute("select * from market_snapshots"):
+        raw = json.loads(row["raw_json"] or "{}")
+        trade_date = snapshot_as_of_to_trade_date(row["as_of"])
+        if not trade_date:
+            continue
+        conn.execute(
+            """
+            insert into daily_bars (
+              symbol, trade_date, provider, adjust, open, high, low, close, pre_close,
+              change_pct, volume, amount, turnover_rate, pe_ttm, pb, ps_ttm,
+              pcf_ncf_ttm, is_st, trade_status, raw_json, fetched_at
+            )
+            values (?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            on conflict(symbol, trade_date, provider, adjust) do update set
+              open = excluded.open,
+              high = excluded.high,
+              low = excluded.low,
+              close = excluded.close,
+              pre_close = excluded.pre_close,
+              change_pct = excluded.change_pct,
+              volume = excluded.volume,
+              amount = excluded.amount,
+              turnover_rate = excluded.turnover_rate,
+              pe_ttm = excluded.pe_ttm,
+              pb = excluded.pb,
+              ps_ttm = excluded.ps_ttm,
+              pcf_ncf_ttm = excluded.pcf_ncf_ttm,
+              is_st = excluded.is_st,
+              trade_status = excluded.trade_status,
+              raw_json = excluded.raw_json,
+              fetched_at = excluded.fetched_at
+            """,
+            (
+                row["symbol"],
+                trade_date,
+                row["provider"],
+                float_from_raw(raw, ["daily", "open"], row["price"]),
+                float_from_raw(raw, ["daily", "high"], row["price"]),
+                float_from_raw(raw, ["daily", "low"], row["price"]),
+                row["price"],
+                float_from_raw(raw, ["daily", "pre_close"], None),
+                raw.get("change"),
+                row["volume"],
+                row["amount"],
+                row["turnover_rate"],
+                raw.get("pe"),
+                raw.get("pb"),
+                raw.get("ps_ttm") or raw.get("ps"),
+                raw.get("pcf_ncf_ttm"),
+                raw.get("is_st"),
+                raw.get("trade_status"),
+                row["raw_json"],
+                row["fetched_at"] or fetched_at,
+            ),
+        )
+
+    for row in conn.execute("select * from financial_snapshots"):
+        conn.execute(
+            """
+            insert into financial_metrics_history (
+              symbol, report_period, provider, announce_date, revenue_growth, roe,
+              fcf_margin, debt_ratio, raw_json, fetched_at
+            )
+            values (?, ?, ?, '', ?, ?, ?, ?, ?, ?)
+            on conflict(symbol, report_period, provider) do update set
+              revenue_growth = excluded.revenue_growth,
+              roe = excluded.roe,
+              fcf_margin = excluded.fcf_margin,
+              debt_ratio = excluded.debt_ratio,
+              raw_json = excluded.raw_json,
+              fetched_at = excluded.fetched_at
+            """,
+            (
+                row["symbol"],
+                row["period"],
+                row["provider"],
+                row["revenue_growth"],
+                row["roe"],
+                row["fcf_margin"],
+                row["debt_ratio"],
+                row["raw_json"],
+                fetched_at,
+            ),
+        )
+
+
+def snapshot_as_of_to_trade_date(value: str) -> str:
+    text = str(value or "")
+    if len(text) >= 10:
+        return text[:10]
+    if len(text) == 8 and text.isdigit():
+        return f"{text[:4]}-{text[4:6]}-{text[6:8]}"
+    return ""
+
+
+def float_from_raw(raw: dict[str, Any], path: list[str], default: Any) -> Any:
+    value: Any = raw
+    for key in path:
+        if not isinstance(value, dict):
+            return default
+        value = value.get(key)
+    return default if value in (None, "") else value
 
 
 def sync_seed_analysis_runs(conn: sqlite3.Connection) -> None:
@@ -505,7 +803,6 @@ def migrate_account_scoped_data_sources(conn: sqlite3.Connection) -> None:
             """
         )
         conn.execute("drop table data_source_credentials_legacy")
-
     conn.execute(
         """
         create table if not exists data_source_account_settings (
@@ -515,6 +812,133 @@ def migrate_account_scoped_data_sources(conn: sqlite3.Connection) -> None:
           updated_at text not null,
           primary key (account_id, source_id)
         )
+        """
+    )
+
+
+def migrate_daily_bars_extra_metrics(conn: sqlite3.Connection) -> None:
+    columns = {row["name"] for row in conn.execute("pragma table_info(daily_bars)")}
+    additions = [
+        ("ps_ttm", "real"),
+        ("pcf_ncf_ttm", "real"),
+        ("is_st", "integer"),
+        ("trade_status", "text"),
+    ]
+    for name, column_type in additions:
+        if name not in columns:
+            conn.execute(f"alter table daily_bars add column {name} {column_type}")
+
+    conn.execute(
+        """
+        update daily_bars
+        set
+          ps_ttm = case
+            when ps_ttm is null and provider = 'baostock-market' and nullif(json_extract(raw_json, '$.psTTM'), '') is not null
+            then cast(json_extract(raw_json, '$.psTTM') as real)
+            when ps_ttm is null and provider = 'baostock-market' and nullif(json_extract(raw_json, '$.daily.psTTM'), '') is not null
+            then cast(json_extract(raw_json, '$.daily.psTTM') as real)
+            when ps_ttm is null and provider = 'tushare-market' and nullif(json_extract(raw_json, '$.daily_basic.ps_ttm'), '') is not null
+            then cast(json_extract(raw_json, '$.daily_basic.ps_ttm') as real)
+            when ps_ttm is null and provider = 'tushare-market' and nullif(json_extract(raw_json, '$.daily_basic.ps'), '') is not null
+            then cast(json_extract(raw_json, '$.daily_basic.ps') as real)
+            else ps_ttm
+          end,
+          pcf_ncf_ttm = case
+            when pcf_ncf_ttm is null and provider = 'baostock-market' and nullif(json_extract(raw_json, '$.pcfNcfTTM'), '') is not null
+            then cast(json_extract(raw_json, '$.pcfNcfTTM') as real)
+            when pcf_ncf_ttm is null and provider = 'baostock-market' and nullif(json_extract(raw_json, '$.daily.pcfNcfTTM'), '') is not null
+            then cast(json_extract(raw_json, '$.daily.pcfNcfTTM') as real)
+            else pcf_ncf_ttm
+          end,
+          is_st = case
+            when is_st is null and provider = 'baostock-market' and nullif(json_extract(raw_json, '$.isST'), '') is not null
+            then cast(json_extract(raw_json, '$.isST') as integer)
+            when is_st is null and provider = 'baostock-market' and nullif(json_extract(raw_json, '$.daily.isST'), '') is not null
+            then cast(json_extract(raw_json, '$.daily.isST') as integer)
+            else is_st
+          end,
+          trade_status = case
+            when trade_status is null and provider = 'baostock-market' and nullif(json_extract(raw_json, '$.tradestatus'), '') is not null
+            then cast(json_extract(raw_json, '$.tradestatus') as text)
+            when trade_status is null and provider = 'baostock-market' and nullif(json_extract(raw_json, '$.daily.tradestatus'), '') is not null
+            then cast(json_extract(raw_json, '$.daily.tradestatus') as text)
+            else trade_status
+          end
+        where json_valid(raw_json)
+          and (
+            ps_ttm is null
+            or pcf_ncf_ttm is null
+            or is_st is null
+            or trade_status is null
+          )
+        """
+    )
+
+
+def migrate_financial_metrics_history_columns(conn: sqlite3.Connection) -> None:
+    columns = {row["name"] for row in conn.execute("pragma table_info(financial_metrics_history)")}
+    additions = [
+        ("net_profit", "real"),
+        ("eps_ttm", "real"),
+        ("mb_revenue", "real"),
+        ("total_share", "real"),
+        ("liqa_share", "real"),
+        ("nr_turn_ratio", "real"),
+        ("nr_turn_days", "real"),
+        ("inv_turn_ratio", "real"),
+        ("inv_turn_days", "real"),
+        ("ca_turn_ratio", "real"),
+        ("asset_turn_ratio", "real"),
+        ("yoy_equity", "real"),
+        ("yoy_asset", "real"),
+        ("yoy_ni", "real"),
+        ("yoy_eps_basic", "real"),
+        ("yoy_pni", "real"),
+        ("current_ratio", "real"),
+        ("quick_ratio", "real"),
+        ("cash_ratio", "real"),
+        ("yoy_liability", "real"),
+        ("liability_to_asset", "real"),
+        ("asset_to_equity", "real"),
+        ("ca_to_asset", "real"),
+        ("tangible_asset_to_asset", "real"),
+        ("ebit_to_interest", "real"),
+        ("operating_cash_flow_to_asset", "real"),
+        ("operating_cash_flow_to_debt", "real"),
+        ("dupont_roe", "real"),
+        ("dupont_asset_to_equity", "real"),
+        ("dupont_asset_turn", "real"),
+        ("dupont_pnitoni", "real"),
+        ("dupont_nitogr", "real"),
+        ("dupont_tax_burden", "real"),
+        ("dupont_int_burden", "real"),
+        ("dupont_ebit_to_gr", "real"),
+    ]
+    for name, column_type in additions:
+        if name not in columns:
+            conn.execute(f"alter table financial_metrics_history add column {name} {column_type}")
+    conn.execute(
+        """
+        create table if not exists company_reports_history (
+          id integer primary key autoincrement,
+          symbol text not null references symbols(symbol),
+          report_period text not null,
+          provider text not null,
+          report_type text not null,
+          report_key text not null,
+          published_at text not null default '',
+          title text not null default '',
+          summary text not null default '',
+          raw_json text not null default '{}',
+          fetched_at text not null,
+          unique (provider, symbol, report_type, report_key)
+        )
+        """
+    )
+    conn.execute(
+        """
+        create index if not exists idx_company_reports_symbol_period
+        on company_reports_history(symbol, report_period desc, published_at desc)
         """
     )
 

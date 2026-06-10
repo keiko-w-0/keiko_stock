@@ -1,0 +1,4511 @@
+{
+  "id": 13,
+  "provider": "baostock",
+  "scope": "a-share-history-background:universe",
+  "status": "running",
+  "started_at": "2026-06-07T13:30:23",
+  "finished_at": null,
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 4532,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "688722.SH",
+    "688726.SH",
+    "688727.SH",
+    "688728.SH",
+    "688729.SH",
+    "688733.SH",
+    "688737.SH",
+    "688739.SH",
+    "688750.SH",
+    "688755.SH",
+    "688757.SH",
+    "688758.SH",
+    "688759.SH",
+    "688765.SH",
+    "688766.SH",
+    "688767.SH",
+    "688768.SH",
+    "688772.SH",
+    "688775.SH",
+    "688776.SH",
+    "688777.SH",
+    "688778.SH",
+    "688779.SH",
+    "688781.SH",
+    "688783.SH",
+    "688785.SH",
+    "688786.SH",
+    "688787.SH",
+    "688788.SH",
+    "688789.SH",
+    "688790.SH",
+    "688793.SH",
+    "688795.SH",
+    "688796.SH",
+    "688798.SH",
+    "688799.SH",
+    "688800.SH",
+    "688802.SH",
+    "688805.SH",
+    "688807.SH",
+    "688808.SH",
+    "688809.SH",
+    "688811.SH",
+    "688813.SH",
+    "688816.SH",
+    "688818.SH",
+    "688819.SH",
+    "688820.SH",
+    "688981.SH",
+    "689009.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 688251,
+    "market_snapshots": 4532,
+    "batches": 444,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "remaining_candidates": 7576,
+    "last_progress_at": "2026-06-08T00:01:29",
+    "last_batch_symbol_count": 30
+  },
+  "errors": [
+    {
+      "scope": "baostock-universe",
+      "error": "BaoStock query_all_stock failed: 网络接收错误。"
+    },
+    {
+      "scope": "baostock-history-batch",
+      "error": "BaoStock login failed: 网络接收错误。"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7580,
+    "aliases": 30101,
+    "daily_bars": 1100816,
+    "financial_metrics": 10,
+    "filings": 120,
+    "company_reports": 0,
+    "latest_daily_bar": "2026-06-05"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 26,
+  "provider": "baostock",
+  "scope": "a-share-history-background:universe",
+  "status": "partial",
+  "started_at": "2026-06-10T00:00:07",
+  "finished_at": "2026-06-10T00:04:24",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 7,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "159042.SZ",
+    "159050.SZ",
+    "159051.SZ",
+    "159053.SZ",
+    "159055.SZ",
+    "159056.SZ",
+    "301669.SZ"
+  ],
+  "counts": {
+    "symbols": 7267,
+    "daily_bars": 7,
+    "market_snapshots": 7,
+    "batches": 4,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-22",
+    "target_end": "2026-06-09",
+    "remaining_candidates": 7585,
+    "last_progress_at": "2026-06-10T00:04:24",
+    "last_batch_symbol_count": 30,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920033.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920035.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920036.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920033.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920035.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920036.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920033.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920035.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    },
+    {
+      "symbol": "920036.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-22..2026-06-09"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7589,
+    "aliases": 30143,
+    "daily_bars": 1100827,
+    "financial_metrics": 11,
+    "filings": 120,
+    "company_reports": 0,
+    "latest_daily_bar": "2026-06-09"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 34,
+  "provider": "baostock",
+  "scope": "a-share-history-background:universe",
+  "status": "partial",
+  "started_at": "2026-06-11T00:00:08",
+  "finished_at": "2026-06-11T00:01:41",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 3,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "159041.SZ",
+    "159048.SZ",
+    "159060.SZ"
+  ],
+  "counts": {
+    "symbols": 7269,
+    "daily_bars": 3,
+    "market_snapshots": 3,
+    "batches": 4,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-23",
+    "target_end": "2026-06-10",
+    "remaining_candidates": 7588,
+    "last_progress_at": "2026-06-11T00:01:41",
+    "last_batch_symbol_count": 30,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920033.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920035.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920036.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920033.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920035.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920036.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920033.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920035.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    },
+    {
+      "symbol": "920036.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-23..2026-06-10"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7592,
+    "aliases": 30155,
+    "daily_bars": 1100831,
+    "financial_metrics": 16700,
+    "filings": 120,
+    "company_reports": 217,
+    "latest_daily_bar": "2026-06-10"
+  }
+}

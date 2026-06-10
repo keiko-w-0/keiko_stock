@@ -20,9 +20,9 @@ const baseStocks = [
     reasons: ["行业景气与订单催化较强", "价格站上关键均线，成交额同步放大", "估值处于中性偏高区间"],
     risks: ["估值容错较低", "行业政策和价格战会放大波动"],
     evidence: [
-      { tier: "S", source: "交易所公告 Mock", claim: "近期公告未发现停牌或重大风险提示", confidence: 0.93 },
-      { tier: "A", source: "财务数据 Mock", claim: "收入和现金流质量维持正向", confidence: 0.84 },
-      { tier: "B", source: "新闻情绪 Mock", claim: "行业订单和出口话题热度上升", confidence: 0.72 }
+      { tier: "S", source: "交易所公告", claim: "近期公告未发现停牌或重大风险提示", confidence: 0.93 },
+      { tier: "A", source: "财务数据", claim: "收入和现金流质量维持正向", confidence: 0.84 },
+      { tier: "B", source: "新闻情绪", claim: "行业订单和出口话题热度上升", confidence: 0.72 }
     ],
     reflection: [
       { round: "第 1 轮", label: "数据闸门", status: "pass", text: "行情延迟 1 分钟，财务和公告字段完整，可继续分析。" },
@@ -49,13 +49,13 @@ const baseStocks = [
     reasons: ["盈利质量和现金流稳定", "回购与业务韧性支持估值", "短线技术位置不够从容"],
     risks: ["监管和平台经济政策扰动", "港股流动性和汇率波动"],
     evidence: [
-      { tier: "S", source: "HKEXnews Mock", claim: "公告源可追溯，未发现冲突信息", confidence: 0.91 },
-      { tier: "A", source: "公司财务 Mock", claim: "利润率稳定，现金流良好", confidence: 0.82 },
-      { tier: "B", source: "财经新闻 Mock", claim: "回购和 AI 业务话题带动情绪", confidence: 0.68 }
+      { tier: "S", source: "HKEXnews 公告", claim: "公告源可追溯，未发现冲突信息", confidence: 0.91 },
+      { tier: "A", source: "公司财务", claim: "利润率稳定，现金流良好", confidence: 0.82 },
+      { tier: "B", source: "财经新闻", claim: "回购和 AI 业务话题带动情绪", confidence: 0.68 }
     ],
     reflection: [
-      { round: "第 1 轮", label: "数据闸门", status: "pass", text: "港股 mock 行情延迟 8 分钟，仍在本原型阈值内。" },
-      { round: "第 2 轮", label: "证据闸门", status: "pass", text: "公司动作以 HKEXnews Mock 为核心证据，新闻未单独触发结论。" },
+      { round: "第 1 轮", label: "数据闸门", status: "pass", text: "港股行情延迟 8 分钟，仍在数据闸门阈值内。" },
+      { round: "第 2 轮", label: "证据闸门", status: "pass", text: "公司动作以 HKEXnews 公告为核心证据，新闻未单独触发结论。" },
       { round: "第 3 轮", label: "投资逻辑", status: "warn", text: "基本面支持持有观察，但技术面追价性价比不足。" }
     ]
   },
@@ -78,13 +78,13 @@ const baseStocks = [
     reasons: ["AI 算力需求仍是强催化", "估值分位较高，安全边际不足", "短期波动放大，需要等待确认"],
     risks: ["高估值回撤", "供应链和出口限制", "预期过热"],
     evidence: [
-      { tier: "S", source: "SEC EDGAR Mock", claim: "财报字段完整，可核验收入和利润", confidence: 0.9 },
-      { tier: "A", source: "结构化基本面 Mock", claim: "增长和毛利率维持高位", confidence: 0.86 },
-      { tier: "B", source: "新闻情绪 Mock", claim: "AI 芯片需求叙事仍强", confidence: 0.7 }
+      { tier: "S", source: "SEC EDGAR 披露", claim: "财报字段完整，可核验收入和利润", confidence: 0.9 },
+      { tier: "A", source: "结构化基本面", claim: "增长和毛利率维持高位", confidence: 0.86 },
+      { tier: "B", source: "新闻情绪", claim: "AI 芯片需求叙事仍强", confidence: 0.7 }
     ],
     reflection: [
       { round: "第 1 轮", label: "数据闸门", status: "warn", text: "美股当前按上一交易日数据分析，盘前/盘中需要刷新。" },
-      { round: "第 2 轮", label: "证据闸门", status: "pass", text: "核心财务 claim 来自 SEC Mock，新闻情绪只做辅助。" },
+      { round: "第 2 轮", label: "证据闸门", status: "pass", text: "核心财务 claim 来自 SEC EDGAR，新闻情绪只做辅助。" },
       { round: "第 3 轮", label: "投资逻辑", status: "warn", text: "强趋势与高估值并存，动作保留为持有复核。" }
     ]
   },
@@ -107,9 +107,9 @@ const baseStocks = [
     reasons: ["盈利质量仍有支撑", "趋势弱化，缺少短期催化", "消费预期和估值分歧扩大"],
     risks: ["需求预期下修", "高股价流动性影响仓位管理"],
     evidence: [
-      { tier: "S", source: "交易所公告 Mock", claim: "公告源未出现硬性利空", confidence: 0.88 },
-      { tier: "A", source: "财务数据 Mock", claim: "盈利质量仍高", confidence: 0.8 },
-      { tier: "B", source: "情绪数据 Mock", claim: "消费板块情绪偏弱", confidence: 0.62 }
+      { tier: "S", source: "交易所公告", claim: "公告源未出现硬性利空", confidence: 0.88 },
+      { tier: "A", source: "财务数据", claim: "盈利质量仍高", confidence: 0.8 },
+      { tier: "B", source: "情绪数据", claim: "消费板块情绪偏弱", confidence: 0.62 }
     ],
     reflection: [
       { round: "第 1 轮", label: "数据闸门", status: "pass", text: "关键行情和财务字段可用。" },
@@ -132,16 +132,16 @@ const baseStocks = [
     truthScore: 73,
     factors: { 基本面: 70, 估值: 66, 技术: 81, 催化: 82, 情绪: 79, 风险: 57 },
     spark: [24, 25, 25.7, 26.5, 27.4, 26.8, 28.1, 28.9, 29.2, 29.7],
-    thesis: "催化和技术面较强，但部分情绪来自市场传闻，真实版本必须用公告和销量数据核验。",
+    thesis: "催化和技术面较强，但部分情绪来自市场传闻，必须用公告和销量数据核验。",
     reasons: ["智能硬件和汽车业务催化明显", "趋势强于港股大盘", "情绪热度高但未证实比例偏高"],
     risks: ["新业务估值波动", "传闻驱动导致追高风险"],
     evidence: [
-      { tier: "S", source: "HKEXnews Mock", claim: "公告字段可追溯", confidence: 0.86 },
-      { tier: "B", source: "新闻情绪 Mock", claim: "汽车业务话题热度上升", confidence: 0.66 },
-      { tier: "C", source: "社媒热度 Mock", claim: "短线讨论度快速上升", confidence: 0.38 }
+      { tier: "S", source: "HKEXnews 公告", claim: "公告字段可追溯", confidence: 0.86 },
+      { tier: "B", source: "新闻情绪", claim: "汽车业务话题热度上升", confidence: 0.66 },
+      { tier: "C", source: "社媒热度", claim: "短线讨论度快速上升", confidence: 0.38 }
     ],
     reflection: [
-      { round: "第 1 轮", label: "数据闸门", status: "warn", text: "行情延迟 22 分钟，接近原型阈值上限。" },
+      { round: "第 1 轮", label: "数据闸门", status: "warn", text: "行情延迟 22 分钟，接近数据闸门阈值上限。" },
       { round: "第 2 轮", label: "证据闸门", status: "warn", text: "催化中有传闻成分，未证实比例偏高。" },
       { round: "第 3 轮", label: "投资逻辑", status: "warn", text: "保留观察，不升级为买入候选。" }
     ]
@@ -165,9 +165,9 @@ const baseStocks = [
     reasons: ["现金流和回购能力强", "增长催化不够清晰", "风险相对可控"],
     risks: ["估值和增长匹配度", "新品周期不确定"],
     evidence: [
-      { tier: "S", source: "SEC EDGAR Mock", claim: "财务披露完整", confidence: 0.9 },
-      { tier: "A", source: "公司 IR Mock", claim: "回购和现金流可核验", confidence: 0.82 },
-      { tier: "B", source: "新闻情绪 Mock", claim: "产品周期讨论度中性", confidence: 0.64 }
+      { tier: "S", source: "SEC EDGAR 披露", claim: "财务披露完整", confidence: 0.9 },
+      { tier: "A", source: "公司 IR", claim: "回购和现金流可核验", confidence: 0.82 },
+      { tier: "B", source: "新闻情绪", claim: "产品周期讨论度中性", confidence: 0.64 }
     ],
     reflection: [
       { round: "第 1 轮", label: "数据闸门", status: "warn", text: "美股按上一交易日数据，盘中需刷新。" },
@@ -324,9 +324,9 @@ const filterCatalog = [
   {
     group: "估值与质量",
     items: [
-      { id: "valuation-not-hot", label: "PE分位 <= 70", test: (stock) => stock.metrics.pePercentile <= 70, keywords: ["估值合理", "不贵", "安全边际", "pe"] },
-      { id: "roe-high", label: "ROE >= 15%", test: (stock) => stock.metrics.roe >= 15, keywords: ["roe", "质量", "盈利能力"] },
-      { id: "cashflow-good", label: "自由现金流率 >= 5%", test: (stock) => stock.metrics.fcfMargin >= 5, keywords: ["现金流", "自由现金流"] }
+      { id: "valuation-not-hot", label: "PE分位 <= 70", test: (stock) => hasMetric(stock.metrics.pePercentile) && stock.metrics.pePercentile <= 70, keywords: ["估值合理", "不贵", "安全边际", "pe"] },
+      { id: "roe-high", label: "ROE >= 15%", test: (stock) => hasMetric(stock.metrics.roe) && stock.metrics.roe >= 15, keywords: ["roe", "质量", "盈利能力"] },
+      { id: "cashflow-good", label: "自由现金流率 >= 5%", test: (stock) => hasMetric(stock.metrics.fcfMargin) && stock.metrics.fcfMargin >= 5, keywords: ["现金流", "自由现金流"] }
     ]
   },
   {
@@ -342,35 +342,31 @@ const filterCatalog = [
     items: [
       { id: "data-fresh", label: "数据 fresh", test: (stock) => stock.freshnessStatus === "fresh", keywords: ["新鲜", "实时", "不过期", "fresh"] },
       { id: "evidence-high", label: "证据可信 >= 80%", test: (stock) => stock.truthScore >= 80, keywords: ["证据", "可信", "真实性", "可靠"] },
-      { id: "rumor-low", label: "未证实 < 25%", test: (stock) => stock.metrics.unverifiedRatio < 0.25, keywords: ["少传闻", "未证实少", "真实性高"] }
+      { id: "rumor-low", label: "未证实 < 25%", test: (stock) => hasMetric(stock.metrics.unverifiedRatio) && stock.metrics.unverifiedRatio < 0.25, keywords: ["少传闻", "未证实少", "真实性高"] }
     ]
   }
 ];
 
-const healthSources = [
+const healthSourceKinds = [
   {
+    kind: "market",
     name: "行情/K 线",
-    status: "fresh",
-    source: "Mock adapter",
-    text: "盘中阈值 90 秒；延迟源按授权合同单独配置。过期则禁止输出买卖结论。"
+    text: "盘中分析依赖最新价格、K 线、成交额、换手率和价差；过期则禁止输出买卖结论。"
   },
   {
+    kind: "financial",
     name: "财务/估值",
-    status: "fresh",
-    source: "Structured mock",
-    text: "估值依赖行情价格，行情过期时 PE/PB 同步降级。"
+    text: "估值依赖最新行情价格和可追溯财务口径，行情或财务过期时 PE/PB 同步降级。"
   },
   {
+    kind: "filing",
     name: "公告/披露",
-    status: "fresh",
-    source: "Exchange mock",
-    text: "真实版本优先 CNINFO、SSE/SZSE、HKEXnews、SEC EDGAR。"
+    text: "公告原文优先使用 CNINFO、SSE/SZSE、HKEXnews、SEC EDGAR 等可追溯来源。"
   },
   {
+    kind: "news",
     name: "新闻/情绪",
-    status: "warn",
-    source: "Sentiment mock",
-    text: "未证实信息比例偏高时只允许观察，不允许升级动作。"
+    text: "新闻和情绪只作为辅助；未证实信息比例偏高时只允许观察，不升级交易动作。"
   }
 ];
 
@@ -393,21 +389,27 @@ const providerDisplayLabels = {
   cninfo: "CNINFO 公告",
   cninfo_sse_szse: "A 股公告自动源",
   finnhub: "Finnhub",
+  finnhub_market: "Finnhub 美股行情",
+  finnhub_financial: "Finnhub 基本面",
   hkexnews: "HKEXnews 公告",
-  mock: "模拟数据",
-  mock_hk_market: "港股模拟行情",
-  mock_hk_financial: "港股模拟财务",
-  mock_news_cn: "A 股模拟新闻情绪",
-  mock_news_hk: "港股模拟新闻情绪",
-  mock_news_us: "美股模拟新闻情绪",
+  mock: "本地数据",
+  mock_hk_market: "港股行情供应商",
+  mock_hk_financial: "港股财务供应商",
+  mock_news_cn: "A 股新闻情绪",
+  mock_news_hk: "港股新闻情绪",
+  mock_news_us: "美股新闻情绪",
   sse: "上交所公告",
   szse: "深交所公告",
+  baostock: "BaoStock 历史回刷",
+  "baostock-financial": "BaoStock 季频财务",
   tushare: "Tushare Pro",
-  "mock-adapter": "模拟适配器",
-  "mock adapter": "模拟适配器",
-  "structured mock": "结构化模拟数据",
-  "exchange mock": "交易所模拟数据",
-  "sentiment mock": "情绪模拟数据",
+  tushare_market: "Tushare Pro 行情",
+  tushare_financial: "Tushare Pro 财务指标",
+  "mock-adapter": "本地适配器",
+  "mock adapter": "本地适配器",
+  "structured mock": "结构化数据",
+  "exchange mock": "交易所数据",
+  "sentiment mock": "情绪数据",
   "data gate": "数据闸门"
 };
 
@@ -580,6 +582,8 @@ const traditionalToSimplifiedMap = new Map(traditionalToSimplifiedPairs);
 
 const fallbackDataSources = [
   { id: "cn-akshare-market", market: "A", label: "AKShare A股行情", provider: "akshare", source_kind: "market", source_kind_label: "行情", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "" },
+  { id: "cn-baostock-history", market: "A", label: "BaoStock 历史日线/回刷", provider: "baostock", source_kind: "market", source_kind_label: "行情", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "" },
+  { id: "cn-baostock-financial", market: "A", label: "BaoStock 季频财务/公司报告", provider: "baostock-financial", source_kind: "financial", source_kind_label: "财务/估值", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "" },
   { id: "cn-tushare-market", market: "A", label: "Tushare Pro A股行情", provider: "tushare", source_kind: "market", source_kind_label: "行情", requires_key: true, credential_label: "Tushare token", enabled: false, configured: false, active: false, credential_hint: "" },
   { id: "cn-tushare-financial", market: "A", label: "Tushare Pro 财务/估值", provider: "tushare", source_kind: "financial", source_kind_label: "财务/估值", requires_key: true, credential_label: "Tushare token", enabled: false, configured: false, active: false, credential_hint: "" },
   { id: "cn-exchange-filings", market: "A", label: "CNINFO / 交易所公告", provider: "cninfo_sse_szse", source_kind: "filing", source_kind_label: "公告/披露", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "" },
@@ -619,7 +623,7 @@ let stocks = baseStocks.map((stock) => enrichStock(stock));
 let activeMarket = "all";
 let selectedSymbol = stocks[0].symbol;
 let filterMode = "all";
-let activeFilterIds = new Set(["amount-high", "evidence-high"]);
+let activeFilterIds = new Set();
 let favoriteSymbols = new Set(["002594.SZ", "0700.HK", "1810.HK"]);
 let priceRefreshCount = 0;
 let latestPriceRefreshAt = "未刷新";
@@ -641,6 +645,7 @@ let alphaVantagePreviewLoading = false;
 let alphaVantagePreviewError = "";
 let sourceTestCatalog = null;
 let selectedSourceTestId = "filing-sse";
+let sourceTestKindFilter = "filing";
 let sourceTestPayload = null;
 let sourceTestLoading = false;
 let sourceTestError = "";
@@ -648,6 +653,7 @@ let searchHistoryItems = [];
 let backtestPayload = null;
 let backtestLoading = false;
 let backtestError = "";
+let dataJobPoller = null;
 const apiState = {
   connected: false,
   accountId: "acct-admin",
@@ -657,7 +663,7 @@ const apiState = {
   portfolio: null,
   lastError: ""
 };
-const navSectionIds = ["filters", "health", "source-tests", "daily", "anomalies", "backtests", "favorites", "holdings", "settings"];
+const navSectionIds = ["filters", "health", "data-exploration", "daily", "anomalies", "backtests", "favorites", "holdings", "settings"];
 
 const candidateGrid = document.querySelector("#candidateGrid");
 const candidateCount = document.querySelector("#candidateCount");
@@ -748,6 +754,10 @@ function enrichStock(stock) {
   const enriched = {
     ...stock,
     metrics,
+    thesis: cleanAnalysisCopy(stock.thesis),
+    reasons: (stock.reasons ?? []).map(cleanAnalysisCopy),
+    risks: (stock.risks ?? []).map(cleanAnalysisCopy),
+    reflection: (stock.reflection ?? []).map(cleanReflectionItem),
     memoryUpdatedAt: "2026-06-04 22:10",
     supplementCount: 0
   };
@@ -756,10 +766,31 @@ function enrichStock(stock) {
   return enriched;
 }
 
-function enrichEvidence(stock, item, index) {
-  const authorityUrl = officialUrlFor(stock, item);
+function cleanReflectionItem(item) {
   return {
     ...item,
+    text: cleanAnalysisCopy(item.text)
+  };
+}
+
+function cleanAnalysisCopy(value) {
+  return String(value ?? "")
+    .replace(/\s*Mock\b/g, "")
+    .replace(/\bmock\s*/ig, "数据源")
+    .replace(/本原型/g, "当前环境")
+    .replace(/原型演示/g, "数据闸门")
+    .replace(/真实版本/g, "当前版本")
+    .replace(/\s+([，。；、])/g, "$1")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function enrichEvidence(stock, item, index) {
+  const authorityUrl = officialUrlFor(stock, item);
+  const source = cleanAnalysisSource(stock, item.source);
+  return {
+    ...item,
+    source,
     id: `${stock.symbol}-claim-${index + 1}`,
     url: authorityUrl,
     sourceRank: item.tier === "S" ? 100 : item.tier === "A" ? 85 : item.tier === "B" ? 65 : 35,
@@ -772,11 +803,31 @@ function enrichEvidence(stock, item, index) {
     rawFields: {
       fetched_at: now.toISOString(),
       as_of: formatAsOf(stock.lagMinutes),
-      provider: item.source,
+      provider: source,
       entity_match: `${stock.symbol}:${stock.name}`,
       checksum: `${stock.symbol.replace(".", "")}-${index + 1}-${Math.round(item.confidence * 1000)}`
     }
   };
+}
+
+function cleanAnalysisSource(stock, source) {
+  const text = String(source ?? "").trim();
+  if (!text) return sourceDescriptionForKind(stock, "filing");
+  if (!/mock/i.test(text)) return text;
+  const kind = sourceKindFromText(text);
+  return firstActiveSourceLabel(stock, kind) || text.replace(/\s*mock\s*/ig, "").replace(/\s*Mock\s*/g, "").trim() || sourceKindLabels[kind] || "数据源";
+}
+
+function sourceKindFromText(text) {
+  if (/公告|披露|HKEX|SEC|交易所/i.test(text)) return "filing";
+  if (/财务|估值|基本面|IR/i.test(text)) return "financial";
+  if (/新闻|情绪|社媒/i.test(text)) return "news";
+  if (/行情|K线|价格|波动|风险/i.test(text)) return "market";
+  return "filing";
+}
+
+function firstActiveSourceLabel(stock, kind) {
+  return activeSourceLabelsForKind(kind, stock.market)[0] || "";
 }
 
 function officialUrlFor(stock, item) {
@@ -797,7 +848,7 @@ function buildMemory(stock) {
       },
       {
         title: "归一化财务基线",
-        text: `最近一次完整分析已保存：ROE ${metrics.roe.toFixed(1)}%，收入增速 ${metrics.revenueGrowth.toFixed(1)}%，自由现金流率 ${metrics.fcfMargin.toFixed(1)}%，资产负债率 ${metrics.debtRatio.toFixed(1)}%。这些字段可作为二次分析基线，但遇到新财报必须重新读取原始财报。`
+        text: `最近一次完整分析已保存：ROE ${formatMetric(metrics.roe, 1, "%")}，收入增速 ${formatMetric(metrics.revenueGrowth, 1, "%")}，自由现金流率 ${formatMetric(metrics.fcfMargin, 1, "%")}，资产负债率 ${formatMetric(metrics.debtRatio, 1, "%")}。这些字段可作为二次分析基线，但遇到新财报必须重新读取原始财报。`
       },
       {
         title: "已验证 claim 索引",
@@ -848,6 +899,22 @@ function formatPct(value) {
   if (!Number.isFinite(value)) return "N/A";
   const sign = value > 0 ? "+" : "";
   return `${sign}${value.toFixed(2)}%`;
+}
+
+function hasMetric(value) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function formatMetric(value, digits = 1, suffix = "") {
+  return hasMetric(value) ? `${value.toFixed(digits)}${suffix}` : "暂无";
+}
+
+function formatMetricInt(value, suffix = "") {
+  return hasMetric(value) ? `${Math.round(value)}${suffix}` : "暂无";
+}
+
+function formatRatio(value) {
+  return hasMetric(value) ? `${(value * 100).toFixed(0)}%` : "暂无";
 }
 
 function formatCnyAmount(value) {
@@ -1182,16 +1249,17 @@ function normalizeBackendTrade(trade) {
 
 function updateBackendStatus(message = "") {
   if (!backendStatus || !sharedCacheStatus) return;
-  backendStatus.textContent = apiState.connected ? "Mock API connected" : "本地 fallback";
+  const statusText = message || (apiState.connected ? "数据 API connected" : "本地 fallback");
+  backendStatus.textContent = statusText.length > 28 ? `${statusText.slice(0, 27)}…` : statusText;
   backendStatus.className = `status-chip ${apiState.connected ? "fresh" : "warn"}`;
-  backendStatus.title = message || apiState.lastError || "前端可在后端关闭时继续使用内置 mock。";
+  backendStatus.title = message || apiState.lastError || "前端可在后端关闭时继续使用本地缓存。";
 
   if (apiState.sharedCache) {
     sharedCacheStatus.textContent = `共享分析 ${apiState.sharedCache.stock_analysis_runs} 条`;
     sharedCacheStatus.title = "股票分析、异动分析和记忆是跨账户共享资产。";
   } else {
     sharedCacheStatus.textContent = "共享分析 local";
-    sharedCacheStatus.title = "当前使用前端内置 mock 共享分析。";
+    sharedCacheStatus.title = "当前使用前端本地共享分析缓存。";
   }
 }
 
@@ -1224,6 +1292,8 @@ function applyDataSourcePayload(payload) {
   dataSources = Array.isArray(payload?.sources) ? payload.sources : fallbackDataSources;
   apiState.sourceSummary = payload?.summary ?? null;
   renderDataSources();
+  renderHealth();
+  renderSourceTests();
 }
 
 async function loadAkshareCapabilities() {
@@ -1295,6 +1365,7 @@ async function loadSourceTestCatalog() {
     sourceTestError = `数据源测试清单加载失败：${error.message}`;
   }
   renderSourceTests();
+  renderHealth();
 }
 
 async function loadAccountFromApi(accountId = apiState.accountId) {
@@ -1328,7 +1399,7 @@ async function loadAccountFromApi(accountId = apiState.accountId) {
     apiState.sharedCache = null;
     apiState.sourceSummary = null;
     apiState.portfolio = null;
-    apiState.lastError = `Mock API 未连接：${error.message}`;
+    apiState.lastError = `数据 API 未连接：${error.message}`;
     applyDataSourcePayload({ sources: fallbackDataSources });
     await loadAkshareCapabilities();
     await loadAlphaVantageCapabilities();
@@ -1419,27 +1490,57 @@ function renderFilterGroups() {
 
 function renderActiveRules() {
   const rules = [...activeFilterIds].map((id) => filtersById.get(id)).filter(Boolean);
-  activeRules.innerHTML = rules.length
-    ? rules.map((rule) => `<span class="rule-pill">${rule.label}</span>`).join("")
+  const promptText = filterPrompt.value.trim();
+  const rulePills = rules.map((rule) => `<span class="rule-pill">${rule.label}</span>`);
+  if (promptText) rulePills.push(`<span class="rule-pill">自然语言：${escapeHTML(promptText)}</span>`);
+  activeRules.innerHTML = rulePills.length
+    ? rulePills.join("")
     : `<span class="rule-pill muted">未启用过滤</span>`;
 }
 
-function applyNaturalLanguageFilter() {
+async function applyNaturalLanguageFilter() {
   const text = filterPrompt.value.trim().toLowerCase();
-  if (!text) return;
-  void saveSearchHistory("filter_prompt", filterPrompt.value);
-  filterCatalog.forEach((group) => {
-    group.items.forEach((item) => {
-      const matched = item.keywords.some((keyword) => text.includes(keyword.toLowerCase()));
-      if (matched) activeFilterIds.add(item.id);
-    });
-  });
-  if (text.includes("宽松") || text.includes("任一") || text.includes("或者")) {
-    filterMode = "any";
-    syncFilterModeButtons();
+  if (text) {
+    void saveSearchHistory("filter_prompt", filterPrompt.value);
+    if (text.includes("宽松") || text.includes("任一") || text.includes("或者")) {
+      filterMode = "any";
+      syncFilterModeButtons();
+    }
   }
-  renderFilterGroups();
-  renderCandidates();
+  renderActiveRules();
+  await runDatabaseScreener();
+}
+
+async function runDatabaseScreener() {
+  if (!apiState.connected) {
+    renderCandidates();
+    return;
+  }
+  try {
+    updateBackendStatus("数据库筛选中");
+    const payload = await apiRequest("/api/screeners/run", {
+      method: "POST",
+      body: JSON.stringify({
+        market: activeMarket,
+        filter_ids: [...activeFilterIds],
+        mode: filterMode,
+        natural_query: filterPrompt.value.trim(),
+        account_id: apiState.accountId
+      })
+    });
+    const apiStocks = Array.isArray(payload.stocks) ? payload.stocks : [];
+    stocks = apiStocks.map(normalizeApiStock).map((stock) => enrichStock(stock));
+    if (stocks.length && !stockBySymbol(selectedSymbol)) selectedSymbol = stocks[0].symbol;
+    renderCandidates();
+    renderWatchlist();
+    renderStockAnomalyReport(selectedAnomalySymbol);
+    const warehouse = payload.warehouse ?? {};
+    updateBackendStatus(`数据库筛选完成：${payload.count ?? stocks.length} 只，历史日线 ${warehouse.daily_bars ?? 0} 条`);
+  } catch (error) {
+    apiState.lastError = `数据库筛选失败：${error.message}`;
+    updateBackendStatus(apiState.lastError);
+    renderCandidates();
+  }
 }
 
 function renderCandidates() {
@@ -1510,7 +1611,7 @@ function renderStockAnomalyReport(symbol) {
   anomalyReport.innerHTML = `
     <div class="report-head">
       <div>
-        <p class="eyebrow">Stock anomaly · Mock</p>
+        <p class="eyebrow">Stock anomaly · Data API</p>
         <h4>${stock.symbol} · ${stock.name}</h4>
       </div>
       <span class="anomaly-score">${severity}</span>
@@ -1530,7 +1631,7 @@ function renderStockAnomalyReport(symbol) {
       <h4>证据和限制</h4>
       <ul>
         <li>证据可信度 ${stock.truthScore}%，数据状态 ${statusText(stock.freshnessStatus)}。</li>
-        <li>本报告只使用 mock 行情、新闻热度和因子快照；真实版本需要拉取最新盘口、逐笔、公告和新闻源。</li>
+        <li>本报告使用当前接入的数据源快照；盘中结论需要拉取最新盘口、逐笔、公告和新闻源。</li>
         <li>若数据过期或未证实比例过高，只能作为异动提醒，不能直接升级为买卖结论。</li>
       </ul>
     </section>
@@ -1564,12 +1665,12 @@ function renderPromptAnomalyReport() {
   anomalyReport.innerHTML = `
     <div class="report-head">
       <div>
-        <p class="eyebrow">Question anomaly · Mock</p>
+        <p class="eyebrow">Question anomaly · Data API</p>
         <h4>${title}</h4>
       </div>
       <span class="anomaly-score">${negative ? 78 : 62}</span>
     </div>
-    <p class="thesis">${subject}出现${direction}时，优先拆成三层：指数/板块同步性、资金流和消息面真实性。本报告是 mock 推理模板，不代表实时市场事实。</p>
+    <p class="thesis">${subject}出现${direction}时，优先拆成三层：指数/板块同步性、资金流和消息面真实性。本报告是数据推理模板，实时结论取决于当前数据源新鲜度。</p>
     <section class="report-section">
       <h4>可能解释路径</h4>
       <ul>
@@ -1631,7 +1732,7 @@ async function handleBacktestSubmit(event) {
 function renderBacktestResult() {
   if (!backtestResult) return;
   if (backtestStatus) {
-    backtestStatus.textContent = backtestLoading ? "运行中" : backtestPayload ? "已生成报告" : "Mock 研究回测";
+    backtestStatus.textContent = backtestLoading ? "运行中" : backtestPayload ? "已生成报告" : "研究回测";
   }
   if (backtestLoading) {
     backtestResult.innerHTML = `<div class="empty-state compact">正在运行回测...</div>`;
@@ -1654,7 +1755,7 @@ function renderBacktestResult() {
   backtestResult.innerHTML = `
     <div class="thesis">
       <strong>${escapeHTML(strategy.label ?? "回测策略")}</strong>
-      <p>${escapeHTML(strategy.thesis ?? "用于验证策略假设的 mock 研究回测。")}</p>
+      <p>${escapeHTML(strategy.thesis ?? "用于验证策略假设的研究回测。")}</p>
     </div>
     <div class="backtest-summary-grid">
       ${renderBacktestCard("总收益", formatPct(Number(summary.total_return ?? 0)), Number(summary.total_return ?? 0))}
@@ -1673,7 +1774,7 @@ function renderBacktestResult() {
             <p class="eyebrow">Equity curve</p>
             <h4>收益曲线与基准</h4>
           </div>
-          <span class="confidence">${escapeHTML(backtestPayload.mode ?? "mock")}</span>
+          <span class="confidence">${escapeHTML(cleanAnalysisCopy(backtestPayload.mode ?? "local"))}</span>
         </div>
         <canvas id="backtestCurve" class="backtest-chart" width="1200" height="320"></canvas>
       </section>
@@ -1828,10 +1929,10 @@ function localBacktestPayload(config) {
   const benchmarkReturn = (benchmark / config.initial_cash - 1) * 100;
   const winRate = returns.length ? returns.filter((item) => item > 0).length / returns.length * 100 : 0;
   return {
-    mode: "local-mock-research-backtest",
+    mode: "local-research-backtest",
     run_id: `local-${Date.now()}`,
     config,
-    strategy: { label: strategyLabel(config.strategy), thesis: "本地 fallback 使用页面内 mock 股票曲线，只用于确认回测报告交互。" },
+    strategy: { label: strategyLabel(config.strategy), thesis: "本地 fallback 使用页面内股票曲线，只用于确认回测报告交互。" },
     summary: {
       total_return: Number(totalReturn.toFixed(2)),
       annualized_return: Number((totalReturn * 252 / Math.max(returns.length, 1)).toFixed(2)),
@@ -1852,7 +1953,7 @@ function localBacktestPayload(config) {
       main_driver: strategyLabel(config.strategy)
     },
     research_notes: [
-      "当前为本地 fallback mock 回测，不代表真实历史收益。",
+      "当前为本地 fallback 回测，不代表真实历史收益。",
       "正式版本必须使用复权行情、完整交易日历、真实调仓价、滑点和手续费。",
       "样本量太小，不能用当前结果判断策略有效性。"
     ]
@@ -2164,30 +2265,30 @@ function factorDetail(stock, name) {
   const m = stock.metrics;
   const map = {
     基本面: {
-      summary: `ROE ${m.roe.toFixed(1)}%，收入增速 ${m.revenueGrowth.toFixed(1)}%，自由现金流率 ${m.fcfMargin.toFixed(1)}%。`,
-      source: "财务报表 / 结构化基本面 Mock",
+      summary: `ROE ${formatMetric(m.roe, 1, "%")}，收入增速 ${formatMetric(m.revenueGrowth, 1, "%")}，自由现金流率 ${formatMetric(m.fcfMargin, 1, "%")}。`,
+      source: sourceDescriptionForKinds(stock, ["financial"]),
       values: [
-        ["ROE", `${m.roe.toFixed(1)}%`],
-        ["收入增速", `${m.revenueGrowth.toFixed(1)}%`],
-        ["自由现金流率", `${m.fcfMargin.toFixed(1)}%`],
-        ["资产负债率", `${m.debtRatio.toFixed(1)}%`]
+        ["ROE", formatMetric(m.roe, 1, "%")],
+        ["收入增速", formatMetric(m.revenueGrowth, 1, "%")],
+        ["自由现金流率", formatMetric(m.fcfMargin, 1, "%")],
+        ["资产负债率", formatMetric(m.debtRatio, 1, "%")]
       ],
       process: "先按最新完整财报归一化，再与行业中位数和自身三年分位比较；缺财报时不能用记忆替代。"
     },
     估值: {
-      summary: `PE ${m.pe.toFixed(1)}，PE历史分位 ${m.pePercentile}%，PB ${m.pb.toFixed(1)}。`,
-      source: "最新价格 + 最新财务口径 Mock",
+      summary: `PE ${formatMetric(m.pe, 1)}，PE历史分位 ${formatMetricInt(m.pePercentile, "%")}，PB ${formatMetric(m.pb, 1)}。`,
+      source: sourceDescriptionForKinds(stock, ["market", "financial"]),
       values: [
-        ["PE", m.pe.toFixed(1)],
-        ["PE历史分位", `${m.pePercentile}%`],
-        ["PB", m.pb.toFixed(1)],
+        ["PE", formatMetric(m.pe, 1)],
+        ["PE历史分位", formatMetricInt(m.pePercentile, "%")],
+        ["PB", formatMetric(m.pb, 1)],
         ["评分", stock.factors.估值]
       ],
       process: "价格必须取最新行情，盈利口径取最新可追溯财报；旧记忆只能提供上次估值分位作为对比。"
     },
     技术: {
       summary: `20日线偏离 ${m.ma20GapPct.toFixed(1)}%，量能 ${m.volumeRatio.toFixed(2)}倍，ATR ${m.atrPct.toFixed(1)}%。`,
-      source: "K线 / 成交量 / 波动率 Mock",
+      source: sourceDescriptionForKinds(stock, ["market"]),
       values: [
         ["20日线偏离", `${m.ma20GapPct.toFixed(1)}%`],
         ["量能倍数", `${m.volumeRatio.toFixed(2)}x`],
@@ -2197,30 +2298,30 @@ function factorDetail(stock, name) {
       process: "必须重新读取历史K线和成交量，不能复用旧趋势结论；只复用上次关键价位作为比较点。"
     },
     催化: {
-      summary: `催化评分 ${m.catalystScore}，72小时新闻 ${m.newsCount72h} 条，已验证比例 ${(m.verifiedCatalystRatio * 100).toFixed(0)}%。`,
-      source: "公告 / 新闻 / 事件抽取 Mock",
+      summary: `催化评分 ${formatMetricInt(m.catalystScore)}，72小时新闻 ${formatMetricInt(m.newsCount72h)} 条，已验证比例 ${formatRatio(m.verifiedCatalystRatio)}。`,
+      source: sourceDescriptionForKinds(stock, ["filing", "news"]),
       values: [
-        ["催化评分", m.catalystScore],
-        ["72小时新闻数", m.newsCount72h],
-        ["已验证比例", `${(m.verifiedCatalystRatio * 100).toFixed(0)}%`],
-        ["未证实比例", `${(m.unverifiedRatio * 100).toFixed(0)}%`]
+        ["催化评分", formatMetricInt(m.catalystScore)],
+        ["72小时新闻数", formatMetricInt(m.newsCount72h)],
+        ["已验证比例", formatRatio(m.verifiedCatalystRatio)],
+        ["未证实比例", formatRatio(m.unverifiedRatio)]
       ],
       process: "先从公告和新闻抽 claim，再按来源等级、实体匹配和时效降权；C级来源不能单独触发买入。"
     },
     情绪: {
-      summary: `情绪分 ${m.sentimentScore}，未证实比例 ${(m.unverifiedRatio * 100).toFixed(0)}%，72小时热度 ${m.newsCount72h}。`,
-      source: "新闻情绪 / 社媒热度 Mock",
+      summary: `情绪分 ${formatMetricInt(m.sentimentScore)}，未证实比例 ${formatRatio(m.unverifiedRatio)}，72小时热度 ${formatMetricInt(m.newsCount72h)}。`,
+      source: sourceDescriptionForKinds(stock, ["news"]),
       values: [
-        ["情绪分", m.sentimentScore],
-        ["未证实比例", `${(m.unverifiedRatio * 100).toFixed(0)}%`],
-        ["热度", m.newsCount72h],
-        ["已验证催化", `${(m.verifiedCatalystRatio * 100).toFixed(0)}%`]
+        ["情绪分", formatMetricInt(m.sentimentScore)],
+        ["未证实比例", formatRatio(m.unverifiedRatio)],
+        ["热度", formatMetricInt(m.newsCount72h)],
+        ["已验证催化", formatRatio(m.verifiedCatalystRatio)]
       ],
       process: "情绪只作为辅助。若未证实比例高，会降低结论强度，并要求补公告或公司来源。"
     },
     风险: {
       summary: `20日波动 ${m.volatility20d}%，60日最大回撤 ${m.maxDrawdown60d}%，ATR ${m.atrPct.toFixed(1)}%。`,
-      source: "风险模型 / K线 / 公告风险 Mock",
+      source: sourceDescriptionForKinds(stock, ["market", "filing"]),
       values: [
         ["20日波动", `${m.volatility20d}%`],
         ["60日最大回撤", `${m.maxDrawdown60d}%`],
@@ -2231,6 +2332,34 @@ function factorDetail(stock, name) {
     }
   };
   return map[name];
+}
+
+function sourceDescriptionForKinds(stock, kinds) {
+  return kinds.map((kind) => sourceDescriptionForKind(stock, kind)).join("；");
+}
+
+function sourceDescriptionForKind(stock, kind) {
+  const label = sourceKindLabels[kind] ?? kind;
+  if (kind === "financial" && stock.sourceStatus?.valuationBasis) {
+    const basis = stock.sourceStatus.valuationBasis;
+    if (basis.mode === "latest-market-with-prior-valuation") {
+      return `${label}：${basis.label}，行情 ${basis.marketProvider ?? "行情数据源"} 快照 ${basis.asOf}`;
+    }
+    return `${label}：${basis.label}${basis.asOf ? `，快照 ${basis.asOf}` : ""}`;
+  }
+  const snapshot = kind === "market"
+    ? stock.sourceStatus?.marketSnapshot
+    : kind === "financial"
+      ? stock.sourceStatus?.financialSnapshot
+      : null;
+  const snapshotProvider = snapshot?.provider ? providerDisplayName(snapshot.provider) : "";
+  const activeLabels = activeSourceLabelsForKind(kind, stock.market);
+  const providerText = snapshotProvider || activeLabels.join("、");
+  const missing = (stock.sourceStatus?.missingKinds ?? []).includes(kind);
+  if (missing && providerText) return `${label}：${providerText} 已启用，当前股票暂无可用快照`;
+  if (missing || !providerText) return `${label}：未启用或未配置`;
+  const asOf = snapshot?.asOf ? `，快照 ${snapshot.asOf}` : "";
+  return `${label}：${providerText}${asOf}`;
 }
 
 function renderEvidence(item, index) {
@@ -2290,7 +2419,7 @@ function renderUnknown(symbol) {
       <div class="metric-box"><span>证据可信度</span><strong>0%</strong></div>
       <div class="metric-box"><span>数据时间</span><strong>无数据</strong></div>
     </div>
-    <p class="thesis">本地 mock 数据没有找到 ${escapeHTML(normalized)}。真实接口未接入时，系统拒绝生成买入或卖出结论。</p>
+    <p class="thesis">本地数据源没有找到 ${escapeHTML(normalized)}。接口未返回足够证据时，系统拒绝生成买入或卖出结论。</p>
     <div class="evidence-list">
       ${renderEvidence({ tier: "F", source: "Data gate", claim: "缺少行情、财务、公告和新闻证据，必须先刷新或接入真实数据源。", confidence: 0, process: [], rawFields: {}, url: "" }, 0)}
     </div>
@@ -2593,16 +2722,60 @@ function drawPositionKline() {
 }
 
 function renderHealth() {
-  healthGrid.innerHTML = healthSources.map((item) => `
-    <article class="health-card">
+  if (!healthGrid) return;
+  healthGrid.innerHTML = buildHealthSources().map((item) => `
+    <article
+      class="health-card ${item.kind === sourceTestKindFilter ? "active" : ""}"
+      data-health-kind="${escapeHTML(item.kind)}"
+      role="button"
+      tabindex="0"
+    >
       <div class="health-top">
-        <strong>${item.name}</strong>
+        <strong>${escapeHTML(item.name)}</strong>
         <span class="freshness-badge ${item.status}">${statusText(item.status)}</span>
       </div>
-      <p class="confidence">${escapeHTML(displayText(item.source))}</p>
-      <p>${escapeHTML(displayText(item.text))}</p>
+      <p class="confidence">${escapeHTML(item.source)}</p>
+      <p>${escapeHTML(item.text)}</p>
     </article>
   `).join("");
+}
+
+function buildHealthSources() {
+  return healthSourceKinds.map((config) => {
+    const sources = sourcesForKind(config.kind);
+    const active = sources.filter((source) => source.active);
+    const enabled = sources.filter((source) => source.enabled);
+    const tests = (sourceTestCatalog?.tests ?? []).filter((test) => test.source_kind === config.kind);
+    const activeTests = tests.filter((test) => test.active);
+    const status = active.length ? "fresh" : enabled.length ? "warn" : "stale";
+    const providerText = active.length
+      ? active.map((source) => source.label).join("、")
+      : enabled.length
+        ? `${enabled.map((source) => source.label).join("、")} 需配置`
+        : "未启用";
+    const sourceText = `${providerText} · ${active.length}/${sources.length || 0} 已生效`;
+    const testText = tests.length ? `${activeTests.length}/${tests.length} 项可测试` : "等待测试清单";
+    return {
+      ...config,
+      status,
+      source: sourceText,
+      text: `${config.text} ${testText}。`
+    };
+  });
+}
+
+function sourcesForKind(kind, market = "") {
+  const sources = dataSources.length ? dataSources : fallbackDataSources;
+  return sources.filter((source) => {
+    if (source.source_kind !== kind) return false;
+    return !market || source.market === market;
+  });
+}
+
+function activeSourceLabelsForKind(kind, market = "") {
+  return sourcesForKind(kind, market)
+    .filter((source) => source.active)
+    .map((source) => source.label);
 }
 
 function renderDataSources() {
@@ -2660,7 +2833,7 @@ function renderSourceCard(source) {
           <input data-source-key="${source.id}" type="${source.requires_key ? "password" : "text"}" placeholder="${escapeHTML(placeholder)}" ${source.requires_key ? "" : "disabled"} />
         </label>
         <button class="primary-action" data-source-save="${source.id}" type="button">保存配置</button>
-        ${["tushare", "finnhub"].includes(source.provider) ? `<button class="ghost-action small" data-source-refresh="${source.provider}" type="button">刷新数据</button>` : ""}
+        ${["akshare", "baostock", "baostock-financial", "tushare", "finnhub"].includes(source.provider) ? `<button class="ghost-action small" data-source-refresh="${source.provider}" type="button">刷新数据</button>` : ""}
       </div>
       <div class="source-meta">
         <span class="status-chip ${statusClass}">${status}</span>
@@ -2691,9 +2864,19 @@ function renderSourceTests() {
     return;
   }
 
-  const tests = sourceTestCatalog.tests ?? [];
+  const allTests = sourceTestCatalog.tests ?? [];
+  const tests = sourceTestKindFilter
+    ? allTests.filter((item) => item.source_kind === sourceTestKindFilter)
+    : allTests;
+  if (tests.length && !tests.some((item) => item.id === selectedSourceTestId)) {
+    selectedSourceTestId = tests[0].id;
+    sourceTestPayload = null;
+    sourceTestError = "";
+    if (sourceTestSymbol) sourceTestSymbol.value = "";
+  }
   const activeCount = tests.filter((item) => item.active).length;
-  sourceTestStatus.textContent = `${activeCount}/${tests.length} 可测试`;
+  const testKindLabel = sourceKindLabels[sourceTestKindFilter] ?? "全部";
+  sourceTestStatus.textContent = `${testKindLabel} · ${activeCount}/${tests.length} 可测试`;
 
   sourceTestSelect.innerHTML = tests.map((test) => `
     <option value="${escapeHTML(test.id)}" ${test.id === selectedSourceTestId ? "selected" : ""}>
@@ -2702,17 +2885,21 @@ function renderSourceTests() {
   `).join("");
 
   const grouped = tests.reduce((map, test) => {
-    const group = test.source_kind_label || test.source_kind || "其他";
+    const group = sourceTestKindFilter
+      ? (marketLabels[test.market] ?? test.market ?? "其他")
+      : (test.source_kind_label || test.source_kind || "其他");
     if (!map.has(group)) map.set(group, []);
     map.get(group).push(test);
     return map;
   }, new Map());
-  sourceTestList.innerHTML = [...grouped.entries()].map(([group, items]) => `
-    <section class="source-test-group">
-      <h4>${escapeHTML(displayText(group))}</h4>
-      ${items.map(renderSourceTestItem).join("")}
-    </section>
-  `).join("");
+  sourceTestList.innerHTML = tests.length
+    ? [...grouped.entries()].map(([group, items]) => `
+      <section class="source-test-group">
+        <h4>${escapeHTML(displayText(group))}</h4>
+        ${items.map(renderSourceTestItem).join("")}
+      </section>
+    `).join("")
+    : `<p class="empty-state compact">当前板块没有可用测试项。</p>`;
 
   renderSourceTestForm();
   renderSourceTestResult();
@@ -2802,7 +2989,7 @@ function renderSourceTestResult() {
           </thead>
           <tbody>
             ${rows.slice(0, 12).map((row) => `
-              <tr>${visibleColumns.map((column) => renderResultCell(row?.[column], column)).join("")}</tr>
+              <tr>${visibleColumns.map((column) => renderResultCell(row?.[column], column, row)).join("")}</tr>
             `).join("")}
           </tbody>
         </table>
@@ -2827,17 +3014,35 @@ function renderSourceTestResult() {
   `;
 }
 
-function renderResultCell(value, column = "") {
+function renderResultCell(value, column = "", row = null) {
   const text = value === null || value === undefined ? "" : String(value);
   const href = text.startsWith("http://") || text.startsWith("https://");
   const display = displayCellValue(value, column);
+  const linkedTitle = normalizeFieldKey(column) === "title" ? rowExternalUrl(row) : "";
+  if (linkedTitle && display) {
+    return `<td><a class="source-text-link result-cell-clamp" href="${escapeHTML(linkedTitle)}" target="_blank" rel="noreferrer" title="${escapeHTML(display)}">${escapeHTML(display)}</a></td>`;
+  }
   return href
     ? `<td><a class="source-link" href="${escapeHTML(text)}" target="_blank" rel="noreferrer">打开</a></td>`
     : `<td><div class="result-cell-clamp" title="${escapeHTML(display)}">${escapeHTML(display)}</div></td>`;
 }
 
+function rowExternalUrl(row) {
+  if (!row || typeof row !== "object") return "";
+  for (const key of ["url", "href", "link", "source_url", "document_url"]) {
+    const value = row[key];
+    if (typeof value === "string" && (value.startsWith("http://") || value.startsWith("https://"))) {
+      return value;
+    }
+  }
+  return "";
+}
+
 function selectedSourceTest() {
-  return (sourceTestCatalog?.tests ?? []).find((item) => item.id === selectedSourceTestId);
+  const tests = sourceTestKindFilter
+    ? (sourceTestCatalog?.tests ?? []).filter((item) => item.source_kind === sourceTestKindFilter)
+    : (sourceTestCatalog?.tests ?? []);
+  return tests.find((item) => item.id === selectedSourceTestId);
 }
 
 function sourceTestParamPayload() {
@@ -2878,6 +3083,16 @@ async function runSourceTest() {
     sourceTestLoading = false;
     renderSourceTestResult();
   }
+}
+
+function selectHealthKind(kind) {
+  if (!healthSourceKinds.some((item) => item.kind === kind)) return;
+  sourceTestKindFilter = kind;
+  sourceTestPayload = null;
+  sourceTestError = "";
+  if (sourceTestSymbol) sourceTestSymbol.value = "";
+  renderHealth();
+  renderSourceTests();
 }
 
 function renderAkshareExplorer() {
@@ -3025,7 +3240,7 @@ function renderAksharePreview() {
   const visibleColumns = columns.slice(0, 8);
   const rowHtml = rows.slice(0, 8).map((row) => `
     <tr>
-      ${visibleColumns.map((column) => renderResultCell(row?.[column], column)).join("")}
+      ${visibleColumns.map((column) => renderResultCell(row?.[column], column, row)).join("")}
     </tr>
   `).join("");
 
@@ -3168,7 +3383,7 @@ function renderAlphaVantagePreview() {
   const visibleColumns = columns.slice(0, 8);
   const rowHtml = rows.slice(0, 8).map((row) => `
     <tr>
-      ${visibleColumns.map((column) => renderResultCell(row?.[column], column)).join("")}
+      ${visibleColumns.map((column) => renderResultCell(row?.[column], column, row)).join("")}
     </tr>
   `).join("");
 
@@ -3308,6 +3523,7 @@ async function saveDataSource(sourceId) {
     });
     applyDataSourcePayload(payload);
     if (source.provider === "alpha_vantage") await loadAlphaVantageCapabilities();
+    await loadSourceTestCatalog();
     await loadStocksFromApi();
     renderCandidates();
     renderDetails(selectedStock() ?? stocks[0]);
@@ -3327,19 +3543,66 @@ async function refreshProviderData(provider) {
   }
 
   try {
-    const label = provider === "finnhub" ? "Finnhub" : provider === "tushare" ? "Tushare" : provider;
+    const label = provider === "finnhub" ? "Finnhub" : provider === "tushare" ? "Tushare" : provider === "akshare" ? "AKShare" : provider === "baostock" ? "BaoStock 历史回刷" : provider === "baostock-financial" ? "BaoStock 季频财务" : provider;
     updateBackendStatus(`${label} 数据刷新中`);
     const payload = await apiRequest("/api/data/refresh", {
       method: "POST",
-      body: JSON.stringify({ provider, scope: provider, account_id: apiState.accountId })
+      body: JSON.stringify({ provider, scope: provider, account_id: apiState.accountId, refresh_universe: provider === "baostock" || provider === "baostock-financial" })
     });
+    if ((payload.mode === "baostock-backfill-background" || payload.mode === "baostock-quarterly-financials-background") && payload.run_id) {
+      startDataJobPolling(payload.run_id, label);
+      const counts = payload.counts ?? payload.job?.counts ?? {};
+      updateBackendStatus(`${label} 后台任务 ${payload.already_running ? "运行中" : "已启动"}：剩余 ${counts.remaining_candidates ?? "?"} 只`);
+      return;
+    }
     await loadAccountFromApi(apiState.accountId);
     const counts = payload.counts ?? {};
-    updateBackendStatus(`${label} 已刷新：行情 ${counts.market_snapshots ?? 0}，财务 ${counts.financial_snapshots ?? 0}，新闻 ${counts.news_items ?? 0}`);
+    updateBackendStatus(`${label} 已刷新：股票 ${counts.symbols ?? 0}，日线 ${counts.daily_bars ?? counts.market_snapshots ?? 0}，财务 ${counts.financial_snapshots ?? 0}，公告 ${counts.filings ?? 0}，新闻 ${counts.news_items ?? 0}`);
   } catch (error) {
     apiState.lastError = `真实数据刷新失败：${error.message}`;
     updateBackendStatus(apiState.lastError);
   }
+}
+
+function startDataJobPolling(runId, label) {
+  if (dataJobPoller) clearInterval(dataJobPoller);
+  pollDataJob(runId, label);
+  dataJobPoller = setInterval(() => pollDataJob(runId, label), 5000);
+}
+
+async function pollDataJob(runId, label) {
+  try {
+    const payload = await apiRequest(`/api/data/jobs/${encodeURIComponent(runId)}`);
+    const counts = payload.counts ?? {};
+    const status = payload.status ?? "running";
+    const batches = counts.batches ?? 0;
+    const progressText = dataJobProgressText(counts);
+    const remaining = counts.remaining_candidates ?? "?";
+    if (status === "running") {
+      updateBackendStatus(`${label} 后台回刷中：${batches} 批，${progressText}，剩余 ${remaining}`);
+      return;
+    }
+    if (dataJobPoller) {
+      clearInterval(dataJobPoller);
+      dataJobPoller = null;
+    }
+    await loadAccountFromApi(apiState.accountId);
+    updateBackendStatus(`${label} 后台回刷${status === "ok" ? "完成" : status}：${batches} 批，${progressText}，剩余 ${remaining}`);
+  } catch (error) {
+    if (dataJobPoller) {
+      clearInterval(dataJobPoller);
+      dataJobPoller = null;
+    }
+    apiState.lastError = `后台任务查询失败：${error.message}`;
+    updateBackendStatus(apiState.lastError);
+  }
+}
+
+function dataJobProgressText(counts) {
+  if (counts.financial_metrics !== undefined || counts.company_reports !== undefined) {
+    return `季频指标 ${counts.financial_metrics ?? 0}，公司报告 ${counts.company_reports ?? 0}`;
+  }
+  return `日线 ${counts.daily_bars ?? 0}`;
 }
 
 function openClaimDetail(index) {
@@ -3622,13 +3885,18 @@ async function toggleFavorite(symbol) {
   if (stock) renderDetails(stock);
 }
 
+function normalizeTabId(id) {
+  return id === "source-tests" ? "health" : id;
+}
+
 function syncActiveNav() {
-  const hashTarget = location.hash.slice(1);
+  const hashTarget = normalizeTabId(location.hash.slice(1));
   setActiveTab(navSectionIds.includes(hashTarget) ? hashTarget : activeTab, false);
 }
 
 function setActiveTab(current, shouldUpdateHash = true) {
-  const next = navSectionIds.includes(current) ? current : "filters";
+  const normalized = normalizeTabId(current);
+  const next = navSectionIds.includes(normalized) ? normalized : "filters";
   activeTab = next;
   document.querySelectorAll(".section-block").forEach((section) => {
     const active = section.id === next;
@@ -3757,6 +4025,7 @@ document.querySelector("#applyPromptFilter").addEventListener("click", applyNatu
 filterPrompt.addEventListener("keydown", (event) => {
   if (event.key === "Enter") applyNaturalLanguageFilter();
 });
+filterPrompt.addEventListener("input", renderActiveRules);
 
 document.querySelector("#resetFilters").addEventListener("click", () => {
   activeFilterIds = new Set();
@@ -3793,6 +4062,19 @@ tradeForm.addEventListener("submit", handleTradeSubmit);
 
 portfolioSummary.addEventListener("click", (event) => {
   if (event.target.closest("[data-refresh-profit]")) refreshPortfolioPrices();
+});
+
+healthGrid?.addEventListener("click", (event) => {
+  const card = event.target.closest("[data-health-kind]");
+  if (card) selectHealthKind(card.dataset.healthKind);
+});
+
+healthGrid?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const card = event.target.closest("[data-health-kind]");
+  if (!card) return;
+  event.preventDefault();
+  selectHealthKind(card.dataset.healthKind);
 });
 
 dataSourceGrid?.addEventListener("click", (event) => {
@@ -3894,7 +4176,7 @@ document.addEventListener("click", (event) => {
 
 window.addEventListener("hashchange", syncActiveNav);
 window.addEventListener("load", () => {
-  const hashTarget = location.hash.slice(1);
+  const hashTarget = normalizeTabId(location.hash.slice(1));
   setActiveTab(navSectionIds.includes(hashTarget) ? hashTarget : "filters", false);
 });
 
@@ -3920,7 +4202,7 @@ renderWatchlist();
 renderHealth();
 renderStockAnomalyReport(selectedAnomalySymbol);
 renderBacktestResult();
-setActiveTab(navSectionIds.includes(location.hash.slice(1)) ? location.hash.slice(1) : "filters", false);
+setActiveTab(navSectionIds.includes(normalizeTabId(location.hash.slice(1))) ? normalizeTabId(location.hash.slice(1)) : "filters", false);
 updateBackendStatus();
 loadAccountFromApi();
 

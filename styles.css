@@ -1364,6 +1364,25 @@ td {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.health-test-lab {
+  margin-top: 18px;
+}
+
+.health-card {
+  cursor: pointer;
+}
+
+.health-card.active {
+  border-color: rgba(35, 100, 170, 0.46);
+  background: #f3f8fe;
+  box-shadow: 0 0 0 3px rgba(35, 100, 170, 0.1);
+}
+
+.health-card:focus-visible {
+  outline: 3px solid rgba(35, 100, 170, 0.18);
+  outline-offset: 2px;
+}
+
 .provider-test-lab {
   display: grid;
   gap: 16px;
@@ -2576,6 +2595,16 @@ body.drawer-open {
   text-decoration: none;
 }
 
+.source-text-link {
+  color: var(--blue);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.source-text-link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 1120px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -2823,7 +2852,7 @@ body.drawer-open {
     bottom: 0;
     left: 0;
     display: grid;
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(9, minmax(0, 1fr));
     gap: 2px;
     padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--line);

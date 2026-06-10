@@ -1,8 +1,8 @@
 # 聚宝盆工程 TODO
 
-更新时间：2026-06-05
+更新时间：2026-06-07
 
-目标：先把当前 mock demo 打磨成可用网页版，支持多账户、真实数据源配置、共享分析记忆、独立持仓/关注的股票研究软件；macOS 和 iPhoneOS 打包暂缓。
+目标：把当前本地网页版打磨成数据库驱动的股票研究软件，支持多账户、真实/缓存数据源配置、历史数据仓库、共享分析记忆、独立持仓/关注；macOS 和 iPhoneOS 打包暂缓。
 
 换电脑或开启新 Codex 会话时，先读 `docs/handoff.md`，再按本 TODO 继续推进。
 
@@ -28,6 +28,18 @@
 - Phase 1E Web：左侧新增“设置”，可按 A/HK/US 市场勾选行情、财务、公告、新闻情绪数据源并输入 mock API key；未生效的数据源不会进入后续 mock 分析。
 - Phase 1E Web：已新增 `acct-admin` 管理账户、账户级数据源开关/key 隔离，以及 Finnhub 美股行情、基本面、公司新闻刷新。
 - Phase 1E Web：左侧新增“回测平台”，支持 mock 研究回测，输出收益曲线、最大回撤、胜率、换手、调仓记录、归因和研究限制。
+- Phase 1F Web：已接入 Tushare A 股行情/财务缓存、Alpha Vantage 数据探索、官方公告数据源测试和公告标题链接。
+- Phase 1G Web：已接入 SQLite 历史数据仓库，新增 `symbol_aliases`、`daily_bars`、`financial_metrics_history`、`filings_history`、`ingestion_runs`。
+- Phase 1G Web：BaoStock 已接入 `query_all_stock` 和 `query_history_k_data_plus`，支持 A 股/ETF/指数代码宇宙、日线、成交额、换手率、`peTTM`、`pbMRQ`。
+- Phase 1G Web：BaoStock 已接入季频财务和公司报告回刷；`financial_metrics_history` 支持利润、营运、成长、偿债、现金流、杜邦指标，`company_reports_history` 支持业绩快报/业绩预告。
+- Phase 1G Web：BaoStock 全量回刷已改为后台长任务，设置页点击刷新后返回 `run_id` 并轮询 `/api/data/jobs/{run_id}`。
+- Phase 1G Web：BaoStock 历史回刷已加入单只证券等待重试、重新登录、批次心跳和卡住任务 `interrupted` 释放；新增 `scripts/run_baostock_backfill.py` 作为后台/定时入口。
+- Phase 1G Web：BaoStock 季频财务/公司报告批次已加入子进程超时保护，并新增 `scripts/test_warehouse_guards.py` 覆盖任务防回写、增量区间、季度 no_data 重试和超时收口。
+- Phase 1G Ops：本机已安装 LaunchAgent `com.keiko.baostock-nightly`，每天 00:00 回刷 BaoStock 最近日线，日志写入 `logs/baostock-nightly.*.log`。
+- Phase 1G Ops：本机已安装 LaunchAgent `com.keiko.baostock-financial-nightly`，每天 02:30 回刷 BaoStock 季频财务/公司报告，日志写入 `logs/baostock-financial-nightly.*.log`。
+- Phase 1G Web：筛选股票已改为数据库查询；自然语言 `PE<10` 等作为独立 SQL 条件，不再自动勾选复选框。
+- Phase 1G Web：回测平台优先使用 `daily_bars`，数据不足时才退回研究 mock。
+- Phase 1G Debug：已新增 `scripts/debug_warehouse.py` 和 `scripts/debug_warehouse.README.md`，用于 SQL 差数、provider 覆盖、PE/PB、缺口和任务状态。
 
 ## 1. 技术架构 TODO
 
@@ -38,6 +50,9 @@
 - [ ] 拆组件：`StockCard`、`SingleStockDrawer`、`PortfolioTable`、`AnomalyReport`、`DataHealthPanel`、`MemoryPanel`。
 - [ ] 建立前端状态层：用户会话、当前账户、筛选股票、关注列表、持仓、分析报告、异动报告、数据源设置。
 - [ ] 所有按钮和表单增加 loading、error、empty、stale 状态。
+- [x] BaoStock 数据源刷新按钮改成后台任务并显示轮询进度。
+- [x] BaoStock 季频财务/公司报告数据源刷新按钮改成后台任务并显示季度指标/报告进度。
+- [x] BaoStock 回刷加入网络错误自动等待/重试和心跳失效释放。
 - [ ] 为关键交互写 Playwright 测试：查看分析、关注/取消关注、录入 Buy/Sell、刷新股价、生成异动报告。
 - [ ] 生成正式 iOS app icon PNG/icon set，替换当前 SVG 原型图标。
 
@@ -45,8 +60,8 @@
 
 - [x] 使用 FastAPI 做本地 API 服务。
 - [ ] 建立模块：
-  - `providers/`：行情、财务、公告、新闻、情绪供应商适配器。当前已有 mock provider 起点。
-  - `ingestion/`：拉取、去重、标准化、缓存。
+  - `providers/`：行情、财务、公告、新闻、情绪供应商适配器。当前已有 mock、Tushare、AKShare、Alpha Vantage、Finnhub、BaoStock 起点。
+  - `ingestion/`：拉取、去重、标准化、缓存。当前 BaoStock 仍在 `backend/history.py` 内，后续应拆出独立 worker/queue。
   - `data_quality/`：新鲜度、字段完整性、异常值、跨源一致性。当前已有 mock 模块。
   - `claims/`：claim 抽取、证据绑定、真实性评分。
   - `strategy/`：过滤、因子评分、候选生成、持仓复核。
@@ -63,11 +78,12 @@
   - `GET /memory/stocks/{symbol}` 已有 mock 版
   - `GET /api/data-sources` 已有 mock 版
   - `PUT /api/data-sources/{source_id}` 已有 mock 版
-  - `POST /api/backtests/run` 已有 mock 版
+  - `POST /api/backtests/run` 已有数据库优先版
   - `PUT /api/accounts/{account_id}/favorites/{symbol}` 已有 mock 版
   - `POST /api/accounts/{account_id}/trades` 已有 mock 版
   - `GET /api/accounts/{account_id}/portfolio` 已有 mock 版
-  - `POST /api/data/refresh` 已有 mock 版
+  - `POST /api/data/refresh` 已支持 provider 刷新；BaoStock 会启动后台任务
+  - `GET /api/data/jobs/{run_id}` 已有 ingestion 任务状态查询
 
 ## 2. 数据库与记忆管理 TODO
 
@@ -87,9 +103,19 @@
   - `id`, `user_id`, `name`, `base_currency`, `created_at`
 - [x] `symbols`
   - `symbol`, `market`, `name`, `currency`, `exchange`, `sector`, `industry`
-- [ ] `market_snapshots`
+- [x] `symbol_aliases`
+  - `alias`, `normalized_alias`, `symbol`, `source`, `updated_at`
+- [x] `daily_bars`
+  - `symbol`, `trade_date`, `provider`, `adjust`, `open`, `high`, `low`, `close`, `pre_close`, `change_pct`, `volume`, `amount`, `turnover_rate`, `pe_ttm`, `pb`, `ps_ttm`, `pcf_ncf_ttm`, `is_st`, `trade_status`, `raw_json`, `fetched_at`
+- [x] `financial_metrics_history`
+  - `symbol`, `report_period`, `provider`, `announce_date`, `revenue_growth`, `roe`, `fcf_margin`, `debt_ratio`, `gross_margin`, `net_margin`, `raw_json`, `fetched_at`
+- [x] `filings_history`
+  - `symbol`, `source`, `published_at`, `title`, `url`, `category`, `source_tier`, `raw_json`, `fetched_at`
+- [x] `ingestion_runs`
+  - `provider`, `scope`, `status`, `started_at`, `finished_at`, `requested_symbols`, `updated_symbols`, `counts_json`, `errors_json`
+- [x] `market_snapshots`
   - `id`, `symbol`, `provider`, `as_of`, `fetched_at`, `price`, `volume`, `amount`, `turnover_rate`, `spread_bps`, `raw_json`, `freshness_status`
-- [ ] `financial_snapshots`
+- [x] `financial_snapshots`
   - `id`, `symbol`, `period`, `provider`, `revenue_growth`, `roe`, `fcf_margin`, `debt_ratio`, `pe`, `pb`, `raw_json`
 - [ ] `news_items`
   - `id`, `symbol`, `source`, `source_tier`, `title`, `url`, `published_at`, `summary`, `sentiment_score`, `raw_text_hash`
@@ -153,9 +179,10 @@
 
 ### 行情和财务
 
-- [ ] Tushare Pro：A 股行情、基础资料、财务、交易日历。需要 Tushare token。
-- [ ] AKShare：原型/补充数据，可先不需要 key，但必须做源质量标记。
-- [ ] Alpha Vantage：美股时间序列、基本面、新闻情绪。需要 API key。
+- [x] BaoStock：A 股/ETF/指数代码宇宙、历史日线、PE/PB 回刷。无需 key，非实时。
+- [x] Tushare Pro：A 股行情、基础资料、财务、交易日历方向已接入行情/财务缓存。需要 Tushare token。
+- [x] AKShare：原型/补充数据和数据探索已接入；仍需持续做源质量标记。
+- [x] Alpha Vantage：美股时间序列、基本面、新闻情绪探索已接入。需要 API key。
 - [x] Finnhub：美股行情、公司新闻、基本面基础接入。需要 API key，当前按账户私有保存。
 - [ ] Polygon/Massive：美股更高质量行情、聚合 K 线、WebSocket。生产环境建议申请 paid key。
 
@@ -275,11 +302,18 @@
 
 ### Phase 1：真实数据最小闭环
 
-- [ ] 选择一个市场先做，建议美股。
-- [ ] 接入行情 K 线 + SEC EDGAR + 新闻情绪。
-- [ ] 实现数据新鲜度检测。
-- [ ] 实现共享 `stock_analysis_runs` 和 `stock_memories`。
-- [ ] 单股分析只基于结构化数据和证据生成。
+- [x] A 股先完成历史行情最小闭环：BaoStock/Tushare/AKShare -> SQLite -> 搜索/筛选/分析/回测。
+- [x] 美股完成 Finnhub/Alpha Vantage 探索和缓存起点。
+- [x] 实现基础数据新鲜度检测。
+- [x] 实现共享 `stock_analysis_runs` 和 `stock_memories` 的 mock 起点。
+- [ ] 单股分析完全脱离前端 fallback，只基于后端结构化数据和证据生成。
+- [x] BaoStock 后台回刷已有可恢复脚本入口和失败重试；前端触发仍用 FastAPI 进程内 background task。
+- [ ] 后续把 BaoStock 回刷升级为正式独立 worker/持久队列，支持暂停、恢复、并发控制和任务 UI。
+- [ ] 明确筛选/回测默认复权口径，避免未复权和 `qfq` 同时进入同一结果。
+- [ ] 给 `daily_bars` 增加必要索引，评估 DuckDB/Parquet 存放大批量历史数据。
+- [ ] 为 `debug_warehouse.py` 覆盖率和任务状态添加轻量测试。
+- [ ] 把 BaoStock 季频 `financial_metrics_history` 接入单股分析的财务快照优先级，替代只读 `financial_snapshots` 的旧路径。
+- [ ] 为 `company_reports_history` 增加前端检索/展示入口，和公告原文链接分开展示。
 
 ### Phase 2：账户系统和持仓
 
@@ -291,7 +325,8 @@
 
 ### Phase 3：A/HK/US 数据源
 
-- [ ] A 股：Tushare + CNINFO/交易所公告。
+- [x] A 股：BaoStock + Tushare + CNINFO/交易所公告起点。
+- [ ] A 股：补交易日历、停复牌、分红拆股、复权因子、行业分类和财务报告历史。
 - [ ] 港股：行情供应商 + HKEXnews。
 - [ ] 美股：Polygon/Finnhub/Alpha Vantage + SEC EDGAR。
 - [ ] 做统一 symbol 标准化、币种、交易日历、时区。
@@ -315,6 +350,7 @@
 ## 8. 参考资料
 
 - Tushare Pro 文档：https://tushare.pro/document/2
+- BaoStock 文档：https://www.baostock.com/mainContent?file=home.md
 - Alpha Vantage API 文档：https://www.alphavantage.co/documentation/
 - Finnhub API 文档：https://www.finnhub.io/docs/api
 - SEC EDGAR APIs：https://www.sec.gov/submit-filings/filer-support-resources/how-do-i-guides/understand-edgar-application-programming-interfaces-apis

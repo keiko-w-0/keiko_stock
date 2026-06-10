@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=20260605-source-result-scroll" />
-    <script defer src="app.js?v=20260605-source-result-scroll"></script>
+    <link rel="stylesheet" href="styles.css?v=20260606-baostock-background" />
+    <script defer src="app.js?v=20260606-baostock-background"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -21,14 +21,14 @@
           <div class="brand-mark">K</div>
           <div>
             <h1>聚宝盆</h1>
-            <p>本地研究台 · Mock</p>
+            <p>本地研究台 · 数据 API</p>
           </div>
         </div>
 
         <nav class="nav-list" aria-label="页面区域">
           <a href="#filters" class="nav-item active">筛选股票</a>
           <a href="#health" class="nav-item">数据健康</a>
-          <a href="#source-tests" class="nav-item">数据源测试</a>
+          <a href="#data-exploration" class="nav-item">数据探索</a>
           <a href="#daily" class="nav-item">今日观察</a>
           <a href="#anomalies" class="nav-item">异动分析</a>
           <a href="#backtests" class="nav-item">回测平台</a>
@@ -60,7 +60,7 @@
                 <option value="acct-demo-a">我的主账户</option>
               </select>
             </label>
-            <span id="backendStatus" class="status-chip warn">Mock API 连接中</span>
+            <span id="backendStatus" class="status-chip warn">数据 API 连接中</span>
             <span id="sharedCacheStatus" class="status-chip verified">共享分析 local</span>
             <span class="status-chip fresh">行情 fresh</span>
             <span class="status-chip verified">证据链 86%</span>
@@ -124,11 +124,8 @@
             </div>
           </div>
           <div id="healthGrid" class="health-grid"></div>
-        </section>
-
-        <section id="source-tests" class="section-block">
-          <div class="provider-test-lab">
-            <div class="section-title">
+          <div class="provider-test-lab health-test-lab">
+            <div class="section-title nested-title">
               <div>
                 <p class="eyebrow">数据源诊断</p>
                 <h3>数据源测试</h3>
@@ -155,7 +152,17 @@
                 <div id="sourceTestResult" class="source-test-result" aria-live="polite"></div>
               </div>
             </div>
+          </div>
+        </section>
 
+        <section id="data-exploration" class="section-block">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Data exploration</p>
+              <h3>数据探索</h3>
+            </div>
+          </div>
+          <div class="provider-test-lab">
             <div class="provider-panel-grid">
               <div class="akshare-explorer" id="akshareExplorer">
                 <div class="akshare-head">
@@ -235,11 +242,11 @@
               <p class="eyebrow">Research backtest</p>
               <h3>回测平台</h3>
             </div>
-            <span id="backtestStatus" class="count-pill">Mock 研究回测</span>
+            <span id="backtestStatus" class="count-pill">研究回测</span>
           </div>
           <div class="settings-intro">
             <strong>用数据验证策略假设</strong>
-            <p>当前使用 mock 行情和因子数据跑研究回测，重点看流程、指标和风险提示。正式版本需要接入复权行情、交易日历、停复牌、分红拆股、交易成本和滑点模型。</p>
+            <p>按已接入的行情和因子数据跑研究回测，重点看流程、指标和风险提示。生产使用需要补齐复权行情、交易日历、停复牌、分红拆股、交易成本和滑点模型。</p>
           </div>
           <form id="backtestForm" class="backtest-form">
             <label>
@@ -320,7 +327,7 @@
                   <p class="eyebrow">Daily curve</p>
                   <h4>组合天级收益曲线</h4>
                 </div>
-                <span class="confidence">Mock 日线估算</span>
+                <span class="confidence">日线估算</span>
               </div>
               <canvas id="portfolioCurve" class="portfolio-curve" width="1200" height="260"></canvas>
             </div>
@@ -409,7 +416,7 @@
               <p class="eyebrow">Settings</p>
               <h3>设置</h3>
             </div>
-            <span id="sourceSettingsStatus" class="count-pill">Mock 配置</span>
+            <span id="sourceSettingsStatus" class="count-pill">数据源配置</span>
           </div>
           <div class="settings-intro">
             <strong>数据源配置</strong>
@@ -425,6 +432,7 @@
     <nav class="mobile-tabbar" aria-label="iPhone 底部导航">
       <a href="#filters" class="nav-item tabbar-item active"><span class="tab-icon filter-icon"></span><span>筛选</span></a>
       <a href="#health" class="nav-item tabbar-item"><span class="tab-icon health-icon"></span><span>健康</span></a>
+      <a href="#data-exploration" class="nav-item tabbar-item"><span class="tab-icon source-test-icon"></span><span>探索</span></a>
       <a href="#daily" class="nav-item tabbar-item"><span class="tab-icon daily-icon"></span><span>观察</span></a>
       <a href="#anomalies" class="nav-item tabbar-item"><span class="tab-icon anomaly-icon"></span><span>异动</span></a>
       <a href="#backtests" class="nav-item tabbar-item"><span class="tab-icon backtest-icon"></span><span>回测</span></a>

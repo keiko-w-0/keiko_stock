@@ -15,9 +15,10 @@ from .data_sources import (
     tushare_token,
 )
 from .filings import published_at_sort_value, search_filing_documents
-from .providers import FinnhubClient, FinnhubError, TushareClient, TushareError
+from .providers import BaostockError, FinnhubClient, FinnhubError, TushareClient, TushareError
 from .providers.akshare_provider import query_akshare_capability
 from .providers.alpha_vantage import AlphaVantageError, query_alpha_vantage_capability
+from .providers.baostock_provider import query_baostock_history
 from .providers.tushare import financial_date_window, recent_tushare_date_window
 from .symbol_resolver import resolve_symbol
 
@@ -123,6 +124,18 @@ SOURCE_TEST_OVERRIDES: dict[str, dict[str, Any]] = {
         "market": "A",
         "source_kind": "market",
         "description": "AKShare A 股历史行情小样本测试。",
+        "default_symbol": "600519.SH",
+        "requires_key": False,
+        "implemented": True,
+        "params": market_params(),
+    },
+    "cn-baostock-history": {
+        "id": "source-cn-baostock-history",
+        "label": "BaoStock 历史日线/回刷",
+        "provider": "baostock",
+        "market": "A",
+        "source_kind": "market",
+        "description": "BaoStock A 股历史日 K 回刷测试；非实时，适合历史仓库和回测。",
         "default_symbol": "600519.SH",
         "requires_key": False,
         "implemented": True,
@@ -329,7 +342,7 @@ def fallback_source_test(source: dict[str, Any]) -> dict[str, Any]:
         "provider": source["provider"],
         "market": source["market"],
         "source_kind": source["source_kind"],
-        "description": "本地 mock provider 快照测试。" if implemented else "该数据源暂未接入独立测试调用。",
+        "description": "本地 provider 快照测试。" if implemented else "该数据源暂未接入独立测试调用。",
         "default_symbol": default_symbol,
         "requires_key": bool(source["requires_key"]),
         "implemented": implemented,
@@ -363,7 +376,7 @@ def run_data_source_test(
         result = runner(conn, test, clean_symbol, account_id, clean_params)
     except HTTPException:
         raise
-    except (AlphaVantageError, FinnhubError, TushareError) as exc:
+    except (AlphaVantageError, BaostockError, FinnhubError, TushareError) as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     return {
@@ -386,6 +399,8 @@ def runner_for_test(test_id: str, test: dict[str, Any]) -> Callable[[sqlite3.Con
         return run_filing_test
     if test_id == "source-cn-akshare-market":
         return run_akshare_market_test
+    if test_id == "source-cn-baostock-history":
+        return run_baostock_market_test
     if test_id == "source-cn-tushare-market":
         return run_tushare_market_test
     if test_id == "source-cn-tushare-financial":
@@ -457,6 +472,22 @@ def run_akshare_market_test(
     }
     payload = query_akshare_capability("stock_a_hist", query)
     return normalize_provider_payload(payload)
+
+
+def run_baostock_market_test(
+    conn: sqlite3.Connection,
+    test: dict[str, Any],
+    symbol: str,
+    account_id: str,
+    params: dict[str, Any],
+) -> dict[str, Any]:
+    rows = query_baostock_history(
+        symbol,
+        str_param(params, "start_date", iso_days_ago(120)),
+        str_param(params, "end_date", date.today().isoformat()),
+    )
+    limit = int_param(params, "limit", 20)
+    return table_result(rows[:limit], total=len(rows), raw={"rows": rows, "note": "BaoStock 为历史日线回刷源，非实时行情。"})
 
 
 def run_tushare_market_test(
