@@ -29,7 +29,13 @@ def main() -> int:
             update_ingestion_progress,
             upsert_baostock_financial_metrics,
         )
+        from backend.finnhub_service import (
+            insert_financial_snapshot as insert_finnhub_financial_snapshot,
+            normalize_symbols as normalize_finnhub_symbols,
+            upsert_finnhub_symbol,
+        )
         from backend.providers.baostock_provider import BaostockError, run_baostock_child_with_timeout
+        from backend.tushare_service import insert_financial_snapshot as insert_tushare_financial_snapshot
 
         init_db()
         test_child_timeout(BaostockError, run_baostock_child_with_timeout)
@@ -37,6 +43,13 @@ def main() -> int:
             test_finished_run_guard(conn, start_ingestion, update_ingestion_progress, finish_ingestion)
             test_daily_backfill_plan(conn, BAOSTOCK_MARKET_PROVIDER, baostock_daily_backfill_plan)
             test_quarterly_no_data_retry(conn, upsert_baostock_financial_metrics, baostock_financial_backfill_plan)
+            test_tushare_fcf_margin_standardization(conn, insert_tushare_financial_snapshot)
+            test_finnhub_financial_history_and_hk_symbols(
+                conn,
+                insert_finnhub_financial_snapshot,
+                normalize_finnhub_symbols,
+                upsert_finnhub_symbol,
+            )
     print("warehouse guard tests ok")
     return 0
 
@@ -129,6 +142,102 @@ def test_quarterly_no_data_retry(conn, upsert_baostock_financial_metrics, baosto
     )
     stale = baostock_financial_backfill_plan(conn, ["TEST03.SH"], periods)
     assert stale == {"TEST03.SH": [(2026, 1), (2025, 4), (2025, 3)]}, stale
+
+
+def test_tushare_fcf_margin_standardization(conn, insert_tushare_financial_snapshot) -> None:
+    insert_symbol(conn, "TEST04.SH", "Tushare FCF")
+    insert_tushare_financial_snapshot(
+        conn,
+        "TEST04.SH",
+        {"end_date": "20260331", "ann_date": "20260420", "or_yoy": "11.5", "roe_dt": "18.2", "ocf_to_or": "99"},
+        {"end_date": "20260331", "ann_date": "20260420", "total_revenue": "1000", "n_income_attr_p": "120"},
+        {"end_date": "20260331", "ann_date": "20260420", "n_cashflow_act": "300", "c_pay_acq_const_fiolta": "125"},
+        {"pe_ttm": "20", "pb": "3"},
+    )
+    row = financial_metric_row(conn, "TEST04.SH", "20260331", "tushare-financial")
+    assert round(row["fcf_margin"], 4) == 17.5, row
+    assert row["revenue_growth"] == 11.5, row
+    assert row["roe"] == 18.2, row
+    raw = json.loads(row["raw_json"])
+    assert raw["fcf_margin_source"] == "n_cashflow_act_minus_c_pay_acq_const_fiolta", raw
+    assert raw["free_cash_flow"] == 175.0, raw
+
+    insert_tushare_financial_snapshot(
+        conn,
+        "TEST04.SH",
+        {"end_date": "20260630", "ann_date": "20260720", "or_yoy": "8", "roe_dt": "15", "ocf_to_or": "88"},
+        {"end_date": "20260630", "ann_date": "20260720", "total_revenue": "1000"},
+        None,
+        {},
+    )
+    missing_cashflow = financial_metric_row(conn, "TEST04.SH", "20260630", "tushare-financial")
+    assert missing_cashflow["fcf_margin"] is None, missing_cashflow
+    snapshot = conn.execute(
+        """
+        select fcf_margin
+        from financial_snapshots
+        where symbol = 'TEST04.SH' and period = '20260630' and provider = 'tushare-financial'
+        """
+    ).fetchone()
+    assert snapshot["fcf_margin"] == 0, snapshot
+
+
+def test_finnhub_financial_history_and_hk_symbols(
+    conn,
+    insert_finnhub_financial_snapshot,
+    normalize_finnhub_symbols,
+    upsert_finnhub_symbol,
+) -> None:
+    assert normalize_finnhub_symbols(["00700.HK", "AAPL", "600519.SH"]) == ["0700.HK", "AAPL"]
+    profile = {
+        "name": "Tencent Holdings",
+        "currency": "HKD",
+        "exchange": "HKEX",
+        "finnhubIndustry": "Interactive Media",
+    }
+    upsert_finnhub_symbol(conn, "0700.HK", profile)
+    insert_finnhub_financial_snapshot(
+        conn,
+        "0700.HK",
+        {
+            "metric": {
+                "revenueGrowthTTMYoy": "12.4",
+                "roeTTM": "21.3",
+                "fcfMarginTTM": "18.6",
+                "totalDebt/totalAssetsAnnual": "14.2",
+                "grossMarginTTM": "49.8",
+                "netProfitMarginTTM": "24.1",
+            },
+            "series": {},
+        },
+        profile,
+    )
+    symbol = conn.execute("select market, currency from symbols where symbol = '0700.HK'").fetchone()
+    assert symbol["market"] == "HK", symbol
+    assert symbol["currency"] == "HKD", symbol
+    row = conn.execute(
+        """
+        select *
+        from financial_metrics_history
+        where symbol = '0700.HK' and provider = 'finnhub-financial'
+        """
+    ).fetchone()
+    assert row["revenue_growth"] == 12.4, row
+    assert row["roe"] == 21.3, row
+    assert row["fcf_margin"] == 18.6, row
+
+
+def financial_metric_row(conn, symbol: str, period: str, provider: str):
+    row = conn.execute(
+        """
+        select *
+        from financial_metrics_history
+        where symbol = ? and report_period = ? and provider = ?
+        """,
+        (symbol, period, provider),
+    ).fetchone()
+    assert row is not None, (symbol, period, provider)
+    return row
 
 
 def insert_symbol(conn, symbol: str, name: str) -> None:

@@ -56,6 +56,7 @@ tushare-market   171
 
 get最近的一条数据
 python3 scripts/debug_warehouse.py sql "select * from daily_bars where symbol='600578.SH' order by trade_date DESC limit 1"
+python3 scripts/debug_warehouse.py sql "select * from daily_bars where symbol='000001.SH' order by trade_date DESC limit 1"
 
 
 # financial_metrics_history 季度财务数据
@@ -63,6 +64,7 @@ python3 scripts/debug_warehouse.py sql "select * from financial_metrics_history 
 
 python3 scripts/debug_warehouse.py sql "select provider, count(*) from financial_metrics_history group by provider"
 
+python3 scripts/debug_warehouse.py sql "select * from financial_metrics_history where provider='baostock-financial' limit 10"
 
 # company_reports_history 季度公司报告
 python3 scripts/debug_warehouse.py sql "select * from company_reports_history limit 10"
@@ -74,19 +76,30 @@ python3 scripts/debug_warehouse.py sql "select * from ingestion_runs limit 10"
 
 
 清理任务
-python -c "
+
+python3 -c "
 import sys; from pathlib import Path
 sys.path.insert(0, str(Path('.').resolve()))
 from backend.db import get_db, init_db
 from backend.history import finish_ingestion, parse_json_value
 init_db()
 with get_db() as conn:
-    row = conn.execute('select * from ingestion_runs where id=?', (22,)).fetchone()
+    row = conn.execute('select * from ingestion_runs where id=?', (32,)).fetchone()
     item = dict(row)
-    finish_ingestion(conn, 22, 'interrupted',
+    finish_ingestion(conn, 32, 'interrupted',
         parse_json_value(item['updated_symbols'], []),
         parse_json_value(item['counts_json'], {}),
         parse_json_value(item['errors_json'], []) + [{'scope':'manual','error':'interrupted'}])
     conn.commit()
 "
+
+
+python scripts/run_baostock_financial_backfill.py \
+  --quarters 4 --batch-size 10 --no-universe-refresh --json
+
+KEIKO_BAOSTOCK_FINANCIAL_BATCH_TIMEOUT_SECONDS=8 \
+KEIKO_BAOSTOCK_REPORT_BATCH_TIMEOUT_SECONDS=5 \
+python scripts/run_baostock_financial_backfill.py 600578.SH \
+  --quarters 1 --batch-size 1 --max-batches 1 --no-universe-refresh --json
+
 

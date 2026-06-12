@@ -147,6 +147,8 @@ def finnhub_token(conn: sqlite3.Connection, account_id: str = DEFAULT_ACCOUNT_ID
         credential_for_source(conn, "us-finnhub-market", account_id)
         or credential_for_source(conn, "us-finnhub-financial", account_id)
         or credential_for_source(conn, "us-finnhub-news", account_id)
+        or credential_for_source(conn, "hk-finnhub-market", account_id)
+        or credential_for_source(conn, "hk-finnhub-financial", account_id)
     )
 
 

@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=20260606-baostock-background" />
-    <script defer src="app.js?v=20260606-baostock-background"></script>
+    <link rel="stylesheet" href="styles.css?v=20260612-stock-search-click-1" />
+    <script defer src="app.js?v=20260612-stock-search-click-1"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -76,10 +76,21 @@
               <button class="segment" data-market="HK" type="button">港股</button>
               <button class="segment" data-market="US" type="button">美股</button>
             </div>
-            <label class="search-box">
-              <span>输入股票</span>
-              <input id="symbolInput" type="search" placeholder="例如 华大智造 / 002594.SZ / 0700.HK / NVDA" />
-            </label>
+            <div class="search-box">
+              <label for="symbolInput">输入股票</label>
+              <span class="stock-search-control">
+                <input
+                  id="symbolInput"
+                  type="search"
+                  placeholder="例如 华大智造 / HDZZ / 002594.SZ / 0700.HK / NVDA"
+                  autocomplete="off"
+                  aria-autocomplete="list"
+                  aria-controls="stockSearchList"
+                  aria-expanded="false"
+                />
+                <div id="stockSearchList" class="stock-search-list" role="listbox" hidden></div>
+              </span>
+            </div>
             <button id="runAnalysis" class="primary-action" type="button">分析</button>
           </div>
           <div class="section-title">
@@ -96,8 +107,14 @@
             <div id="filterGroups" class="filter-groups"></div>
             <div class="nl-filter-box">
               <label class="search-box">
+                <span>行业/板块</span>
+                <select id="industryFilter" class="industry-filter">
+                  <option value="">全部行业/板块</option>
+                </select>
+              </label>
+              <label class="search-box">
                 <span>自然语言过滤</span>
-                <input id="filterPrompt" type="search" placeholder="例如：成交额高、价差小、趋势强、证据可信度高" />
+                <input id="filterPrompt" type="search" placeholder="例如：成交额高、行业=火力发电、趋势强、证据可信" />
               </label>
               <div class="filter-actions">
                 <button id="applyPromptFilter" class="primary-action" type="button">应用</button>
@@ -425,7 +442,7 @@
           <div id="dataSourceGrid" class="data-source-grid" aria-live="polite"></div>
         </section>
 
-        <footer class="app-footer">研究辅助，不构成投资建议。真实版本必须接入授权数据源并保留审计记录。</footer>
+        <footer class="app-footer">赚钱赚钱赚钱！暴富暴富暴富！</footer>
       </main>
     </div>
 
@@ -450,33 +467,21 @@
             <p class="eyebrow">Single stock</p>
             <h3 id="detailTitle">个股分析</h3>
           </div>
+          <button id="detailFavorite" class="status-badge drawer-favorite-button" type="button" hidden>
+            <span class="badge-icon bookmark-icon"></span>
+            <span>关注</span>
+          </button>
           <span id="detailAction" class="action-pill drawer-action-pill">等待选择</span>
         </header>
         <div class="analysis-layout drawer-layout">
           <article class="analysis-main">
             <div id="detailBody" class="detail-body"></div>
           </article>
-          <aside class="side-stack">
-            <div class="reflection-panel">
-              <div class="section-title compact">
-                <div>
-                  <p class="eyebrow">Reflection</p>
-                  <h3>3 轮反思</h3>
-                </div>
-              </div>
-              <div id="reflectionList" class="reflection-list"></div>
-            </div>
-
-            <div class="memory-panel">
-              <div class="section-title compact">
-                <div>
-                  <p class="eyebrow">Memory</p>
-                  <h3>分析记忆</h3>
-                </div>
-                <button id="updateMemory" class="ghost-action small" type="button">更新</button>
-              </div>
-              <div id="memoryList" class="memory-list"></div>
-            </div>
+          <aside class="side-stack sentiment-side-stack">
+            <div id="sentimentAside" class="sentiment-aside"></div>
+            <div id="reflectionList" class="reflection-list" hidden></div>
+            <div id="memoryList" class="memory-list" hidden></div>
+            <button id="updateMemory" class="ghost-action small" type="button" hidden>更新</button>
           </aside>
         </div>
       </section>

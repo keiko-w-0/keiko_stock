@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from . import seed_data
+from .pinyin import pinyin_initials
 from .providers import MockProviderSet
 
 
@@ -21,8 +22,9 @@ def now_iso() -> str:
 
 
 def get_db() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.row_factory = sqlite3.Row
+    conn.execute("pragma busy_timeout = 30000")
     return conn
 
 
@@ -30,9 +32,53 @@ def row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
     return dict(row)
 
 
+def upsert_financial_metrics_history(conn: sqlite3.Connection, payload: dict[str, Any]) -> None:
+    columns = [
+        "symbol",
+        "report_period",
+        "provider",
+        "announce_date",
+        "revenue_growth",
+        "roe",
+        "fcf_margin",
+        "debt_ratio",
+        "gross_margin",
+        "net_margin",
+        "net_profit",
+        "raw_json",
+        "fetched_at",
+    ]
+    row = {column: payload.get(column) for column in columns}
+    row["announce_date"] = row.get("announce_date") or ""
+    row["raw_json"] = financial_raw_json_text(row.get("raw_json"))
+    row["fetched_at"] = row.get("fetched_at") or now_iso()
+    placeholders = ", ".join(f":{column}" for column in columns)
+    updates = ", ".join(
+        f"{column} = excluded.{column}"
+        for column in columns
+        if column not in {"symbol", "report_period", "provider"}
+    )
+    conn.execute(
+        f"""
+        insert into financial_metrics_history ({", ".join(columns)})
+        values ({placeholders})
+        on conflict(symbol, report_period, provider) do update set
+          {updates}
+        """,
+        row,
+    )
+
+
+def financial_raw_json_text(value: Any) -> str:
+    if isinstance(value, str):
+        return value or "{}"
+    return json.dumps(value or {}, ensure_ascii=False, default=str)
+
+
 def init_db() -> None:
     DATA_DIR.mkdir(exist_ok=True)
     with get_db() as conn:
+        conn.execute("pragma journal_mode = wal")
         conn.executescript(
             """
             create table if not exists users (
@@ -174,6 +220,18 @@ def init_db() -> None:
               unique (source, symbol, url)
             );
 
+            create table if not exists filing_refresh_state (
+              symbol text not null references symbols(symbol),
+              source text not null,
+              start_date text not null,
+              end_date text not null,
+              status text not null,
+              document_count integer not null default 0,
+              last_error text not null default '',
+              fetched_at text not null,
+              primary key (symbol, source)
+            );
+
             create table if not exists ingestion_runs (
               id integer primary key autoincrement,
               provider text not null,
@@ -227,6 +285,64 @@ def init_db() -> None:
               summary text not null,
               sentiment_score real not null,
               raw_text_hash text not null
+            );
+
+            create table if not exists community_posts (
+              id integer primary key autoincrement,
+              symbol text not null references symbols(symbol),
+              source text not null,
+              source_post_id text not null,
+              title text not null default '',
+              content text not null default '',
+              author text not null default '',
+              url text not null default '',
+              published_at text not null default '',
+              metrics_json text not null default '{}',
+              raw_json text not null default '{}',
+              fetched_at text not null,
+              unique (source, symbol, source_post_id)
+            );
+
+            create table if not exists sentiment_evidence (
+              id integer primary key autoincrement,
+              symbol text not null references symbols(symbol),
+              sentiment_type text not null,
+              source_table text not null,
+              source_id text not null,
+              source text not null default '',
+              event_date text not null default '',
+              title text not null default '',
+              url text not null default '',
+              category text not null default '',
+              sentiment_score real not null,
+              sentiment_label text not null,
+              confidence real not null,
+              impact_horizon text not null default '',
+              keywords_json text not null default '[]',
+              evidence_json text not null default '{}',
+              model_provider text not null default 'local',
+              model_name text not null default 'rule-v1',
+              method_version text not null,
+              analyzed_at text not null,
+              unique (sentiment_type, source_table, source_id, method_version)
+            );
+
+            create table if not exists sentiment_snapshots (
+              id integer primary key autoincrement,
+              symbol text not null references symbols(symbol),
+              as_of text not null,
+              window_days integer not null,
+              filing_news_score real,
+              community_score real,
+              market_score real,
+              composite_score real not null,
+              sentiment_label text not null,
+              confidence real not null,
+              source_counts_json text not null default '{}',
+              raw_json text not null default '{}',
+              method_version text not null,
+              generated_at text not null,
+              unique (symbol, as_of, window_days, method_version)
             );
 
             create table if not exists claims (
@@ -390,8 +506,20 @@ def init_db() -> None:
             create index if not exists idx_filings_symbol_published
             on filings_history(symbol, published_at desc);
 
+            create index if not exists idx_filing_refresh_state_fetched
+            on filing_refresh_state(source, fetched_at);
+
             create index if not exists idx_company_reports_symbol_period
             on company_reports_history(symbol, report_period desc, published_at desc);
+
+            create index if not exists idx_community_posts_symbol_published
+            on community_posts(symbol, published_at desc);
+
+            create index if not exists idx_sentiment_evidence_symbol_type_date
+            on sentiment_evidence(symbol, sentiment_type, event_date desc);
+
+            create index if not exists idx_sentiment_snapshots_symbol_generated
+            on sentiment_snapshots(symbol, generated_at desc);
             """
         )
         seed_if_empty(conn)
@@ -402,6 +530,7 @@ def init_db() -> None:
         migrate_account_scoped_data_sources(conn)
         migrate_daily_bars_extra_metrics(conn)
         migrate_financial_metrics_history_columns(conn)
+        migrate_tushare_legacy_fcf_margin(conn)
         seed_shared_snapshots_if_empty(conn)
         seed_data_sources(conn)
         sync_symbol_aliases(conn)
@@ -539,7 +668,7 @@ def sync_symbol_aliases(conn: sqlite3.Connection) -> None:
         symbol = row["symbol"]
         code = symbol.split(".")[0]
         name = row["name"]
-        for alias in {symbol, symbol.upper(), code, name}:
+        for alias in {symbol, symbol.upper(), code, name, pinyin_initials(name)}:
             normalized = normalize_alias(alias)
             if normalized:
                 aliases.append(
@@ -627,6 +756,10 @@ def backfill_warehouse_from_snapshots(conn: sqlite3.Connection) -> None:
         )
 
     for row in conn.execute("select * from financial_snapshots"):
+        fcf_margin = row["fcf_margin"]
+        raw_json = str(row["raw_json"] or "")
+        if row["provider"] == "tushare-financial":
+            fcf_margin = tushare_snapshot_fcf_margin_for_history(raw_json, fcf_margin)
         conn.execute(
             """
             insert into financial_metrics_history (
@@ -648,7 +781,7 @@ def backfill_warehouse_from_snapshots(conn: sqlite3.Connection) -> None:
                 row["provider"],
                 row["revenue_growth"],
                 row["roe"],
-                row["fcf_margin"],
+                fcf_margin,
                 row["debt_ratio"],
                 row["raw_json"],
                 fetched_at,
@@ -672,6 +805,18 @@ def float_from_raw(raw: dict[str, Any], path: list[str], default: Any) -> Any:
             return default
         value = value.get(key)
     return default if value in (None, "") else value
+
+
+def tushare_snapshot_fcf_margin_for_history(raw_json: str, fallback: Any) -> Any:
+    try:
+        raw = json.loads(raw_json or "{}")
+    except json.JSONDecodeError:
+        raw = {}
+    if isinstance(raw, dict) and raw.get("fcf_margin_source"):
+        return raw.get("fcf_margin")
+    if "fcf_margin_source" not in raw_json and "cashflow" not in raw_json:
+        return None
+    return fallback
 
 
 def sync_seed_analysis_runs(conn: sqlite3.Connection) -> None:
@@ -939,6 +1084,33 @@ def migrate_financial_metrics_history_columns(conn: sqlite3.Connection) -> None:
         """
         create index if not exists idx_company_reports_symbol_period
         on company_reports_history(symbol, report_period desc, published_at desc)
+        """
+    )
+
+
+def migrate_tushare_legacy_fcf_margin(conn: sqlite3.Connection) -> None:
+    conn.execute(
+        """
+        update financial_metrics_history
+        set fcf_margin = null
+        where provider = 'tushare-financial'
+          and (
+            (instr(coalesce(raw_json, ''), 'fcf_margin_source') = 0 and instr(coalesce(raw_json, ''), 'cashflow') = 0)
+            or instr(coalesce(raw_json, ''), 'missing_cashflow_or_revenue') > 0
+            or instr(coalesce(raw_json, ''), '"fcf_margin": null') > 0
+          )
+        """
+    )
+    conn.execute(
+        """
+        update financial_snapshots
+        set fcf_margin = 0
+        where provider = 'tushare-financial'
+          and (
+            (instr(coalesce(raw_json, ''), 'fcf_margin_source') = 0 and instr(coalesce(raw_json, ''), 'cashflow') = 0)
+            or instr(coalesce(raw_json, ''), 'missing_cashflow_or_revenue') > 0
+            or instr(coalesce(raw_json, ''), '"fcf_margin": null') > 0
+          )
         """
     )
 

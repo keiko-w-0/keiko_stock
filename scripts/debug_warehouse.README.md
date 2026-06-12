@@ -146,6 +146,8 @@ python3 scripts/run_baostock_financial_backfill.py 600519.SH --quarters 1 --batc
 ```bash
 launchctl print gui/501/com.keiko.baostock-nightly
 launchctl print gui/501/com.keiko.baostock-financial-nightly
+launchctl print gui/501/com.keiko.a-share-filings-nightly
+launchctl print gui/501/com.keiko.ingestion-watchdog
 ```
 
 已安装的 plist 位于 `/Users/wangwenhui/Library/LaunchAgents/com.keiko.baostock-nightly.plist`，项目内源文件是 `scripts/com.keiko.baostock-nightly.plist`。任务每天 00:00 运行 `scripts/run_baostock_backfill.py --days 260 --batch-size 30 --json`，日志写入：
@@ -153,10 +155,20 @@ launchctl print gui/501/com.keiko.baostock-financial-nightly
 - `logs/baostock-nightly.log`
 - `logs/baostock-nightly.err.log`
 
-季度任务 plist 位于 `/Users/wangwenhui/Library/LaunchAgents/com.keiko.baostock-financial-nightly.plist`，项目内源文件是 `scripts/com.keiko.baostock-financial-nightly.plist`。任务每天 02:30 运行 `scripts/run_baostock_financial_backfill.py --quarters 12 --batch-size 10 --json`，日志写入：
+季度任务 plist 位于 `/Users/wangwenhui/Library/LaunchAgents/com.keiko.baostock-financial-nightly.plist`，项目内源文件是 `scripts/com.keiko.baostock-financial-nightly.plist`。任务每天 02:30 运行 `scripts/run_baostock_financial_backfill.py --quarters 4 --batch-size 3 --json`，日志写入：
 
 - `logs/baostock-financial-nightly.log`
 - `logs/baostock-financial-nightly.err.log`
+
+公告任务 plist 位于 `/Users/wangwenhui/Library/LaunchAgents/com.keiko.a-share-filings-nightly.plist`，项目内源文件是 `scripts/com.keiko.a-share-filings-nightly.plist`。任务每天 20:30 运行 `scripts/run_a_share_filings_backfill.py --source all --days 180 --batch-size 20 --json`，日志写入：
+
+- `logs/a-share-filings-nightly.log`
+- `logs/a-share-filings-nightly.err.log`
+
+watchdog plist 位于 `/Users/wangwenhui/Library/LaunchAgents/com.keiko.ingestion-watchdog.plist`，项目内源文件是 `scripts/com.keiko.ingestion-watchdog.plist`。任务每 15 分钟检查一次 stale/incomplete 回刷，并且每轮最多启动一个续跑任务，日志写入：
+
+- `logs/ingestion-watchdog.log`
+- `logs/ingestion-watchdog.err.log`
 
 任务进度写在 `ingestion_runs.counts_json`：
 

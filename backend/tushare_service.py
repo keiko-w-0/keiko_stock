@@ -8,7 +8,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .data_sources import DEFAULT_ACCOUNT_ID, active_source_ids, tushare_token
-from .db import now_iso, row_to_dict
+from .db import now_iso, row_to_dict, upsert_financial_metrics_history
 from .providers import TushareClient, TushareError
 from .providers.tushare import financial_date_window, latest_row, recent_tushare_date_window
 
@@ -23,7 +23,7 @@ def tushare_status(conn: sqlite3.Connection, account_id: str = DEFAULT_ACCOUNT_I
     source_ids = active_source_ids(conn, account_id)
     token_configured = bool(tushare_token(conn, account_id))
     latest_market = latest_snapshot_meta(conn, "market_snapshots", TUSHARE_PROVIDER_MARKET)
-    latest_financial = latest_snapshot_meta(conn, "financial_snapshots", TUSHARE_PROVIDER_FINANCIAL)
+    latest_financial = latest_financial_metrics_meta(conn, TUSHARE_PROVIDER_FINANCIAL)
     return {
         "provider": "tushare",
         "account_id": account_id,
@@ -97,10 +97,16 @@ def refresh_tushare_data(
                 try:
                     indicator_rows = client.fina_indicator(symbol, financial_start, financial_end)
                     income_rows = client.income(symbol, financial_start, financial_end)
+                    cashflow_rows: list[dict[str, Any]] = []
+                    try:
+                        cashflow_rows = client.cashflow(symbol, financial_start, financial_end)
+                    except TushareError as exc:
+                        errors.append({"symbol": symbol, "error": f"Tushare cashflow 暂不可用：{exc}"})
                     indicator = latest_row(indicator_rows, "end_date")
                     income = latest_row(income_rows, "end_date")
-                    if indicator or income:
-                        insert_financial_snapshot(conn, symbol, indicator, income, daily_basic)
+                    cashflow = latest_row(cashflow_rows, "end_date")
+                    if indicator or income or cashflow:
+                        insert_financial_snapshot(conn, symbol, indicator, income, cashflow, daily_basic)
                         financial_count += 1
                     else:
                         errors.append({"symbol": symbol, "error": "Tushare 财务接口无返回数据"})
@@ -121,6 +127,7 @@ def refresh_tushare_data(
         "counts": {
             "market_snapshots": market_count,
             "financial_snapshots": financial_count,
+            "financial_metrics_history": financial_count,
             "errors": len(errors),
         },
         "errors": errors,
@@ -238,11 +245,23 @@ def insert_financial_snapshot(
     symbol: str,
     indicator: dict[str, Any] | None,
     income: dict[str, Any] | None,
+    cashflow: dict[str, Any] | None,
     daily_basic: dict[str, Any] | None,
 ) -> None:
     indicator = indicator or {}
     income = income or {}
-    period = str(indicator.get("end_date") or income.get("end_date") or "")
+    cashflow = cashflow or {}
+    period = str(indicator.get("end_date") or income.get("end_date") or cashflow.get("end_date") or "")
+    fcf = tushare_fcf_margin(income, cashflow)
+    raw_json = {
+        "fina_indicator": indicator,
+        "income": income,
+        "cashflow": cashflow,
+        "daily_basic": daily_basic or {},
+        "fcf_margin_source": fcf["source"],
+        "free_cash_flow": fcf["free_cash_flow"],
+        "fcf_margin": fcf["margin"],
+    }
     conn.execute(
         """
         insert into financial_snapshots (
@@ -254,14 +273,31 @@ def insert_financial_snapshot(
             symbol,
             period,
             TUSHARE_PROVIDER_FINANCIAL,
-            first_number(indicator, ["or_yoy", "tr_yoy", "netprofit_yoy"], 0),
-            first_number(indicator, ["roe_dt", "roe_waa", "roe", "q_roe"], 0),
-            first_number(indicator, ["ocf_to_or", "netprofit_margin", "grossprofit_margin"], 0),
-            first_number(indicator, ["debt_to_assets"], 0),
+            number_or_zero(optional_number(indicator, ["or_yoy", "tr_yoy"])),
+            number_or_zero(optional_number(indicator, ["roe_dt", "roe_waa", "roe", "q_roe"])),
+            number_or_zero(fcf["margin"]),
+            number_or_zero(optional_number(indicator, ["debt_to_assets"])),
             first_number(daily_basic, ["pe_ttm", "pe"], 0),
             first_number(daily_basic, ["pb"], 0),
-            json.dumps({"fina_indicator": indicator, "income": income, "daily_basic": daily_basic or {}}, ensure_ascii=False),
+            json.dumps(raw_json, ensure_ascii=False),
         ),
+    )
+    upsert_financial_metrics_history(
+        conn,
+        {
+            "symbol": symbol,
+            "report_period": period,
+            "provider": TUSHARE_PROVIDER_FINANCIAL,
+            "announce_date": str(indicator.get("ann_date") or income.get("ann_date") or cashflow.get("ann_date") or ""),
+            "revenue_growth": optional_number(indicator, ["or_yoy", "tr_yoy"]),
+            "roe": optional_number(indicator, ["roe_dt", "roe_waa", "roe", "q_roe"]),
+            "fcf_margin": fcf["margin"],
+            "debt_ratio": optional_number(indicator, ["debt_to_assets"]),
+            "gross_margin": optional_number(indicator, ["grossprofit_margin"]),
+            "net_margin": optional_number(indicator, ["netprofit_margin"]),
+            "net_profit": optional_number(income, ["n_income_attr_p", "n_income"]),
+            "raw_json": raw_json,
+        },
     )
 
 
@@ -283,6 +319,20 @@ def latest_snapshot_meta(conn: sqlite3.Connection, table: str, provider: str) ->
         f"""
         select provider, max(fetched_at) as fetched_at, count(*) as count
         from {table}
+        where provider = ?
+        """,
+        (provider,),
+    ).fetchone()
+    if not row or not row["count"]:
+        return None
+    return row_to_dict(row)
+
+
+def latest_financial_metrics_meta(conn: sqlite3.Connection, provider: str) -> dict[str, Any] | None:
+    row = conn.execute(
+        """
+        select provider, max(report_period) as period, count(*) as count
+        from financial_metrics_history
         where provider = ?
         """,
         (provider,),
@@ -321,6 +371,42 @@ def exchange_from_symbol(symbol: str) -> str:
     if symbol.endswith(".BJ"):
         return "BSE"
     return "A股"
+
+
+def tushare_fcf_margin(income: dict[str, Any], cashflow: dict[str, Any]) -> dict[str, Any]:
+    revenue = optional_number(income, ["total_revenue", "revenue"])
+    operating_cash_flow = optional_number(cashflow, ["n_cashflow_act"])
+    capex = optional_number(cashflow, ["c_pay_acq_const_fiolta"])
+    reported_free_cash_flow = optional_number(cashflow, ["free_cashflow"])
+
+    source = "missing_cashflow_or_revenue"
+    free_cash_flow: float | None = None
+    if operating_cash_flow is not None and capex is not None:
+        free_cash_flow = operating_cash_flow - capex
+        source = "n_cashflow_act_minus_c_pay_acq_const_fiolta"
+    elif reported_free_cash_flow is not None:
+        free_cash_flow = reported_free_cash_flow
+        source = "free_cashflow"
+
+    margin = None
+    if free_cash_flow is not None and revenue not in (None, 0):
+        margin = free_cash_flow / revenue * 100
+    return {"margin": margin, "free_cash_flow": free_cash_flow, "source": source}
+
+
+def optional_number(row: dict[str, Any] | None, keys: list[str]) -> float | None:
+    if not row:
+        return None
+    for key in keys:
+        value = row.get(key)
+        if value not in (None, ""):
+            parsed = float_value(value, 0)
+            return parsed
+    return None
+
+
+def number_or_zero(value: float | None) -> float:
+    return 0 if value is None else value
 
 
 def first_number(row: dict[str, Any] | None, keys: list[str], default: float | None = 0) -> float:

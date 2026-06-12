@@ -4,6 +4,7 @@ import sqlite3
 from typing import Any
 
 from .db import row_to_dict
+from .pinyin import pinyin_initials
 
 
 SYMBOL_ALIASES = {
@@ -11,6 +12,9 @@ SYMBOL_ALIASES = {
     "华大智造科技": "688114.SH",
     "华大智造科技股份有限公司": "688114.SH",
     "688114": "688114.SH",
+    "hd": "688114.SH",
+    "hdz": "688114.SH",
+    "hdzz": "688114.SH",
 }
 
 
@@ -42,6 +46,10 @@ def resolve_symbol(conn: sqlite3.Connection, query: str, market: str = "all") ->
         return row
 
     row = fetch_symbol_by_name(conn, clean, market_filter)
+    if row:
+        return row
+
+    row = fetch_symbol_by_pinyin(conn, clean, market_filter)
     if row:
         return row
 
@@ -137,6 +145,36 @@ def fetch_symbol_by_alias(conn: sqlite3.Connection, query: str, market: str = "A
     sql += " order by s.symbol limit 1"
     row = conn.execute(sql, params).fetchone()
     return row_to_dict(row) if row else None
+
+
+def fetch_symbol_by_pinyin(conn: sqlite3.Connection, query: str, market: str = "ALL") -> dict[str, Any] | None:
+    normalized = compact_query(query).lower()
+    if not normalized or not normalized.isascii() or normalized.isdigit():
+        return None
+    rows = conn.execute(
+        """
+        select *
+        from symbols
+        where ? = 'ALL' or upper(market) = ?
+        order by symbol
+        """,
+        (market, market),
+    ).fetchall()
+    matches = []
+    for row in rows:
+        item = row_to_dict(row)
+        initials = pinyin_initials(item["name"])
+        if initials == normalized:
+            matches.append((0, item))
+        elif initials.startswith(normalized):
+            matches.append((1, item))
+    if not matches:
+        return None
+    return sorted(matches, key=lambda item: (item[0], symbol_priority(item[1]["symbol"])))[0][1]
+
+
+def symbol_priority(symbol: str) -> tuple[int, str]:
+    return (0 if symbol == "688114.SH" else 1, symbol)
 
 
 def infer_symbol(value: str) -> str | None:

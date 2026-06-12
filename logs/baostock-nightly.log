@@ -4509,3 +4509,644 @@ logout success!
     "latest_daily_bar": "2026-06-10"
   }
 }
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+timed out
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 73,
+  "provider": "baostock",
+  "scope": "a-share-history-background:universe",
+  "status": "partial",
+  "started_at": "2026-06-12T18:00:07",
+  "finished_at": "2026-06-12T18:13:10",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 4,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "159036.SZ",
+    "159037.SZ",
+    "159046.SZ",
+    "159052.SZ"
+  ],
+  "counts": {
+    "symbols": 7262,
+    "daily_bars": 8,
+    "market_snapshots": 4,
+    "batches": 4,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "remaining_candidates": 7592,
+    "last_progress_at": "2026-06-12T18:13:10",
+    "last_batch_symbol_count": 30,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920033.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920035.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920036.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920033.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920035.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920036.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920000.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920001.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920002.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920003.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920005.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920006.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920007.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920008.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920009.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920010.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920011.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920012.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920014.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920015.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920016.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920017.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920018.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920019.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920020.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920021.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920022.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920023.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920026.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920027.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920028.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920029.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920030.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920033.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920035.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    },
+    {
+      "symbol": "920036.BJ",
+      "error": "BaoStock returned no daily rows for requested ranges",
+      "ranges": "2025-09-25..2026-06-12"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1101034,
+    "financial_metrics": 22323,
+    "filings": 7676,
+    "company_reports": 255,
+    "latest_daily_bar": "2026-06-12"
+  }
+}

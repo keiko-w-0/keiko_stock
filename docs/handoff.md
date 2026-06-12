@@ -33,8 +33,10 @@
 - BaoStock 季频财务/公司报告批次增加子进程超时保护；SDK 卡住时会终止子进程并让 run 收口，不会无限保持 `running`。
 - BaoStock 后台/定时入口已新增：`scripts/run_baostock_backfill.py --days 260 --batch-size 30`，不依赖浏览器或前端。
 - BaoStock 季频财务后台入口已新增：`scripts/run_baostock_financial_backfill.py --quarters 12 --batch-size 10`。接口入口是 `/api/data/refresh` body `{"provider":"baostock-financial","scope":"quarterly-financials"}`。
+- A 股公告缺口后台入口已新增：`scripts/run_a_share_filings_backfill.py --source all --days 180 --batch-size 20`。接口入口是 `/api/data/refresh` body `{"provider":"cninfo_sse_szse","scope":"cninfo_sse_szse","refresh_universe":true}`，默认覆盖 CNINFO + 对应交易所公告。
 - 本机已安装 LaunchAgent `com.keiko.baostock-nightly`，每天 00:00 运行 BaoStock 日线回刷脚本；项目内源文件是 `scripts/com.keiko.baostock-nightly.plist`，日志在 `logs/baostock-nightly.log`。
 - 本机已安装 LaunchAgent `com.keiko.baostock-financial-nightly`，每天 02:30 运行 BaoStock 季频财务/公司报告回刷脚本；项目内源文件是 `scripts/com.keiko.baostock-financial-nightly.plist`，日志在 `logs/baostock-financial-nightly.log`。
+- 本机已安装 LaunchAgent `com.keiko.a-share-filings-nightly`，每天 20:30 运行 A 股公告缺口回刷脚本；项目内源文件是 `scripts/com.keiko.a-share-filings-nightly.plist`，日志在 `logs/a-share-filings-nightly.log`。
 - 历史数据仓库诊断脚本已新增：`scripts/debug_warehouse.py`，单独说明见 `scripts/debug_warehouse.README.md`。
 - 筛选股票已改为数据库筛选：未勾选时不再默认启用过滤；自然语言 `PE<10` 等作为独立 SQL 条件，不会自动勾选“PE分位 <= 70”。
 - 回测平台已优先使用 `daily_bars`；数据库数据不足时才退回研究 mock。
@@ -97,8 +99,10 @@ http://<Mac 局域网 IP>:8101
 - `backend/providers/baostock_provider.py`：BaoStock 适配器。
 - `scripts/run_baostock_backfill.py`：BaoStock 后台/定时回刷脚本入口，复用 `ingestion_runs` 状态。
 - `scripts/run_baostock_financial_backfill.py`：BaoStock 季频财务指标和公司报告后台回刷脚本入口。
+- `scripts/run_a_share_filings_backfill.py`：A 股公告/披露缺口后台回刷脚本入口，复用 `ingestion_runs` 和 `filing_refresh_state`。
 - `scripts/com.keiko.baostock-nightly.plist`：macOS LaunchAgent 源配置，每天 00:00 执行 BaoStock 日线回刷。
 - `scripts/com.keiko.baostock-financial-nightly.plist`：macOS LaunchAgent 源配置，每天 02:30 执行 BaoStock 季频财务/公司报告回刷。
+- `scripts/com.keiko.a-share-filings-nightly.plist`：macOS LaunchAgent 源配置，每天 20:30 执行 A 股公告缺口回刷。
 - `scripts/debug_warehouse.py`：只读诊断 SQLite 历史仓库和后台 ingestion 任务。
 - `scripts/debug_warehouse.README.md`：debug 脚本和 BaoStock 后台任务说明。
 - `docs/warehouse-schema.md`：历史数据仓库字段字典和 provider 原始字段映射。

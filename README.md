@@ -73,6 +73,12 @@ python3 scripts/run_baostock_backfill.py --days 260 --batch-size 30
 python3 scripts/run_baostock_financial_backfill.py --quarters 12 --batch-size 10
 ```
 
+公告/披露缺口回刷：
+
+```bash
+python3 scripts/run_a_share_filings_backfill.py --source all --days 180 --batch-size 20
+```
+
 或走接口：
 
 ```bash
@@ -88,7 +94,9 @@ BaoStock 季频财务和公司报告批次通过子进程执行；如果 SDK 网
 本机已安装 macOS LaunchAgent：
 
 - `com.keiko.baostock-nightly`：每天 00:00 运行日线回刷，日志位于 `logs/baostock-nightly.log` 和 `logs/baostock-nightly.err.log`。项目内配置文件是 `scripts/com.keiko.baostock-nightly.plist`。
-- `com.keiko.baostock-financial-nightly`：每天 02:30 运行季频财务/公司报告回刷，日志位于 `logs/baostock-financial-nightly.log` 和 `logs/baostock-financial-nightly.err.log`。项目内配置文件是 `scripts/com.keiko.baostock-financial-nightly.plist`。
+- `com.keiko.baostock-financial-nightly`：每天 02:30 运行季频财务/公司报告回刷，批量为 3，日志位于 `logs/baostock-financial-nightly.log` 和 `logs/baostock-financial-nightly.err.log`。项目内配置文件是 `scripts/com.keiko.baostock-financial-nightly.plist`。
+- `com.keiko.a-share-filings-nightly`：每天 20:30 运行 A 股公告缺口回刷，默认拉 CNINFO 加上对应交易所公告，日志位于 `logs/a-share-filings-nightly.log` 和 `logs/a-share-filings-nightly.err.log`。项目内配置文件是 `scripts/com.keiko.a-share-filings-nightly.plist`。
+- `com.keiko.ingestion-watchdog`：每 15 分钟运行 `scripts/run_ingestion_watchdog.py --json`，发现 stale running、孤儿旧进程、或最新任务 `partial/failed/interrupted` 且仍有剩余候选时，会先终止旧脚本，再小批量启动一个续跑任务。日志位于 `logs/ingestion-watchdog.log` 和 `logs/ingestion-watchdog.err.log`。
 
 本地仓库诊断脚本：
 
@@ -146,6 +154,22 @@ python3 -B -m uvicorn backend.app:app --host 0.0.0.0 --port 8101
 ```
 
 然后在 iPhone Safari 访问 `http://<你的 Mac 局域网 IP>:8101`。iPhone 不能用 `localhost` 访问 Mac，因为手机上的 `localhost` 指向手机自己。
+
+如果要临时让非局域网用户访问，可以用 ngrok 把本机 `8100` 端口映射成公网 HTTPS 地址。当前本机已下载 Apple Silicon 版 ngrok 到项目内 `tools/ngrok`，authtoken 保存在用户目录的 ngrok 配置中，不写入源码。
+
+先确认本地 FastAPI 服务已启动：
+
+```bash
+python3 -B -m uvicorn backend.app:app --host 127.0.0.1 --port 8100
+```
+
+另开一个终端启动公网隧道：
+
+```bash
+tools/ngrok http 8100 --log=stdout
+```
+
+终端输出里的 `https://...ngrok-free.dev` 就是可发给别人访问的临时公网地址。这个方式依赖当前 Mac、uvicorn 和 ngrok 持续运行；机器睡眠、终端关闭或隧道断开后地址会失效。当前应用没有登录保护，只适合发给信任的人临时预览，不适合作为正式公开网站。
 
 也可以直接在浏览器打开静态文件，前端会自动退回到内置 mock 数据：
 
@@ -231,6 +255,7 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 - `scripts/fetch_filings.py`：命令行查询官方公告/披露数据。
 - `scripts/run_baostock_backfill.py`：后台/定时 BaoStock 回刷入口，复用 `ingestion_runs` 和 SQLite 历史仓库，可断点续跑。
 - `scripts/run_baostock_financial_backfill.py`：BaoStock 季频财务指标和公司报告后台回刷入口。
+- `scripts/run_a_share_filings_backfill.py`：A 股公告/披露缺口后台回刷入口，覆盖 CNINFO、SSE、SZSE 和自动源。
 - `scripts/debug_warehouse.py`：只读调试 SQLite 历史数据仓库，查看 provider 覆盖、BaoStock 缺口、PE/PB 和 ingestion 任务。
 - `scripts/debug_warehouse.README.md`：debug 脚本和 BaoStock 后台任务使用说明。
 - `requirements.txt`：后端运行依赖。

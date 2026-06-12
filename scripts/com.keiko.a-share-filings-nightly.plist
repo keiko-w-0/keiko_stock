@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.keiko.a-share-filings-nightly</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/wangwenhui/miniconda3/bin/python3</string>
+    <string>scripts/run_a_share_filings_backfill.py</string>
+    <string>--source</string>
+    <string>all</string>
+    <string>--days</string>
+    <string>180</string>
+    <string>--batch-size</string>
+    <string>20</string>
+    <string>--json</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock</string>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>20</integer>
+    <key>Minute</key>
+    <integer>30</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log</string>
+
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

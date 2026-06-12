@@ -101,6 +101,16 @@ class TushareClient:
             fields="ts_code,ann_date,f_ann_date,end_date,total_revenue,revenue,n_income,n_income_attr_p,basic_eps",
         ).rows
 
+    def cashflow(self, ts_code: str, start_date: str | None = None, end_date: str | None = None) -> list[dict[str, Any]]:
+        return self.query(
+            "cashflow",
+            params={"ts_code": ts_code, **date_window_params(start_date, end_date)},
+            fields=(
+                "ts_code,ann_date,f_ann_date,end_date,n_cashflow_act,"
+                "c_pay_acq_const_fiolta,free_cashflow"
+            ),
+        ).rows
+
     def fina_indicator(
         self,
         ts_code: str,

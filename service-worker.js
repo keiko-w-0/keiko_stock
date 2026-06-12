@@ -1,4 +1,4 @@
-const CACHE_NAME = "jubao-pen-baostock-background-v1";
+const CACHE_NAME = "jubao-pen-stock-search-click-v1";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -29,13 +29,20 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/api/")) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        if (event.request.method !== "GET" || !response.ok) return response;
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-        return response;
+    fetch(event.request).then((response) => {
+      if (event.request.method !== "GET" || !response.ok) return response;
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+      return response;
+    }).catch(() => {
+      return caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (event.request.method !== "GET" || !response.ok) return response;
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          return response;
+        });
       });
     })
   );

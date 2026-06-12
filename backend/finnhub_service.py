@@ -9,17 +9,20 @@ from typing import Any
 from fastapi import HTTPException
 
 from .data_sources import DEFAULT_ACCOUNT_ID, active_source_ids, finnhub_token
-from .db import now_iso, row_to_dict
+from .db import now_iso, row_to_dict, upsert_financial_metrics_history
 from .providers import FinnhubClient, FinnhubError
 
 
 FINNHUB_MARKET_SOURCE_ID = "us-finnhub-market"
 FINNHUB_FINANCIAL_SOURCE_ID = "us-finnhub-financial"
 FINNHUB_NEWS_SOURCE_ID = "us-finnhub-news"
+FINNHUB_HK_MARKET_SOURCE_ID = "hk-finnhub-market"
+FINNHUB_HK_FINANCIAL_SOURCE_ID = "hk-finnhub-financial"
 FINNHUB_PROVIDER_MARKET = "finnhub-market"
 FINNHUB_PROVIDER_FINANCIAL = "finnhub-financial"
 FINNHUB_PROVIDER_NEWS = "finnhub-news"
 USD_TO_CNY = 7.2
+HKD_TO_CNY = 0.92
 
 
 def finnhub_status(conn: sqlite3.Connection, account_id: str = DEFAULT_ACCOUNT_ID) -> dict[str, Any]:
@@ -29,11 +32,18 @@ def finnhub_status(conn: sqlite3.Connection, account_id: str = DEFAULT_ACCOUNT_I
         "provider": "finnhub",
         "account_id": account_id,
         "token_configured": token_configured,
-        "market_active": FINNHUB_MARKET_SOURCE_ID in source_ids,
-        "financial_active": FINNHUB_FINANCIAL_SOURCE_ID in source_ids,
+        "market_active": bool({FINNHUB_MARKET_SOURCE_ID, FINNHUB_HK_MARKET_SOURCE_ID} & source_ids),
+        "financial_active": bool({FINNHUB_FINANCIAL_SOURCE_ID, FINNHUB_HK_FINANCIAL_SOURCE_ID} & source_ids),
         "news_active": FINNHUB_NEWS_SOURCE_ID in source_ids,
+        "active_sources": sorted(source_ids & {
+            FINNHUB_MARKET_SOURCE_ID,
+            FINNHUB_FINANCIAL_SOURCE_ID,
+            FINNHUB_NEWS_SOURCE_ID,
+            FINNHUB_HK_MARKET_SOURCE_ID,
+            FINNHUB_HK_FINANCIAL_SOURCE_ID,
+        }),
         "latest_market": latest_snapshot_meta(conn, "market_snapshots", FINNHUB_PROVIDER_MARKET),
-        "latest_financial": latest_snapshot_meta(conn, "financial_snapshots", FINNHUB_PROVIDER_FINANCIAL),
+        "latest_financial": latest_financial_metrics_meta(conn, FINNHUB_PROVIDER_FINANCIAL),
         "latest_news": latest_news_meta(conn),
     }
 
@@ -44,8 +54,8 @@ def refresh_finnhub_data(
     account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     source_ids = active_source_ids(conn, account_id)
-    market_active = FINNHUB_MARKET_SOURCE_ID in source_ids
-    financial_active = FINNHUB_FINANCIAL_SOURCE_ID in source_ids
+    market_active = bool({FINNHUB_MARKET_SOURCE_ID, FINNHUB_HK_MARKET_SOURCE_ID} & source_ids)
+    financial_active = bool({FINNHUB_FINANCIAL_SOURCE_ID, FINNHUB_HK_FINANCIAL_SOURCE_ID} & source_ids)
     news_active = FINNHUB_NEWS_SOURCE_ID in source_ids
     if not market_active and not financial_active and not news_active:
         raise HTTPException(status_code=400, detail="Finnhub 数据源未启用")
@@ -54,9 +64,13 @@ def refresh_finnhub_data(
     if not token:
         raise HTTPException(status_code=400, detail="Finnhub key 未配置")
 
-    target_symbols = normalize_symbols(symbols) if symbols else existing_us_symbols(conn)
+    target_symbols = normalize_symbols(symbols) if symbols else existing_finnhub_symbols(
+        conn,
+        include_us=bool({FINNHUB_MARKET_SOURCE_ID, FINNHUB_FINANCIAL_SOURCE_ID, FINNHUB_NEWS_SOURCE_ID} & source_ids),
+        include_hk=bool({FINNHUB_HK_MARKET_SOURCE_ID, FINNHUB_HK_FINANCIAL_SOURCE_ID} & source_ids),
+    )
     if not target_symbols:
-        raise HTTPException(status_code=400, detail="没有可刷新的美股股票代码")
+        raise HTTPException(status_code=400, detail="没有可刷新的美股/港股股票代码")
 
     client = FinnhubClient(token)
     errors: list[dict[str, str]] = []
@@ -69,7 +83,7 @@ def refresh_finnhub_data(
         try:
             profile = client.company_profile(symbol) if financial_active or market_active else {}
             metrics_payload = client.basic_financials(symbol) if financial_active or market_active else {}
-            upsert_us_symbol(conn, symbol, profile)
+            upsert_finnhub_symbol(conn, symbol, profile)
 
             if market_active:
                 quote = client.quote(symbol)
@@ -103,6 +117,7 @@ def refresh_finnhub_data(
         "counts": {
             "market_snapshots": market_count,
             "financial_snapshots": financial_count,
+            "financial_metrics_history": financial_count,
             "news_items": news_count,
             "errors": len(errors),
         },
@@ -111,16 +126,25 @@ def refresh_finnhub_data(
     }
 
 
-def existing_us_symbols(conn: sqlite3.Connection) -> list[str]:
+def existing_finnhub_symbols(conn: sqlite3.Connection, include_us: bool = True, include_hk: bool = True) -> list[str]:
+    markets = []
+    if include_us:
+        markets.append("US")
+    if include_hk:
+        markets.append("HK")
+    if not markets:
+        return []
+    placeholders = ", ".join("?" for _ in markets)
     return [
-        row["symbol"]
+        normalize_finnhub_symbol(row["symbol"])
         for row in conn.execute(
-            """
+            f"""
             select symbol
             from symbols
-            where market = 'US'
+            where market in ({placeholders})
             order by symbol
-            """
+            """,
+            markets,
         )
     ]
 
@@ -129,8 +153,8 @@ def normalize_symbols(symbols: list[str]) -> list[str]:
     normalized: list[str] = []
     seen: set[str] = set()
     for item in symbols:
-        symbol = item.strip().upper()
-        if not symbol or "." in symbol:
+        symbol = normalize_finnhub_symbol(item)
+        if not symbol or symbol.endswith((".SH", ".SZ", ".BJ")):
             continue
         if symbol not in seen:
             seen.add(symbol)
@@ -138,22 +162,35 @@ def normalize_symbols(symbols: list[str]) -> list[str]:
     return normalized
 
 
-def upsert_us_symbol(conn: sqlite3.Connection, symbol: str, profile: dict[str, Any]) -> None:
+def normalize_finnhub_symbol(value: Any) -> str:
+    symbol = str(value or "").strip().upper().replace(" ", "")
+    if symbol.endswith(".HK"):
+        code = symbol[:-3]
+        if code.isdigit():
+            code = (code.lstrip("0") or "0").zfill(4)
+        return f"{code}.HK"
+    return symbol
+
+
+def upsert_finnhub_symbol(conn: sqlite3.Connection, symbol: str, profile: dict[str, Any]) -> None:
+    market = "HK" if symbol.endswith(".HK") else "US"
     name = str(profile.get("name") or symbol)
-    currency = str(profile.get("currency") or "USD")
-    exchange = str(profile.get("exchange") or "US")
+    currency = str(profile.get("currency") or ("HKD" if market == "HK" else "USD"))
+    exchange = str(profile.get("exchange") or ("HKEX" if market == "HK" else "US"))
     industry = str(profile.get("finnhubIndustry") or "未分类")
     conn.execute(
         """
         insert into symbols (symbol, market, name, currency, exchange, sector, industry)
-        values (?, 'US', ?, ?, ?, '美股', ?)
+        values (?, ?, ?, ?, ?, ?, ?)
         on conflict(symbol) do update set
+          market = excluded.market,
           name = excluded.name,
           currency = excluded.currency,
           exchange = excluded.exchange,
+          sector = excluded.sector,
           industry = excluded.industry
         """,
-        (symbol, name, currency, exchange, industry),
+        (symbol, market, name, currency, exchange, "港股" if market == "HK" else "美股", industry),
     )
 
 
@@ -174,10 +211,13 @@ def insert_market_snapshot(
     amount_usd = avg_volume * price
     turnover_rate = (avg_volume / share_count * 100) if share_count else 0
     as_of = finnhub_timestamp_as_of(quote.get("t"))
+    currency = str(profile.get("currency") or ("HKD" if symbol.endswith(".HK") else "USD")).upper()
+    amount_cny = amount_usd * currency_to_cny(currency)
     raw_json = {
         "quote": quote,
         "metric": metrics,
         "profile": compact_profile(profile),
+        "currency": currency,
         "change": float_value(quote.get("dp"), 0),
         "price_change": float_value(quote.get("d"), 0),
         "previous_close": float_value(quote.get("pc"), 0),
@@ -200,7 +240,7 @@ def insert_market_snapshot(
             now_iso(),
             price,
             avg_volume,
-            amount_usd * USD_TO_CNY,
+            amount_cny,
             turnover_rate,
             5,
             json.dumps(raw_json, ensure_ascii=False),
@@ -216,6 +256,12 @@ def insert_financial_snapshot(
     profile: dict[str, Any],
 ) -> None:
     metrics = metrics_payload.get("metric") if isinstance(metrics_payload.get("metric"), dict) else {}
+    period = date.today().isoformat()
+    revenue_growth = optional_number(metrics, ["revenueGrowthTTMYoy", "revenueGrowthQuarterlyYoy", "revenueGrowth5Y"])
+    roe = optional_number(metrics, ["roeTTM", "roeRfy", "roeAnnual"])
+    fcf_margin = optional_number(metrics, ["fcfMarginTTM", "fcfMarginAnnual"])
+    debt_ratio = optional_number(metrics, ["totalDebt/totalAssetsAnnual", "totalDebt/totalAssetsQuarterly", "totalDebt/totalEquityAnnual"])
+    raw_json = {"metric": metrics, "series": metrics_payload.get("series") or {}, "profile": compact_profile(profile)}
     conn.execute(
         """
         insert into financial_snapshots (
@@ -225,16 +271,32 @@ def insert_financial_snapshot(
         """,
         (
             symbol,
-            date.today().isoformat(),
+            period,
             FINNHUB_PROVIDER_FINANCIAL,
-            first_number(metrics, ["revenueGrowthTTMYoy", "revenueGrowthQuarterlyYoy", "revenueGrowth5Y"], 0),
-            first_number(metrics, ["roeTTM", "roeRfy", "roeAnnual"], 0),
-            first_number(metrics, ["fcfMarginTTM", "fcfMarginAnnual"], 0),
-            first_number(metrics, ["totalDebt/totalAssetsAnnual", "totalDebt/totalAssetsQuarterly", "totalDebt/totalEquityAnnual"], 0),
+            number_or_zero(revenue_growth),
+            number_or_zero(roe),
+            number_or_zero(fcf_margin),
+            number_or_zero(debt_ratio),
             first_number(metrics, ["peTTM", "peNormalizedAnnual", "peBasicExclExtraTTM"], 0),
             first_number(metrics, ["pbAnnual", "pbQuarterly"], 0),
-            json.dumps({"metric": metrics, "series": metrics_payload.get("series") or {}, "profile": compact_profile(profile)}, ensure_ascii=False),
+            json.dumps(raw_json, ensure_ascii=False),
         ),
+    )
+    upsert_financial_metrics_history(
+        conn,
+        {
+            "symbol": symbol,
+            "report_period": period,
+            "provider": FINNHUB_PROVIDER_FINANCIAL,
+            "announce_date": "",
+            "revenue_growth": revenue_growth,
+            "roe": roe,
+            "fcf_margin": fcf_margin,
+            "debt_ratio": debt_ratio,
+            "gross_margin": optional_number(metrics, ["grossMarginTTM", "grossMarginAnnual"]),
+            "net_margin": optional_number(metrics, ["netProfitMarginTTM", "netProfitMarginAnnual"]),
+            "raw_json": raw_json,
+        },
     )
 
 
@@ -315,6 +377,20 @@ def latest_snapshot_meta(conn: sqlite3.Connection, table: str, provider: str) ->
     return row_to_dict(row)
 
 
+def latest_financial_metrics_meta(conn: sqlite3.Connection, provider: str) -> dict[str, Any] | None:
+    row = conn.execute(
+        """
+        select provider, max(report_period) as period, count(*) as count
+        from financial_metrics_history
+        where provider = ?
+        """,
+        (provider,),
+    ).fetchone()
+    if not row or not row["count"]:
+        return None
+    return row_to_dict(row)
+
+
 def latest_news_meta(conn: sqlite3.Connection) -> dict[str, Any] | None:
     row = conn.execute(
         """
@@ -346,6 +422,26 @@ def share_count_from_profile(profile: dict[str, Any]) -> float:
     if value <= 0:
         return 0
     return value * 1_000_000 if value < 1_000_000 else value
+
+
+def currency_to_cny(currency: str) -> float:
+    if currency.upper() == "HKD":
+        return HKD_TO_CNY
+    return USD_TO_CNY
+
+
+def optional_number(row: dict[str, Any] | None, keys: list[str]) -> float | None:
+    if not row:
+        return None
+    for key in keys:
+        value = row.get(key)
+        if value not in (None, ""):
+            return float_value(value, 0)
+    return None
+
+
+def number_or_zero(value: float | None) -> float:
+    return 0 if value is None else value
 
 
 def first_number(row: dict[str, Any] | None, keys: list[str], default: float = 0) -> float:

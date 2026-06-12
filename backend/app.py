@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sqlite3
 from typing import Any
 
 from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query, Request
@@ -16,12 +17,15 @@ from .db import ROOT_DIR, get_db, init_db
 from .finnhub_service import finnhub_status, refresh_finnhub_data
 from .filings import filing_sources_payload, search_filing_documents
 from .history import (
+    create_a_share_filings_backfill_job,
     create_baostock_backfill_job,
     create_baostock_financial_backfill_job,
     ensure_query_data,
     ingestion_run_payload,
     refresh_akshare_data,
     refresh_baostock_data,
+    refresh_stock_detail_data,
+    run_a_share_filings_backfill_job,
     run_baostock_backfill_job,
     run_baostock_financial_backfill_job,
     screen_from_database,
@@ -52,17 +56,20 @@ from .providers.alpha_vantage import (
 from .schemas import (
     AnomalyInput,
     BacktestInput,
+    CommunityCrawlInput,
     DataRefreshInput,
     DataSourceTestInput,
     DataSourceUpdate,
     FavoriteToggle,
     SearchHistoryInput,
     ScreenerInput,
+    SentimentRefreshInput,
     TradeInput,
 )
 from .search_history import list_search_history, record_search
+from .sentiment import crawl_community_for_symbols, refresh_sentiment, sentiment_payload, sentiment_status
 from .stock_detail import stock_detail_payload
-from .stocks import run_screener, search_stocks, stock_memory
+from .stocks import all_stock_payloads, run_screener, search_stocks, stock_memory
 from .symbol_resolver import normalize_symbol_query
 from .tushare_service import refresh_tushare_data, tushare_status
 
@@ -143,14 +150,69 @@ def create_anomaly(payload: AnomalyInput) -> dict[str, Any]:
         return create_anomaly_run(conn, payload)
 
 
-@app.get("/api/stocks/search")
-def api_stock_search(q: str = "", market: str = "all", account_id: str = DEFAULT_ACCOUNT_ID) -> dict[str, Any]:
+@app.get("/api/sentiment/status")
+def api_sentiment_status() -> dict[str, Any]:
     with get_db() as conn:
-        ingest_result = ensure_query_data(conn, q, market) if q.strip() else None
-        if q.strip():
-            record_search(conn, account_id=account_id, surface="stock_analysis", query=q, metadata={"market": market})
-        result = search_stocks(conn, q, market, account_id)
-        if ingest_result:
+        return sentiment_status(conn)
+
+
+@app.get("/api/sentiment/stocks/{symbol}")
+def api_stock_sentiment(
+    symbol: str,
+    days: int = Query(30, ge=1, le=365),
+    evidence_limit: int = Query(30, ge=1, le=200),
+) -> dict[str, Any]:
+    with get_db() as conn:
+        return sentiment_payload(conn, symbol, days=days, evidence_limit=evidence_limit)
+
+
+@app.post("/api/sentiment/refresh")
+def api_refresh_sentiment(payload: SentimentRefreshInput | None = Body(default=None)) -> dict[str, Any]:
+    payload = payload or SentimentRefreshInput()
+    with get_db() as conn:
+        return refresh_sentiment(
+            conn,
+            payload.symbols,
+            days=payload.days,
+            use_llm=payload.use_llm,
+            crawl_community=payload.crawl_community,
+            community_limit=payload.community_limit,
+            evidence_limit=payload.evidence_limit,
+        )
+
+
+@app.post("/api/community/crawl")
+def api_crawl_community(payload: CommunityCrawlInput) -> dict[str, Any]:
+    with get_db() as conn:
+        return crawl_community_for_symbols(
+            conn,
+            payload.symbols,
+            source=payload.source,
+            limit=payload.limit,
+            timeout=payload.timeout,
+            sleep_seconds=payload.sleep_seconds,
+        )
+
+
+@app.get("/api/stocks/search")
+def api_stock_search(
+    q: str = "",
+    market: str = "all",
+    account_id: str = DEFAULT_ACCOUNT_ID,
+    record: bool = Query(True),
+    limit: int = Query(0, ge=0, le=300),
+) -> dict[str, Any]:
+    with get_db() as conn:
+        if record and q.strip():
+            try:
+                record_search(conn, account_id=account_id, surface="stock_analysis", query=q, metadata={"market": market})
+            except sqlite3.OperationalError as exc:
+                if "locked" not in str(exc).lower():
+                    raise
+        result = search_stocks(conn, q, market, account_id, limit=limit)
+        if record and q.strip() and not result["stocks"]:
+            ingest_result = ensure_query_data(conn, q, market)
+            result = search_stocks(conn, q, market, account_id, limit=limit)
             result["ingestion"] = ingest_result
         return result
 
@@ -165,6 +227,17 @@ def api_stock_detail(
         return stock_detail_payload(conn, symbol, market=market, limit=limit)
 
 
+@app.post("/api/stocks/{symbol}/refresh")
+def api_refresh_stock_detail(
+    symbol: str,
+    market: str = "all",
+    days: int = Query(260, ge=20, le=1200),
+    quarters: int = Query(8, ge=1, le=20),
+) -> dict[str, Any]:
+    with get_db() as conn:
+        return refresh_stock_detail_data(conn, symbol, market=market, days=days, quarters=quarters)
+
+
 @app.get("/stocks/search")
 def stock_search(q: str = "", market: str = "all", account_id: str = DEFAULT_ACCOUNT_ID) -> dict[str, Any]:
     return api_stock_search(q, market, account_id)
@@ -173,25 +246,64 @@ def stock_search(q: str = "", market: str = "all", account_id: str = DEFAULT_ACC
 @app.post("/api/screeners/run")
 def api_run_screener(payload: ScreenerInput) -> dict[str, Any]:
     with get_db() as conn:
-        rows = screen_from_database(conn, payload.market, payload.filter_ids, payload.mode, payload.natural_query)
-        if rows:
-            stocks = []
-            for row in rows:
-                item = search_stocks(conn, query=row["symbol"], market=payload.market, account_id=payload.account_id)["stocks"]
-                if item:
-                    stocks.append(item[0])
-            return {
-                "stocks": stocks,
-                "rows": rows,
-                "mode": "database-screener",
-                "count": len(stocks),
-                "applied_filters": payload.filter_ids,
-                "filter_mode": payload.mode,
-                "natural_query": payload.natural_query,
-                "warehouse": warehouse_summary(conn),
-            }
-        fallback = run_screener(conn, payload)
-        return {**fallback, "mode": "database-screener-empty", "rows": [], "warehouse": warehouse_summary(conn)}
+        rows = screen_from_database(
+            conn,
+            payload.market,
+            payload.filter_ids,
+            payload.mode,
+            payload.natural_query,
+            payload.industry,
+        )
+        row_symbols = [row["symbol"] for row in rows]
+        payloads = all_stock_payloads(
+            conn,
+            account_id=payload.account_id,
+            include_universe=True,
+            symbol_filter=row_symbols,
+        )
+        payloads_by_symbol = {item["symbol"]: item for item in payloads}
+        stocks = [payloads_by_symbol[row["symbol"]] for row in rows if row["symbol"] in payloads_by_symbol]
+        return {
+            "stocks": stocks,
+            "rows": rows,
+            "mode": "database-screener",
+            "count": len(stocks),
+            "applied_filters": payload.filter_ids,
+            "filter_mode": payload.mode,
+            "natural_query": payload.natural_query,
+            "industry": payload.industry,
+            "warehouse": warehouse_summary(conn),
+        }
+
+
+@app.get("/api/screeners/industries")
+def api_screener_industries(market: str = "all") -> dict[str, Any]:
+    normalized_market = market.strip().upper()
+    params: list[Any] = []
+    market_clause = ""
+    if normalized_market != "ALL":
+        market_clause = " and upper(market) = ?"
+        params.extend([normalized_market, normalized_market])
+    with get_db() as conn:
+        rows = conn.execute(
+            f"""
+            with labels as (
+              select symbol, trim(industry) as industry
+              from symbols
+              where trim(coalesce(industry, '')) != ''{market_clause}
+              union
+              select symbol, trim(sector) as industry
+              from symbols
+              where trim(coalesce(sector, '')) != ''{market_clause}
+            )
+            select industry, count(*) as count
+            from labels
+            group by industry
+            order by count(*) desc, industry
+            """,
+            params,
+        ).fetchall()
+        return {"market": market, "industries": [dict(row) for row in rows]}
 
 
 @app.post("/screeners/run")
@@ -662,6 +774,13 @@ def refresh_data(
             result = create_baostock_financial_backfill_job(conn, payload.symbols, payload.refresh_universe)
         if not result.get("already_running"):
             background_tasks.add_task(run_baostock_financial_backfill_job, result["run_id"], payload.symbols, payload.refresh_universe)
+        return result
+    if payload.provider in {"cninfo_sse_szse", "cninfo", "sse", "szse"} or scope in {"filing", "filings", "a-share-filings", "cn-exchange-filings"}:
+        source = payload.provider if payload.provider in {"cninfo", "sse", "szse"} else "all"
+        with get_db() as conn:
+            result = create_a_share_filings_backfill_job(conn, payload.symbols, payload.refresh_universe, source=source)
+        if not result.get("already_running"):
+            background_tasks.add_task(run_a_share_filings_backfill_job, result["run_id"], payload.symbols, payload.refresh_universe, source)
         return result
     if scope == "portfolio" and account_id:
         with get_db() as conn:

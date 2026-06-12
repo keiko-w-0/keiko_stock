@@ -1,0 +1,82 @@
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T00:45:00",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7592",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 27094,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 73,
+        "provider": "baostock",
+        "scope": "a-share-history-background:universe",
+        "status": "partial",
+        "started_at": "2026-06-12T18:00:07",
+        "finished_at": "2026-06-12T18:13:10",
+        "remaining_candidates": 7592,
+        "last_progress_at": "2026-06-12T18:13:10"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 75,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "interrupted",
+        "started_at": "2026-06-12T20:15:02",
+        "finished_at": "2026-06-12T20:17:37",
+        "remaining_candidates": 2029,
+        "last_progress_at": "2026-06-12T20:17:37"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 77,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-12T20:30:08",
+        "finished_at": "2026-06-12T20:30:46",
+        "remaining_candidates": 7216,
+        "last_progress_at": "2026-06-12T20:30:46"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}

@@ -159,7 +159,7 @@ SOURCE_TEST_OVERRIDES: dict[str, dict[str, Any]] = {
         "provider": "tushare",
         "market": "A",
         "source_kind": "financial",
-        "description": "Tushare fina_indicator + income 小样本测试。",
+        "description": "Tushare fina_indicator + income + cashflow 小样本测试。",
         "default_symbol": "600519.SH",
         "requires_key": True,
         "implemented": True,
@@ -260,6 +260,30 @@ SOURCE_TEST_OVERRIDES: dict[str, dict[str, Any]] = {
         "requires_key": True,
         "implemented": True,
         "params": news_params(),
+    },
+    "hk-finnhub-market": {
+        "id": "source-hk-finnhub-market",
+        "label": "Finnhub 港股报价",
+        "provider": "finnhub",
+        "market": "HK",
+        "source_kind": "market",
+        "description": "Finnhub quote 港股测试。",
+        "default_symbol": "0700.HK",
+        "requires_key": True,
+        "implemented": True,
+        "params": [{"name": "limit", "label": "返回行数", "kind": "int", "default": 10}],
+    },
+    "hk-finnhub-financial": {
+        "id": "source-hk-finnhub-financial",
+        "label": "Finnhub 港股基本面",
+        "provider": "finnhub",
+        "market": "HK",
+        "source_kind": "financial",
+        "description": "Finnhub profile + stock/metric 港股测试。",
+        "default_symbol": "0700.HK",
+        "requires_key": True,
+        "implemented": True,
+        "params": [{"name": "limit", "label": "返回行数", "kind": "int", "default": 20}],
     },
 }
 
@@ -407,7 +431,7 @@ def runner_for_test(test_id: str, test: dict[str, Any]) -> Callable[[sqlite3.Con
         return run_tushare_financial_test
     if test_id.startswith("source-us-alpha-vantage-"):
         return run_alpha_vantage_test
-    if test_id.startswith("source-us-finnhub-"):
+    if test_id.startswith("source-us-finnhub-") or test_id.startswith("source-hk-finnhub-"):
         return run_finnhub_test
     if test_id.startswith("source-") and str(test.get("provider", "")).startswith("mock_"):
         return run_mock_source_test
@@ -521,10 +545,12 @@ def run_tushare_financial_test(
     start, end = tushare_window(params, default_days=760, fallback=financial_date_window())
     indicator = client.fina_indicator(ts_code, start, end)
     income = client.income(ts_code, start, end)
+    cashflow = client.cashflow(ts_code, start, end)
     limit = int_param(params, "limit", 20)
     rows = prefix_rows(indicator[:limit], "fina_indicator")
     rows.extend(prefix_rows(income[:limit], "income"))
-    return table_result(rows, total=len(rows), raw={"fina_indicator": indicator, "income": income})
+    rows.extend(prefix_rows(cashflow[:limit], "cashflow"))
+    return table_result(rows, total=len(rows), raw={"fina_indicator": indicator, "income": income, "cashflow": cashflow})
 
 
 def run_alpha_vantage_test(

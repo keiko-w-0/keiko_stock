@@ -316,33 +316,41 @@ const filterCatalog = [
   {
     group: "流动性",
     items: [
-      { id: "amount-high", label: "成交额 >= 50亿", test: (stock) => stock.metrics.avgAmountCny >= 5000000000, keywords: ["成交额", "流动性", "活跃", "大成交"] },
-      { id: "turnover-high", label: "换手率 >= 1%", test: (stock) => stock.metrics.turnoverRate >= 1, keywords: ["换手", "活跃"] },
-      { id: "spread-low", label: "买卖价差 <= 5bp", test: (stock) => stock.metrics.spreadBps <= 5, keywords: ["价差", "买卖价差", "低摩擦", "滑点小"] }
+      { id: "amount-high", label: "成交额 >= 50亿", test: (stock) => stock.metrics.avgAmountCny >= 5000000000, logic: "取最新交易日成交额 amount；过滤机构资金能进出的高流动性标的。", keywords: ["成交额", "流动性", "活跃", "大成交"] },
+      { id: "amount-active", label: "成交额 >= 10亿", test: (stock) => stock.metrics.avgAmountCny >= 1000000000, logic: "取最新交易日成交额 amount；比 50 亿更宽松，用于中等流动性股票池。", keywords: ["成交活跃", "流动性"] },
+      { id: "turnover-high", label: "换手率 >= 1%", test: (stock) => stock.metrics.turnoverRate >= 1, logic: "取最新交易日 turnover_rate；确认股票当天有足够交易活跃度。", keywords: ["换手", "活跃"] },
+      { id: "turnover-healthy", label: "换手 0.5%-8%", test: (stock) => stock.metrics.turnoverRate >= 0.5 && stock.metrics.turnoverRate <= 8, logic: "取最新换手率；排除太冷清和过度炒作的极端样本。", keywords: ["换手健康"] }
     ]
   },
   {
     group: "估值与质量",
     items: [
-      { id: "valuation-not-hot", label: "PE分位 <= 70", test: (stock) => hasMetric(stock.metrics.pePercentile) && stock.metrics.pePercentile <= 70, keywords: ["估值合理", "不贵", "安全边际", "pe"] },
-      { id: "roe-high", label: "ROE >= 15%", test: (stock) => hasMetric(stock.metrics.roe) && stock.metrics.roe >= 15, keywords: ["roe", "质量", "盈利能力"] },
-      { id: "cashflow-good", label: "自由现金流率 >= 5%", test: (stock) => hasMetric(stock.metrics.fcfMargin) && stock.metrics.fcfMargin >= 5, keywords: ["现金流", "自由现金流"] }
+      { id: "pe-positive", label: "PE(TTM) > 0", test: (stock) => hasMetric(stock.metrics.pe) && stock.metrics.pe > 0, logic: "取最新行情 PE(TTM)；PE<=0 视为亏损或无有效盈利口径。", keywords: ["盈利", "pe为正"] },
+      { id: "pe-low", label: "PE(TTM) <= 30", test: (stock) => hasMetric(stock.metrics.pe) && stock.metrics.pe > 0 && stock.metrics.pe <= 30, logic: "取最新行情 PE(TTM)；先排除亏损，再过滤不过热估值。", keywords: ["pe低", "估值低"] },
+      { id: "pb-low", label: "PB <= 3", test: (stock) => hasMetric(stock.metrics.pb) && stock.metrics.pb > 0 && stock.metrics.pb <= 3, logic: "取最新行情 PB；适合资产较重或周期类公司估值对比。", keywords: ["pb低", "市净率"] },
+      { id: "roe-high", label: "ROE >= 15%", test: (stock) => hasMetric(stock.metrics.roe) && stock.metrics.roe >= 15, logic: "取最新可用财报 ROE；衡量股东权益回报和盈利质量。", keywords: ["roe", "质量", "盈利能力"] },
+      { id: "revenue-growth-positive", label: "营收增长 > 0", test: (stock) => hasMetric(stock.metrics.revenueGrowth) && stock.metrics.revenueGrowth > 0, logic: "取最新可用财报 revenue_growth；确认基本面仍在扩张。", keywords: ["营收增长", "成长"] },
+      { id: "gross-margin-high", label: "毛利率 >= 30%", test: (stock) => hasMetric(stock.metrics.grossMargin) && stock.metrics.grossMargin >= 30, logic: "取最新可用财报 gross_margin；高毛利通常代表产品力或议价能力。", keywords: ["毛利率", "产品力"] },
+      { id: "cashflow-good", label: "自由现金流率 >= 5%", test: (stock) => hasMetric(stock.metrics.fcfMargin) && stock.metrics.fcfMargin >= 5, logic: "取最新可用财报 fcf_margin；利润能转成现金，质量更高。", keywords: ["现金流", "自由现金流"] },
+      { id: "debt-low", label: "资产负债率 <= 60%", test: (stock) => hasMetric(stock.metrics.debtRatio) && stock.metrics.debtRatio <= 60, logic: "取最新可用财报 debt_ratio/liability_to_asset；降低财务杠杆风险。", keywords: ["负债低", "财务安全"] }
     ]
   },
   {
     group: "技术与催化",
     items: [
-      { id: "trend-strong", label: "站上20日线", test: (stock) => stock.metrics.ma20GapPct > 0, keywords: ["趋势", "均线", "站上", "技术强"] },
-      { id: "volume-confirm", label: "量能 >= 1.2倍", test: (stock) => stock.metrics.volumeRatio >= 1.2, keywords: ["放量", "成交量", "量能"] },
-      { id: "catalyst-strong", label: "催化评分 >= 75", test: (stock) => stock.metrics.catalystScore >= 75, keywords: ["催化", "订单", "业绩", "政策", "新品"] }
+      { id: "trend-strong", label: "站上20日线", test: (stock) => stock.metrics.ma20GapPct > 0, logic: "最新收盘价 > 最近 20 条日线收盘均值；短期趋势重新转强。", keywords: ["趋势", "均线", "站上", "技术强"] },
+      { id: "trend-medium", label: "站上60日线", test: (stock) => stock.metrics.ma60GapPct > 0, logic: "最新收盘价 > 最近 60 条日线收盘均值；中期趋势过滤。", keywords: ["60日线", "中期趋势"] },
+      { id: "near-52w-high", label: "接近52周高点", test: (stock) => stock.metrics.nearHigh52w, logic: "最新收盘价 >= 近 252 条日线最高价的 80%；保留相对强势股票。", keywords: ["新高", "强势"] },
+      { id: "volume-confirm", label: "量能 >= 1.2倍", test: (stock) => stock.metrics.volumeRatio >= 1.2, logic: "最新成交量 > 最近 20 条日线均量的 1.2 倍；用量能确认价格信号。", keywords: ["放量", "成交量", "量能"] },
+      { id: "catalyst-strong", label: "近30日有公告催化", test: (stock) => stock.metrics.catalystScore >= 75, logic: "查询近 30 日 filings_history/company_reports；有公告或业绩事件才通过。", keywords: ["催化", "订单", "业绩", "政策", "新品"] }
     ]
   },
   {
     group: "证据与风险",
     items: [
-      { id: "data-fresh", label: "数据 fresh", test: (stock) => stock.freshnessStatus === "fresh", keywords: ["新鲜", "实时", "不过期", "fresh"] },
-      { id: "evidence-high", label: "证据可信 >= 80%", test: (stock) => stock.truthScore >= 80, keywords: ["证据", "可信", "真实性", "可靠"] },
-      { id: "rumor-low", label: "未证实 < 25%", test: (stock) => hasMetric(stock.metrics.unverifiedRatio) && stock.metrics.unverifiedRatio < 0.25, keywords: ["少传闻", "未证实少", "真实性高"] }
+      { id: "data-fresh", label: "数据 fresh", test: (stock) => stock.freshnessStatus === "fresh", logic: "最新交易日等于 daily_bars 全库最大交易日；避免用过期行情筛选。", keywords: ["新鲜", "实时", "不过期", "fresh"] },
+      { id: "evidence-high", label: "有公告证据", test: (stock) => stock.truthScore >= 80, logic: "查询 filings_history 是否有官方公告；后续基本面分析优先引用。", keywords: ["证据", "可信", "真实性", "可靠"] },
+      { id: "rumor-low", label: "未证实 < 25%", test: (stock) => hasMetric(stock.metrics.unverifiedRatio) && stock.metrics.unverifiedRatio < 0.25, logic: "来自新闻/讨论源的未证实比例；当前无讨论源时只作为预留风控项。", keywords: ["少传闻", "未证实少", "真实性高"] }
     ]
   }
 ];
@@ -479,6 +487,19 @@ const fieldDisplayLabels = {
   sentiment_score: "情绪分",
   source: "来源",
   source_tier: "来源等级",
+  amount_ratio_20d: "20日成交额倍数",
+  bar_count: "样本K线数",
+  change_1d: "1日涨跌幅",
+  change_5d: "5日涨跌幅",
+  change_20d: "20日涨跌幅",
+  financial_details: "财务细项",
+  latest_trade_date: "最新交易日",
+  limit_down_days: "跌停天数",
+  limit_up_days: "涨停天数",
+  max_drawdown: "最大回撤",
+  text_length: "文本长度",
+  turnover_rate: "换手率",
+  volume_ratio_20d: "20日成交量倍数",
   stock_code: "股票代码",
   summary: "摘要",
   symbol: "股票代码",
@@ -590,6 +611,8 @@ const fallbackDataSources = [
   { id: "cn-news-sentiment", market: "A", label: "A股新闻情绪", provider: "mock_news_cn", source_kind: "news", source_kind_label: "新闻情绪", requires_key: true, credential_label: "News API key", enabled: false, configured: false, active: false, credential_hint: "" },
   { id: "hk-market-vendor", market: "HK", label: "港股行情供应商", provider: "mock_hk_market", source_kind: "market", source_kind_label: "行情", requires_key: true, credential_label: "Market API key", enabled: false, configured: false, active: false, credential_hint: "" },
   { id: "hk-financial-provider", market: "HK", label: "港股财务/估值", provider: "mock_hk_financial", source_kind: "financial", source_kind_label: "财务/估值", requires_key: true, credential_label: "Financial API key", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "hk-finnhub-market", market: "HK", label: "Finnhub 港股行情", provider: "finnhub", source_kind: "market", source_kind_label: "行情", requires_key: true, credential_label: "Finnhub key", enabled: false, configured: false, active: false, credential_hint: "" },
+  { id: "hk-finnhub-financial", market: "HK", label: "Finnhub 港股基本面", provider: "finnhub", source_kind: "financial", source_kind_label: "财务/估值", requires_key: true, credential_label: "Finnhub key", enabled: false, configured: false, active: false, credential_hint: "" },
   { id: "hk-hkexnews-filings", market: "HK", label: "HKEXnews 公告", provider: "hkexnews", source_kind: "filing", source_kind_label: "公告/披露", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "" },
   { id: "hk-news-sentiment", market: "HK", label: "港股新闻情绪", provider: "mock_news_hk", source_kind: "news", source_kind_label: "新闻情绪", requires_key: true, credential_label: "News API key", enabled: false, configured: false, active: false, credential_hint: "" },
   { id: "us-alpha-vantage-market", market: "US", label: "Alpha Vantage 美股行情", provider: "alpha_vantage", source_kind: "market", source_kind_label: "行情", requires_key: true, credential_label: "Alpha Vantage key", enabled: true, configured: false, active: false, credential_hint: "" },
@@ -618,12 +641,17 @@ let portfolioTrades = [
 ];
 
 const filtersById = new Map(filterCatalog.flatMap((group) => group.items.map((item) => [item.id, item])));
+const STOCK_CARD_RENDER_LIMIT = 60;
 let stocks = baseStocks.map((stock) => enrichStock(stock));
+let screenerStocks = [];
 
 let activeMarket = "all";
+let activeIndustry = "";
 let selectedSymbol = stocks[0].symbol;
 let filterMode = "all";
 let activeFilterIds = new Set();
+let databaseScreenerActive = false;
+let screenerRequestId = 0;
 let favoriteSymbols = new Set(["002594.SZ", "0700.HK", "1810.HK"]);
 let priceRefreshCount = 0;
 let latestPriceRefreshAt = "未刷新";
@@ -649,7 +677,15 @@ let sourceTestKindFilter = "filing";
 let sourceTestPayload = null;
 let sourceTestLoading = false;
 let sourceTestError = "";
+let industryOptions = [];
 let searchHistoryItems = [];
+let stockSearchSuggestions = [];
+let stockSearchOpen = false;
+let stockSearchLoading = false;
+let stockSearchError = "";
+let stockSearchTimer = null;
+let stockSearchRequestId = 0;
+let highlightedStockSuggestion = -1;
 let backtestPayload = null;
 let backtestLoading = false;
 let backtestError = "";
@@ -658,12 +694,66 @@ const stockDetailCache = new Map();
 const stockDetailLoading = new Set();
 const stockDetailErrors = new Map();
 const stockDetailPeriods = new Map();
+const stockInfoTabs = new Map();
+const sentimentPayloadCache = new Map();
+const sentimentPayloadLoading = new Set();
+const sentimentPayloadErrors = new Map();
+const sentimentExpandedTypes = new Map();
+const sentimentRefreshing = new Set();
+const sentimentRefreshErrors = new Map();
+const sentimentRefreshResults = new Map();
+const stockDetailRefreshing = new Set();
+const stockDetailRefreshErrors = new Map();
+const stockDetailRefreshSteps = new Map();
+const favoriteStockLoading = new Set();
+const favoriteStockLoadFailed = new Set();
+const stockCardDetailQueue = [];
+const stockCardDetailQueuedSymbols = new Set();
+let stockCardDetailActiveLoads = 0;
+let stockCardDetailPumpQueued = false;
+let sparklineDrawQueued = false;
+let stockDetailChartDrawQueued = false;
+let portfolioDrawQueued = false;
+let positionDrawQueued = false;
+let backtestDrawQueued = false;
+let stockListRefreshQueued = false;
+let selectStockRequestId = 0;
+const maxStockCardDetailLoads = 2;
 const stockDetailPeriodOptions = [
   { id: "daily", label: "日K" },
   { id: "weekly", label: "周K" },
   { id: "monthly", label: "月K" },
   { id: "quarterly", label: "季K" }
 ];
+const stockInfoTabOptions = [
+  { id: "filings", label: "公告" },
+  { id: "news", label: "资讯" },
+  { id: "discussions", label: "讨论" }
+];
+const sentimentTypeOptions = [
+  {
+    id: "filing_news",
+    label: "公告/财报",
+    scoreKey: "filing_news_score",
+    weight: 0.4,
+    sourceNote: "公告、财报、基本面和新闻情绪，偏可追溯证据。"
+  },
+  {
+    id: "community",
+    label: "社区舆论",
+    scoreKey: "community_score",
+    weight: 0.25,
+    sourceNote: "股吧/社区讨论情绪，噪声较大但能观察热度和负面扩散。"
+  },
+  {
+    id: "market",
+    label: "交易行为",
+    scoreKey: "market_score",
+    weight: 0.35,
+    sourceNote: "涨跌幅、量能、换手、回撤、涨跌停等交易型情绪。"
+  }
+];
+const sentimentTypeById = new Map(sentimentTypeOptions.map((item) => [item.id, item]));
 const apiState = {
   connected: false,
   accountId: "acct-admin",
@@ -674,6 +764,73 @@ const apiState = {
   lastError: ""
 };
 const navSectionIds = ["filters", "health", "data-exploration", "daily", "anomalies", "backtests", "favorites", "holdings", "settings"];
+const requestIdleTask = window.requestIdleCallback
+  ? (callback) => window.requestIdleCallback(callback, { timeout: 600 })
+  : (callback) => window.setTimeout(callback, 80);
+
+function scheduleSparklineDraw() {
+  if (sparklineDrawQueued) return;
+  sparklineDrawQueued = true;
+  requestAnimationFrame(() => {
+    sparklineDrawQueued = false;
+    drawAllSparklines();
+  });
+}
+
+function scheduleStockDetailChartDraw() {
+  if (stockDetailChartDrawQueued) return;
+  stockDetailChartDrawQueued = true;
+  requestAnimationFrame(() => {
+    stockDetailChartDrawQueued = false;
+    drawStockDetailCharts();
+  });
+}
+
+function schedulePortfolioDraw() {
+  if (portfolioDrawQueued) return;
+  portfolioDrawQueued = true;
+  requestAnimationFrame(() => {
+    portfolioDrawQueued = false;
+    if (activeTab === "holdings") drawPortfolioCurve();
+  });
+}
+
+function schedulePositionDraw() {
+  if (positionDrawQueued) return;
+  positionDrawQueued = true;
+  requestAnimationFrame(() => {
+    positionDrawQueued = false;
+    if (activeTab === "holdings") drawPositionKline();
+  });
+}
+
+function scheduleBacktestDraw() {
+  if (backtestDrawQueued) return;
+  backtestDrawQueued = true;
+  requestAnimationFrame(() => {
+    backtestDrawQueued = false;
+    if (activeTab === "backtests") drawBacktestCurve();
+  });
+}
+
+function scheduleActiveTabDraws(tab = activeTab) {
+  if (["filters", "daily", "favorites"].includes(tab)) scheduleSparklineDraw();
+  if (tab === "holdings") {
+    schedulePortfolioDraw();
+    schedulePositionDraw();
+  }
+  if (tab === "backtests") scheduleBacktestDraw();
+}
+
+function scheduleStockListRefresh() {
+  if (stockListRefreshQueued) return;
+  stockListRefreshQueued = true;
+  requestAnimationFrame(() => {
+    stockListRefreshQueued = false;
+    renderCandidates();
+    renderFavoriteRows();
+  });
+}
 
 const candidateGrid = document.querySelector("#candidateGrid");
 const candidateCount = document.querySelector("#candidateCount");
@@ -698,7 +855,9 @@ const backtestFee = document.querySelector("#backtestFee");
 const backtestSlippage = document.querySelector("#backtestSlippage");
 const detailTitle = document.querySelector("#detailTitle");
 const detailAction = document.querySelector("#detailAction");
+const detailFavorite = document.querySelector("#detailFavorite");
 const detailBody = document.querySelector("#detailBody");
+const sentimentAside = document.querySelector("#sentimentAside");
 const reflectionList = document.querySelector("#reflectionList");
 const memoryList = document.querySelector("#memoryList");
 const portfolioSummary = document.querySelector("#portfolioSummary");
@@ -720,7 +879,9 @@ const tradeFee = document.querySelector("#tradeFee");
 const tradeFormStatus = document.querySelector("#tradeFormStatus");
 const healthGrid = document.querySelector("#healthGrid");
 const symbolInput = document.querySelector("#symbolInput");
+const stockSearchList = document.querySelector("#stockSearchList");
 const filterGroups = document.querySelector("#filterGroups");
+const industryFilter = document.querySelector("#industryFilter");
 const filterPrompt = document.querySelector("#filterPrompt");
 const activeRules = document.querySelector("#activeRules");
 const accountSelect = document.querySelector("#accountSelect");
@@ -889,7 +1050,20 @@ function formatAsOf(lagMinutes) {
   });
 }
 
+function isIndexLikeStock(stock) {
+  const symbol = String(stock?.symbol ?? "").toUpperCase();
+  const name = String(stock?.name ?? "");
+  const sector = String(stock?.sector ?? "");
+  const industry = String(stock?.industry ?? "");
+  if (name.includes("指数") || sector.includes("指数") || industry.includes("指数")) return true;
+  return ["000001.SH", "000002.SH", "000003.SH", "399001.SZ", "399006.SZ", "399300.SZ"].includes(symbol);
+}
+
 function formatPrice(stock) {
+  if (isIndexLikeStock(stock)) {
+    const numeric = Number(stock.price);
+    return Number.isFinite(numeric) ? numeric.toFixed(2) : "暂无";
+  }
   return new Intl.NumberFormat("zh-CN", {
     style: "currency",
     currency: stock.currency,
@@ -925,6 +1099,145 @@ function formatMetricInt(value, suffix = "") {
 
 function formatRatio(value) {
   return hasMetric(value) ? `${(value * 100).toFixed(0)}%` : "暂无";
+}
+
+function formatSentimentScore(value, digits = 1) {
+  if (value === null || value === undefined || value === "") return "暂无";
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "暂无";
+  const sign = numeric > 0 ? "+" : "";
+  return `${sign}${numeric.toFixed(digits)}`;
+}
+
+function sentimentLabelText(label) {
+  return ({
+    positive: "积极",
+    mild_positive: "偏积极",
+    neutral: "中性",
+    mild_negative: "偏消极",
+    negative: "消极"
+  })[label] || "暂无";
+}
+
+function sentimentTone(value, label = "") {
+  if (value === null || value === undefined || value === "") return "neutral";
+  const numeric = Number(value);
+  const labelText = String(label || "");
+  if (labelText.includes("positive") || numeric >= 12) return "positive";
+  if (labelText.includes("negative") || numeric <= -12) return "negative";
+  return "neutral";
+}
+
+function sentimentFactorScore(snapshot) {
+  const numeric = Number(snapshot?.composite_score);
+  if (!Number.isFinite(numeric)) return null;
+  return Math.max(0, Math.min(100, Math.round((numeric + 100) / 2)));
+}
+
+function sentimentSourceCount(snapshot) {
+  const counts = snapshot?.source_counts ?? {};
+  return ["filing_news", "community", "market"].reduce((total, key) => total + Number(counts[key] || 0), 0);
+}
+
+function formatSentimentConfidence(value) {
+  if (value === null || value === undefined || value === "") return "暂无";
+  return formatDetailNumber(Number(value) * 100, 0, "%");
+}
+
+function sentimentPayloadKey(symbol, windowDays = 30) {
+  return `${String(symbol || "").toUpperCase()}:${Number(windowDays) || 30}`;
+}
+
+function clearSentimentPayloadCache(symbol) {
+  const prefix = `${String(symbol || "").toUpperCase()}:`;
+  [...sentimentPayloadCache.keys()].forEach((key) => {
+    if (key.startsWith(prefix)) sentimentPayloadCache.delete(key);
+  });
+  [...sentimentPayloadErrors.keys()].forEach((key) => {
+    if (key.startsWith(prefix)) sentimentPayloadErrors.delete(key);
+  });
+}
+
+function sentimentWindowDays(snapshot) {
+  return Number(snapshot?.window_days) || 30;
+}
+
+function sentimentMeta(type) {
+  return sentimentTypeById.get(type) || sentimentTypeOptions[0];
+}
+
+function sentimentTypeScore(snapshot, type) {
+  const meta = sentimentMeta(type);
+  return snapshot?.[meta.scoreKey];
+}
+
+function sentimentAvailableTypes(snapshot) {
+  const counts = snapshot?.source_counts ?? {};
+  const typeScores = snapshot?.raw?.type_scores ?? {};
+  return sentimentTypeOptions.filter((item) => {
+    const hasCount = Number(counts[item.id] || 0) > 0;
+    const hasScore = Number.isFinite(Number(typeScores[item.id]?.score ?? snapshot?.[item.scoreKey]));
+    return hasCount || hasScore;
+  });
+}
+
+function sentimentEffectiveWeight(snapshot, type) {
+  const available = sentimentAvailableTypes(snapshot);
+  const total = available.reduce((sum, item) => sum + item.weight, 0);
+  if (!total) return null;
+  return sentimentMeta(type).weight / total;
+}
+
+function sentimentRecencyWeight(value, windowDays = 30) {
+  const dateText = String(value || "").slice(0, 10);
+  const parsed = dateText ? new Date(`${dateText}T00:00:00`) : null;
+  if (!parsed || Number.isNaN(parsed.getTime())) return 0.55;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const daysAgo = Math.max(0, Math.floor((today.getTime() - parsed.getTime()) / 86400000));
+  return Math.max(0.35, 1 - daysAgo / Math.max(1, windowDays * 1.3));
+}
+
+function sentimentEvidenceWeight(item, windowDays = 30) {
+  const confidence = Math.max(0.1, Number(item?.confidence) || 0);
+  return confidence * sentimentRecencyWeight(item?.event_date || item?.analyzed_at, windowDays);
+}
+
+function sentimentEvidenceContribution(item, windowDays = 30) {
+  const score = Number(item?.sentiment_score);
+  if (!Number.isFinite(score)) return null;
+  return score * sentimentEvidenceWeight(item, windowDays);
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function uniqueSentimentTerms(item) {
+  const terms = [
+    ...(Array.isArray(item?.keywords) ? item.keywords : []),
+    ...((item?.evidence?.rule_matches ?? []).map((match) => match.keyword))
+  ];
+  return [...new Set(terms.map((term) => String(term || "").trim()).filter((term) => term.length >= 2))]
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 12);
+}
+
+function renderHighlightedSentimentText(text, terms) {
+  const source = String(text || "暂无原文片段");
+  const cleanTerms = [...new Set((terms || []).filter(Boolean))].sort((a, b) => b.length - a.length);
+  if (!cleanTerms.length) return escapeHTML(source);
+  const pattern = new RegExp(`(${cleanTerms.map(escapeRegExp).join("|")})`, "gi");
+  let output = "";
+  let lastIndex = 0;
+  source.replace(pattern, (match, _term, offset) => {
+    output += escapeHTML(source.slice(lastIndex, offset));
+    output += `<mark class="sentiment-highlight">${escapeHTML(match)}</mark>`;
+    lastIndex = offset + match.length;
+    return match;
+  });
+  output += escapeHTML(source.slice(lastIndex));
+  return output;
 }
 
 function formatCnyAmount(value) {
@@ -1160,6 +1473,88 @@ async function apiRequest(path, options = {}) {
   return response.json();
 }
 
+async function loadSentimentPayload(symbol, windowDays = 30) {
+  const key = sentimentPayloadKey(symbol, windowDays);
+  if (sentimentPayloadCache.has(key) || sentimentPayloadLoading.has(key)) return;
+  sentimentPayloadLoading.add(key);
+  sentimentPayloadErrors.delete(key);
+  renderSentimentAside(selectedStock(), stockDetailCache.get(symbol));
+  try {
+    const params = new URLSearchParams({
+      days: String(windowDays || 30),
+      evidence_limit: "120"
+    });
+    const payload = await apiRequest(`/api/sentiment/stocks/${encodeURIComponent(symbol)}?${params.toString()}`);
+    sentimentPayloadCache.set(key, payload);
+  } catch (error) {
+    sentimentPayloadErrors.set(key, error.message);
+  } finally {
+    sentimentPayloadLoading.delete(key);
+    renderSentimentAside(selectedStock(), stockDetailCache.get(symbol));
+  }
+}
+
+async function refreshCurrentSentiment(useLlm = true) {
+  const stock = selectedStock();
+  if (!stock || !apiState.connected) return;
+  if (sentimentRefreshing.has(stock.symbol)) return;
+  const detail = stockDetailCache.get(stock.symbol);
+  const windowDays = sentimentWindowDays(detail?.information?.sentiment);
+  sentimentRefreshing.add(stock.symbol);
+  sentimentRefreshErrors.delete(stock.symbol);
+  sentimentRefreshResults.delete(stock.symbol);
+  renderSentimentAside(stock, detail);
+  try {
+    updateBackendStatus(`刷新 ${stock.symbol} 情绪中`);
+    const result = await apiRequest("/api/sentiment/refresh", {
+      method: "POST",
+      body: JSON.stringify({
+        symbols: [stock.symbol],
+        days: windowDays,
+        use_llm: useLlm !== false,
+        crawl_community: true,
+        community_limit: 120,
+        evidence_limit: 120
+      })
+    });
+    sentimentRefreshResults.set(stock.symbol, result);
+    clearSentimentPayloadCache(stock.symbol);
+    stockDetailCache.delete(stock.symbol);
+    stockDetailErrors.delete(stock.symbol);
+    await loadStockDetail(stock.symbol, stock.market);
+    const refreshed = stockBySymbol(stock.symbol) ?? stock;
+    renderDetails(refreshed);
+    scheduleStockListRefresh();
+    updateBackendStatus(`${stock.symbol} 情绪已刷新`);
+  } catch (error) {
+    sentimentRefreshErrors.set(stock.symbol, error.message);
+    apiState.lastError = `${stock.symbol} 情绪刷新失败：${error.message}`;
+    updateBackendStatus(apiState.lastError);
+    renderSentimentAside(stock, stockDetailCache.get(stock.symbol));
+  } finally {
+    sentimentRefreshing.delete(stock.symbol);
+    renderSentimentAside(stockBySymbol(stock.symbol) ?? stock, stockDetailCache.get(stock.symbol));
+  }
+}
+
+function toggleSentimentEvidence(type) {
+  const stock = selectedStock();
+  if (!stock) return;
+  const detail = stockDetailCache.get(stock.symbol);
+  const snapshot = detail?.information?.sentiment;
+  const current = sentimentExpandedTypes.get(stock.symbol);
+  if (current === type) {
+    sentimentExpandedTypes.delete(stock.symbol);
+    renderSentimentAside(stock, detail);
+    return;
+  }
+  sentimentExpandedTypes.set(stock.symbol, type);
+  renderSentimentAside(stock, detail);
+  if (snapshot) {
+    void loadSentimentPayload(stock.symbol, sentimentWindowDays(snapshot));
+  }
+}
+
 async function saveSearchHistory(surface, query, metadata = {}) {
   const clean = String(query ?? "").trim();
   if (!clean || !apiState.connected) return;
@@ -1220,14 +1615,15 @@ function renderSearchHistories() {
 }
 
 function ensureSearchHistoryRow(input, surface) {
-  const anchor = input.closest("label") ?? input;
+  const searchBox = input.closest(".search-box");
+  const anchor = searchBox ?? input.closest("label") ?? input;
   let row = document.querySelector(`[data-search-history-row="${CSS.escape(surface)}"]`);
   if (!row || !document.body.contains(row)) {
     row = document.createElement("div");
     row.className = "search-history-row";
     row.dataset.searchHistoryRow = surface;
   }
-  if (anchor.tagName === "LABEL") {
+  if (searchBox || anchor.tagName === "LABEL") {
     if (row.parentElement !== anchor) anchor.append(row);
   } else if (row.previousElementSibling !== anchor) {
     anchor.insertAdjacentElement("afterend", row);
@@ -1239,7 +1635,10 @@ function applySearchHistoryValue(surface, value) {
   const binding = searchHistoryBindings.find((item) => item.surface === surface);
   const input = binding?.input();
   if (input) input.value = value;
-  if (surface === "stock_analysis") selectStock(value);
+  if (surface === "stock_analysis") {
+    hideStockSearchSuggestions();
+    selectStock(value);
+  }
   else if (surface === "filter_prompt") applyNaturalLanguageFilter();
   else if (surface === "anomaly_stock") renderAnomalyStockList();
   else if (surface === "anomaly_prompt") renderPromptAnomalyReport();
@@ -1282,6 +1681,188 @@ function normalizeApiStock(stock) {
   };
 }
 
+function mergeApiStocks(apiStocks) {
+  const enriched = (Array.isArray(apiStocks) ? apiStocks : [])
+    .map(normalizeApiStock)
+    .map((stock) => enrichStock(stock));
+  enriched.forEach((item) => {
+    const index = stocks.findIndex((existing) => existing.symbol === item.symbol);
+    if (index >= 0) stocks[index] = item;
+    else stocks.push(item);
+  });
+  return enriched;
+}
+
+function scheduleStockSearchSuggestions() {
+  window.clearTimeout(stockSearchTimer);
+  const query = symbolInput.value.trim();
+  if (!query) {
+    hideStockSearchSuggestions();
+    return;
+  }
+  stockSearchTimer = window.setTimeout(() => {
+    void loadStockSearchSuggestions(query);
+  }, 120);
+}
+
+async function loadStockSearchSuggestions(query = symbolInput.value.trim()) {
+  const clean = String(query ?? "").trim();
+  const requestId = ++stockSearchRequestId;
+  if (!clean) {
+    hideStockSearchSuggestions();
+    return;
+  }
+
+  stockSearchOpen = true;
+  stockSearchLoading = true;
+  stockSearchError = "";
+  highlightedStockSuggestion = -1;
+  renderStockSearchSuggestions();
+
+  try {
+    let suggestions = [];
+    if (apiState.connected) {
+      const params = new URLSearchParams({
+        q: clean,
+        market: activeMarket,
+        account_id: apiState.accountId,
+        record: "false",
+        limit: "8"
+      });
+      const payload = await apiRequest(`/api/stocks/search?${params.toString()}`);
+      suggestions = mergeApiStocks(payload.stocks).slice(0, 8);
+    } else {
+      suggestions = localStockSuggestions(clean).slice(0, 8);
+    }
+    if (requestId !== stockSearchRequestId) return;
+    stockSearchSuggestions = suggestions;
+  } catch (error) {
+    if (requestId !== stockSearchRequestId) return;
+    stockSearchSuggestions = [];
+    stockSearchError = error.message;
+  } finally {
+    if (requestId === stockSearchRequestId) {
+      stockSearchLoading = false;
+      renderStockSearchSuggestions();
+    }
+  }
+}
+
+function localStockSuggestions(query) {
+  const normalized = String(query ?? "").trim().toLowerCase().replace(/\s+/g, "");
+  if (!normalized) return [];
+  const aliasSymbol = stockSearchAliasSymbol(normalized);
+  const matches = stocks.filter((stock) => {
+    const symbol = stock.symbol.toLowerCase();
+    const code = symbol.split(".")[0];
+    const name = stock.name.toLowerCase();
+    return stock.symbol === aliasSymbol
+      || symbol.includes(normalized)
+      || code.includes(normalized)
+      || name.includes(normalized);
+  });
+  return matches.sort((a, b) => stockSuggestionRank(a, normalized, aliasSymbol) - stockSuggestionRank(b, normalized, aliasSymbol));
+}
+
+function stockSearchAliasSymbol(normalized) {
+  if (["hd", "hdz", "hdzz"].includes(normalized)) return "688114.SH";
+  return "";
+}
+
+function stockSuggestionRank(stock, normalized, aliasSymbol = "") {
+  const symbol = stock.symbol.toLowerCase();
+  const code = symbol.split(".")[0];
+  const name = stock.name.toLowerCase();
+  if (aliasSymbol && stock.symbol === aliasSymbol) return 0;
+  if ([symbol, code, name].includes(normalized)) return 1;
+  if (symbol.startsWith(normalized) || code.startsWith(normalized)) return 2;
+  if (name.startsWith(normalized)) return 3;
+  return 8;
+}
+
+function renderStockSearchSuggestions() {
+  if (!stockSearchList || !symbolInput) return;
+  const query = symbolInput.value.trim();
+  const shouldShow = stockSearchOpen && query;
+  stockSearchList.hidden = !shouldShow;
+  symbolInput.setAttribute("aria-expanded", shouldShow ? "true" : "false");
+  if (!shouldShow) {
+    stockSearchList.innerHTML = "";
+    return;
+  }
+  if (stockSearchLoading) {
+    stockSearchList.innerHTML = `
+      <div class="stock-suggestion-head">股票</div>
+      <div class="stock-suggestion-empty">正在搜索...</div>
+    `;
+    return;
+  }
+  if (stockSearchError) {
+    stockSearchList.innerHTML = `
+      <div class="stock-suggestion-head">股票</div>
+      <div class="stock-suggestion-empty">搜索失败：${escapeHTML(stockSearchError)}</div>
+    `;
+    return;
+  }
+  if (!stockSearchSuggestions.length) {
+    stockSearchList.innerHTML = `
+      <div class="stock-suggestion-head">股票</div>
+      <div class="stock-suggestion-empty">没有匹配股票。</div>
+    `;
+    return;
+  }
+  stockSearchList.innerHTML = `
+    <div class="stock-suggestion-head">股票</div>
+    ${stockSearchSuggestions.map((stock, index) => `
+      <button
+        id="stock-search-option-${index}"
+        class="stock-suggestion ${index === highlightedStockSuggestion ? "active" : ""}"
+        data-stock-suggestion="${escapeHTML(stock.symbol)}"
+        type="button"
+        role="option"
+        aria-selected="${index === highlightedStockSuggestion ? "true" : "false"}"
+      >
+        <strong>${escapeHTML(stock.name)}</strong>
+        <em>${escapeHTML(stock.symbol)}</em>
+        <small>${escapeHTML(stock.marketLabel ?? stock.market)} · ${escapeHTML(stock.industry ?? stock.currency ?? "")}</small>
+      </button>
+    `).join("")}
+  `;
+}
+
+function hideStockSearchSuggestions() {
+  window.clearTimeout(stockSearchTimer);
+  stockSearchOpen = false;
+  stockSearchLoading = false;
+  stockSearchError = "";
+  highlightedStockSuggestion = -1;
+  renderStockSearchSuggestions();
+}
+
+function chooseStockSearchSuggestion(symbol) {
+  const stock = stockBySymbol(symbol) || stockSearchSuggestions.find((item) => item.symbol === symbol);
+  if (!stock) return;
+  symbolInput.value = stock.name;
+  hideStockSearchSuggestions();
+  void saveSearchHistory("stock_analysis", stock.symbol);
+  selectStock(stock.symbol);
+}
+
+function submitStockSearch() {
+  const raw = symbolInput.value.trim();
+  const exact = stockByQuery(raw);
+  const suggestion = highlightedStockSuggestion >= 0
+    ? stockSearchSuggestions[highlightedStockSuggestion]
+    : (!exact ? stockSearchSuggestions[0] : null);
+  if (suggestion) {
+    chooseStockSearchSuggestion(suggestion.symbol);
+    return;
+  }
+  hideStockSearchSuggestions();
+  void saveSearchHistory("stock_analysis", raw);
+  selectStock(raw);
+}
+
 function populateAccountSelect() {
   if (!accountSelect || !apiState.accounts.length) return;
   accountSelect.innerHTML = apiState.accounts.map((account) => `
@@ -1289,11 +1870,66 @@ function populateAccountSelect() {
   `).join("");
 }
 
+async function loadIndustryOptions() {
+  if (!industryFilter) return;
+  if (!apiState.connected) {
+    industryOptions = localIndustryOptions();
+    renderIndustryFilter();
+    return;
+  }
+  try {
+    const params = new URLSearchParams({ market: activeMarket });
+    const payload = await apiRequest(`/api/screeners/industries?${params.toString()}`);
+    industryOptions = Array.isArray(payload.industries) ? payload.industries : [];
+  } catch (error) {
+    industryOptions = localIndustryOptions();
+  }
+  if (activeIndustry && !industryOptions.some((item) => item.industry === activeIndustry)) {
+    activeIndustry = "";
+  }
+  renderIndustryFilter();
+}
+
+function localIndustryOptions() {
+  const counts = new Map();
+  stocks
+    .filter((stock) => activeMarket === "all" || stock.market === activeMarket)
+    .forEach((stock) => {
+      [stock.industry, stock.sector].forEach((value) => {
+        const industry = String(value ?? "").trim();
+        if (!industry) return;
+        counts.set(industry, (counts.get(industry) ?? 0) + 1);
+      });
+    });
+  return [...counts.entries()]
+    .map(([industry, count]) => ({ industry, count }))
+    .sort((a, b) => b.count - a.count || a.industry.localeCompare(b.industry, "zh-CN"));
+}
+
+function renderIndustryFilter() {
+  if (!industryFilter) return;
+  industryFilter.innerHTML = `
+    <option value="">全部行业/板块</option>
+    ${industryOptions.map((item) => `
+      <option value="${escapeHTML(item.industry)}" ${item.industry === activeIndustry ? "selected" : ""}>
+        ${escapeHTML(item.industry)}（${Number(item.count ?? 0)}）
+      </option>
+    `).join("")}
+  `;
+}
+
 async function loadStocksFromApi() {
   if (!apiState.connected) return;
-  const data = await apiRequest(`/api/stocks/search?account_id=${encodeURIComponent(apiState.accountId)}`);
+  const params = new URLSearchParams({
+    account_id: apiState.accountId,
+    record: "false",
+    limit: String(STOCK_CARD_RENDER_LIMIT)
+  });
+  const data = await apiRequest(`/api/stocks/search?${params.toString()}`);
   if (!Array.isArray(data.stocks) || !data.stocks.length) return;
   stocks = data.stocks.map(normalizeApiStock).map((stock) => enrichStock(stock));
+  screenerStocks = [];
+  databaseScreenerActive = false;
   if (!stockBySymbol(selectedSymbol)) selectedSymbol = stocks[0].symbol;
   if (!stockBySymbol(selectedAnomalySymbol)) selectedAnomalySymbol = stocks[0].symbol;
 }
@@ -1393,6 +2029,7 @@ async function loadAccountFromApi(accountId = apiState.accountId) {
     await loadAlphaVantageCapabilities();
     await loadSourceTestCatalog();
     await loadStocksFromApi();
+    await loadIndustryOptions();
     await loadSearchHistory();
     favoriteSymbols = new Set(data.favorites);
     portfolioTrades = data.trades.map(normalizeBackendTrade);
@@ -1409,11 +2046,14 @@ async function loadAccountFromApi(accountId = apiState.accountId) {
     apiState.sharedCache = null;
     apiState.sourceSummary = null;
     apiState.portfolio = null;
+    screenerStocks = [];
+    databaseScreenerActive = false;
     apiState.lastError = `数据 API 未连接：${error.message}`;
     applyDataSourcePayload({ sources: fallbackDataSources });
     await loadAkshareCapabilities();
     await loadAlphaVantageCapabilities();
     await loadSourceTestCatalog();
+    await loadIndustryOptions();
     updateBackendStatus(apiState.lastError);
   }
 }
@@ -1472,13 +2112,26 @@ function syncStocksFromBackendPortfolio(portfolio) {
 }
 
 function filteredStocks() {
-  const marketList = activeMarket === "all" ? stocks : stocks.filter((stock) => stock.market === activeMarket);
+  const source = apiState.connected && databaseScreenerActive ? screenerStocks : stocks;
+  const marketList = activeMarket === "all" ? source : source.filter((stock) => stock.market === activeMarket);
+  const industryList = activeIndustry ? marketList.filter(stockMatchesActiveIndustry) : marketList;
+  if (apiState.connected && databaseScreenerActive) return industryList;
   const activeRulesList = [...activeFilterIds].map((id) => filtersById.get(id)).filter(Boolean);
-  if (!activeRulesList.length) return marketList;
-  return marketList.filter((stock) => {
+  if (!activeRulesList.length) return industryList;
+  return industryList.filter((stock) => {
     const results = activeRulesList.map((rule) => rule.test(stock));
     return filterMode === "all" ? results.every(Boolean) : results.some(Boolean);
   });
+}
+
+function stockMatchesActiveIndustry(stock) {
+  const target = compactFilterLabel(activeIndustry);
+  if (!target) return true;
+  return [stock.industry, stock.sector].some((value) => compactFilterLabel(value) === target);
+}
+
+function compactFilterLabel(value) {
+  return String(value ?? "").trim().replace(/\s+/g, "").toLowerCase();
 }
 
 function renderFilterGroups() {
@@ -1489,7 +2142,10 @@ function renderFilterGroups() {
         ${group.items.map((item) => `
           <label class="check-row">
             <input type="checkbox" data-filter-id="${item.id}" ${activeFilterIds.has(item.id) ? "checked" : ""} />
-            <span>${item.label}</span>
+            <span>
+              <strong>${item.label}</strong>
+              <small>${escapeHTML(item.logic ?? "")}</small>
+            </span>
           </label>
         `).join("")}
       </div>
@@ -1502,6 +2158,7 @@ function renderActiveRules() {
   const rules = [...activeFilterIds].map((id) => filtersById.get(id)).filter(Boolean);
   const promptText = filterPrompt.value.trim();
   const rulePills = rules.map((rule) => `<span class="rule-pill">${rule.label}</span>`);
+  if (activeIndustry) rulePills.unshift(`<span class="rule-pill">行业：${escapeHTML(activeIndustry)}</span>`);
   if (promptText) rulePills.push(`<span class="rule-pill">自然语言：${escapeHTML(promptText)}</span>`);
   activeRules.innerHTML = rulePills.length
     ? rulePills.join("")
@@ -1509,66 +2166,114 @@ function renderActiveRules() {
 }
 
 async function applyNaturalLanguageFilter() {
-  const text = filterPrompt.value.trim().toLowerCase();
+  const rawText = filterPrompt.value.trim();
+  const text = rawText.toLowerCase();
   if (text) {
     void saveSearchHistory("filter_prompt", filterPrompt.value);
     if (text.includes("宽松") || text.includes("任一") || text.includes("或者")) {
       filterMode = "any";
       syncFilterModeButtons();
     }
+    const matchedIndustry = industryFromPrompt(rawText);
+    if (matchedIndustry) {
+      activeIndustry = matchedIndustry;
+      if (industryFilter) industryFilter.value = matchedIndustry;
+      filterPrompt.value = "";
+    }
   }
   renderActiveRules();
   await runDatabaseScreener();
 }
 
+function industryFromPrompt(value) {
+  const clean = String(value ?? "").trim().replace(/^行业\s*(?:=|是|为|:|：)\s*/, "");
+  if (!clean) return "";
+  const exact = industryOptions.find((item) => item.industry === clean);
+  if (exact) return exact.industry;
+  const compact = clean.replace(/\s+/g, "").toLowerCase();
+  const fuzzy = industryOptions.find((item) => item.industry.replace(/\s+/g, "").toLowerCase() === compact);
+  if (fuzzy) return fuzzy.industry;
+  const contained = industryOptions.find((item) => {
+    const industry = item.industry.replace(/\s+/g, "").toLowerCase();
+    return compact.length >= 2 && (compact.includes(industry) || industry.includes(compact));
+  });
+  return contained?.industry ?? "";
+}
+
 async function runDatabaseScreener() {
   if (!apiState.connected) {
+    screenerStocks = [];
+    databaseScreenerActive = false;
     renderCandidates();
     return;
   }
+  const requestId = ++screenerRequestId;
+  renderScreenerLoading();
   try {
     updateBackendStatus("数据库筛选中");
     const payload = await apiRequest("/api/screeners/run", {
       method: "POST",
       body: JSON.stringify({
         market: activeMarket,
+        industry: activeIndustry,
         filter_ids: [...activeFilterIds],
         mode: filterMode,
         natural_query: filterPrompt.value.trim(),
         account_id: apiState.accountId
       })
     });
+    if (requestId !== screenerRequestId) return;
     const apiStocks = Array.isArray(payload.stocks) ? payload.stocks : [];
-    stocks = apiStocks.map(normalizeApiStock).map((stock) => enrichStock(stock));
-    if (stocks.length && !stockBySymbol(selectedSymbol)) selectedSymbol = stocks[0].symbol;
+    screenerStocks = mergeApiStocks(apiStocks);
+    databaseScreenerActive = true;
+    if (screenerStocks.length && !screenerStocks.some((stock) => stock.symbol === selectedSymbol)) {
+      selectedSymbol = screenerStocks[0].symbol;
+    }
     renderCandidates();
     renderWatchlist();
     renderStockAnomalyReport(selectedAnomalySymbol);
     const warehouse = payload.warehouse ?? {};
     updateBackendStatus(`数据库筛选完成：${payload.count ?? stocks.length} 只，历史日线 ${warehouse.daily_bars ?? 0} 条`);
   } catch (error) {
+    if (requestId !== screenerRequestId) return;
     apiState.lastError = `数据库筛选失败：${error.message}`;
     updateBackendStatus(apiState.lastError);
+    screenerStocks = [];
+    databaseScreenerActive = false;
     renderCandidates();
   }
+}
+
+function renderScreenerLoading() {
+  const message = `<div class="empty-state">正在筛选完整股票池，请稍候...</div>`;
+  if (candidateCount) candidateCount.textContent = "筛选中";
+  if (filterResultCount) filterResultCount.textContent = "筛选中";
+  if (candidateGrid) candidateGrid.innerHTML = message;
+  if (filterResultGrid) filterResultGrid.innerHTML = message;
 }
 
 function renderCandidates() {
   const list = filteredStocks();
   candidateCount.textContent = `${list.length} 只`;
-  if (candidateGrid) {
-    candidateGrid.innerHTML = list.length
-      ? list.map(renderStockCard).join("")
-      : `<div class="empty-state">当前过滤组合没有匹配股票。</div>`;
-  }
+  if (candidateGrid) candidateGrid.innerHTML = renderStockCardList(list);
   if (filterResultCount) filterResultCount.textContent = `${list.length} 只`;
-  if (filterResultGrid) {
-    filterResultGrid.innerHTML = list.length
-      ? list.map(renderStockCard).join("")
-      : `<div class="empty-state">当前过滤组合没有匹配股票。</div>`;
-  }
-  requestAnimationFrame(drawAllSparklines);
+  if (filterResultGrid) filterResultGrid.innerHTML = renderStockCardList(list);
+  scheduleSparklineDraw();
   renderAnomalyStockList();
+}
+
+function renderStockCardList(list) {
+  if (!list.length) return `<div class="empty-state">当前过滤组合没有匹配股票。</div>`;
+  const visible = list.slice(0, STOCK_CARD_RENDER_LIMIT);
+  const remainder = list.length - visible.length;
+  return `
+    ${visible.map(renderStockCard).join("")}
+    ${remainder > 0 ? `
+      <div class="empty-state result-limit-note">
+        已显示前 ${visible.length} 只，共 ${list.length} 只。继续增加条件或行业筛选可以缩小结果。
+      </div>
+    ` : ""}
+  `;
 }
 
 function anomalyUniverse() {
@@ -1811,7 +2516,7 @@ function renderBacktestResult() {
       <ul class="backtest-note-list">${notes.map((note) => `<li>${escapeHTML(note)}</li>`).join("")}</ul>
     </section>
   `;
-  requestAnimationFrame(drawBacktestCurve);
+  scheduleBacktestDraw();
 }
 
 function renderBacktestCard(label, value, numberValue, invert = false) {
@@ -2000,7 +2705,14 @@ function renderStockCard(stock) {
         <span class="price">${formatPrice(stock)}</span>
         <strong class="change ${changeClass}">${sign}${stock.change.toFixed(1)}%</strong>
       </div>
-      <canvas class="sparkline" width="440" height="128" data-spark="${stock.spark.join(",")}"></canvas>
+      <canvas
+        class="sparkline"
+        width="440"
+        height="128"
+        data-stock-thumb="${escapeHTML(stock.symbol)}"
+        data-thumb-market="${escapeHTML(stock.market)}"
+        data-spark="${stock.spark.join(",")}"
+      ></canvas>
       <div class="meta-row">
         <span class="freshness-badge ${stock.freshnessStatus}">数据 ${statusText(stock.freshnessStatus)}</span>
         <span class="confidence">证据 ${stock.truthScore}%</span>
@@ -2011,7 +2723,7 @@ function renderStockCard(stock) {
         <span>价差 ${stock.metrics.spreadBps}bp</span>
       </div>
       <div class="factor-list">
-        ${Object.entries(stock.factors).map(([name, value]) => renderFactor(name, value)).join("")}
+        ${Object.entries(stock.factors).map(([name, value]) => renderFactor(stock, name, value)).join("")}
       </div>
       <ul class="reason-list">
         ${stock.reasons.slice(0, 2).map((reason) => `<li>${reason}</li>`).join("")}
@@ -2021,21 +2733,33 @@ function renderStockCard(stock) {
   `;
 }
 
-function renderFactor(name, value) {
+function renderFactor(stock, name, value) {
+  const snapshot = name === "情绪" ? stockDetailCache.get(stock.symbol)?.information?.sentiment : null;
+  const liveScore = sentimentFactorScore(snapshot);
+  const displayValue = liveScore ?? value;
   return `
     <div class="factor-row">
       <span>${name}</span>
-      <div class="bar"><span style="width: ${value}%"></span></div>
-      <strong>${value}</strong>
+      <div class="bar"><span style="width: ${displayValue}%"></span></div>
+      <strong>${displayValue}</strong>
     </div>
   `;
 }
 
 function drawAllSparklines() {
-  document.querySelectorAll(".sparkline").forEach((canvas) => {
-    const points = canvas.dataset.spark.split(",").map(Number);
-    drawSparkline(canvas, points);
+  const canvases = [...document.querySelectorAll(".active-panel .sparkline")]
+    .filter((canvas) => canvas.getClientRects().length > 0);
+  canvases.forEach((canvas) => {
+    const detail = stockDetailCache.get(canvas.dataset.stockThumb);
+    const bars = detail?.market_data?.periods?.daily?.bars ?? [];
+    if (bars.length >= 2) {
+      drawKlineThumbnail(canvas, bars);
+    } else {
+      const points = canvas.dataset.spark.split(",").map(Number);
+      drawKlineThumbnail(canvas, sparkPointsToBars(points));
+    }
   });
+  queueStockCardDetailLoads(canvases);
 }
 
 function drawSparkline(canvas, points) {
@@ -2065,6 +2789,133 @@ function drawSparkline(canvas, points) {
   ctx.fill();
 }
 
+function sparkPointsToBars(points) {
+  return points.filter(Number.isFinite).map((close, index, values) => {
+    const open = index === 0 ? close : values[index - 1];
+    const spread = Math.max(Math.abs(close - open), Math.max(Math.abs(close), 1) * 0.006);
+    return {
+      open,
+      high: Math.max(open, close) + spread * 0.35,
+      low: Math.min(open, close) - spread * 0.35,
+      close,
+      volume: 1 + index
+    };
+  });
+}
+
+function queueStockCardDetailLoads(canvases = [...document.querySelectorAll(".active-panel [data-stock-thumb]")]) {
+  if (!apiState.connected) return;
+  const symbols = new Map();
+  canvases.forEach((canvas) => {
+    const symbol = canvas.dataset.stockThumb;
+    if (!symbol || symbols.has(symbol)) return;
+    if (stockDetailCache.has(symbol) || stockDetailLoading.has(symbol) || stockDetailErrors.has(symbol)) return;
+    if (stockCardDetailQueuedSymbols.has(symbol)) return;
+    symbols.set(symbol, canvas.dataset.thumbMarket || "all");
+  });
+  [...symbols.entries()].slice(0, 8).forEach(([symbol, market]) => {
+    stockCardDetailQueuedSymbols.add(symbol);
+    stockCardDetailQueue.push({ symbol, market });
+  });
+  scheduleStockCardDetailPump();
+}
+
+function scheduleStockCardDetailPump() {
+  if (stockCardDetailPumpQueued) return;
+  stockCardDetailPumpQueued = true;
+  requestIdleTask(() => {
+    stockCardDetailPumpQueued = false;
+    pumpStockCardDetailQueue();
+  });
+}
+
+function pumpStockCardDetailQueue() {
+  if (!apiState.connected) return;
+  while (stockCardDetailActiveLoads < maxStockCardDetailLoads && stockCardDetailQueue.length) {
+    const item = stockCardDetailQueue.shift();
+    stockCardDetailQueuedSymbols.delete(item.symbol);
+    if (stockDetailCache.has(item.symbol) || stockDetailLoading.has(item.symbol) || stockDetailErrors.has(item.symbol)) continue;
+    stockCardDetailActiveLoads += 1;
+    stockDetailLoading.add(item.symbol);
+    void loadStockDetail(item.symbol, item.market).finally(() => {
+      stockCardDetailActiveLoads = Math.max(0, stockCardDetailActiveLoads - 1);
+      scheduleStockCardDetailPump();
+    });
+  }
+}
+
+function drawKlineThumbnail(canvas, bars) {
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+  const visible = bars
+    .filter((bar) => Number.isFinite(Number(bar.close)))
+    .slice(-48)
+    .map((bar) => ({
+      open: Number.isFinite(Number(bar.open)) ? Number(bar.open) : Number(bar.close),
+      high: Number.isFinite(Number(bar.high)) ? Number(bar.high) : Number(bar.close),
+      low: Number.isFinite(Number(bar.low)) ? Number(bar.low) : Number(bar.close),
+      close: Number(bar.close),
+      volume: Number.isFinite(Number(bar.volume)) ? Number(bar.volume) : 0
+    }));
+  if (visible.length < 2) {
+    drawSparkline(canvas, canvas.dataset.spark.split(",").map(Number));
+    return;
+  }
+
+  const padX = 14;
+  const priceTop = 12;
+  const priceHeight = 78;
+  const volumeTop = 98;
+  const volumeHeight = 18;
+  const plotWidth = width - padX * 2;
+  const step = plotWidth / visible.length;
+  const candleWidth = Math.max(2, Math.min(8, step * 0.58));
+  const min = Math.min(...visible.map((bar) => bar.low));
+  const max = Math.max(...visible.map((bar) => bar.high));
+  const span = Math.max(max - min, 0.01);
+  const maxVolume = Math.max(...visible.map((bar) => bar.volume), 1);
+  const xFor = (index) => padX + step * index + step / 2;
+  const yFor = (value) => priceTop + priceHeight - ((value - min) / span) * priceHeight;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#fbfcfd";
+  ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = "#edf1f4";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  [0, 0.5, 1].forEach((ratio) => {
+    const y = priceTop + priceHeight * ratio;
+    ctx.moveTo(padX, y);
+    ctx.lineTo(width - padX, y);
+  });
+  ctx.stroke();
+
+  visible.forEach((bar, index) => {
+    const x = xFor(index);
+    const up = bar.close >= bar.open;
+    const color = up ? "#e23b22" : "#059447";
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(x, yFor(bar.high));
+    ctx.lineTo(x, yFor(bar.low));
+    ctx.stroke();
+    const top = yFor(Math.max(bar.open, bar.close));
+    const bottom = yFor(Math.min(bar.open, bar.close));
+    ctx.fillRect(x - candleWidth / 2, top, candleWidth, Math.max(bottom - top, 2));
+
+    const volumeHeightNow = (bar.volume / maxVolume) * volumeHeight;
+    ctx.globalAlpha = 0.78;
+    ctx.fillRect(x - candleWidth / 2, volumeTop + volumeHeight - volumeHeightNow, candleWidth, Math.max(volumeHeightNow, 1));
+    ctx.globalAlpha = 1;
+  });
+
+  const ma5 = movingAverage(visible.map((bar) => bar.close), 5);
+  drawIndicatorLine(ctx, ma5, xFor, yFor, "#1677d2", 2);
+}
+
 function selectedStock() {
   return stocks.find((item) => item.symbol === selectedSymbol);
 }
@@ -2082,9 +2933,16 @@ function stockByQuery(query) {
 }
 
 async function selectStock(symbol, shouldOpenDrawer = true) {
+  const requestId = ++selectStockRequestId;
   const raw = String(symbol ?? "").trim();
   const normalized = raw.toUpperCase();
   let stock = stockByQuery(raw);
+
+  if (shouldOpenDrawer) {
+    openSingleDrawer();
+    renderDrawerLoading(stock ? `${stock.symbol} · ${stock.name}` : (raw || "股票"));
+  }
+
   if (!stock && raw && apiState.connected) {
     try {
       const params = new URLSearchParams({
@@ -2094,28 +2952,28 @@ async function selectStock(symbol, shouldOpenDrawer = true) {
       });
       const payload = await apiRequest(`/api/stocks/search?${params.toString()}`);
       const apiStocks = Array.isArray(payload.stocks) ? payload.stocks : [];
-      apiStocks.map(normalizeApiStock).map((item) => enrichStock(item)).forEach((item) => {
-        const index = stocks.findIndex((existing) => existing.symbol === item.symbol);
-        if (index >= 0) stocks[index] = item;
-        else stocks.push(item);
-      });
+      mergeApiStocks(apiStocks);
       stock = apiStocks.length ? stockByQuery(apiStocks[0].symbol) : null;
-      await loadSearchHistory();
+      void loadSearchHistory();
     } catch (error) {
       apiState.lastError = `股票搜索失败：${error.message}`;
       updateBackendStatus(apiState.lastError);
     }
   }
+  if (requestId !== selectStockRequestId) return;
   selectedSymbol = stock ? stock.symbol : normalized;
-  renderCandidates();
-  renderFavoriteRows();
+  scheduleStockListRefresh();
   if (!stock) {
     renderUnknown(normalized);
-    if (shouldOpenDrawer) openSingleDrawer();
     return;
   }
-  renderDetails(stock);
-  if (shouldOpenDrawer) openSingleDrawer();
+  if (shouldOpenDrawer) {
+    requestAnimationFrame(() => {
+      if (requestId === selectStockRequestId && selectedSymbol === stock.symbol) renderDetails(stock);
+    });
+  } else {
+    renderDetails(stock);
+  }
 }
 
 function openSingleDrawer() {
@@ -2128,15 +2986,50 @@ function closeSingleDrawer() {
   document.body.classList.remove("drawer-open");
 }
 
+function renderDrawerLoading(label = "股票") {
+  detailTitle.textContent = label;
+  detailAction.textContent = "读取中";
+  detailAction.className = "action-pill drawer-action-pill warn";
+  if (detailFavorite) detailFavorite.hidden = true;
+  detailBody.innerHTML = `
+    <div class="detail-grid">
+      <div class="metric-box"><span>综合评分</span><strong>...</strong></div>
+      <div class="metric-box"><span>证据可信度</span><strong>...</strong></div>
+      <div class="metric-box"><span>数据时间</span><strong>读取中</strong></div>
+    </div>
+    <section class="stock-detail-panel">
+      <div class="stock-detail-empty">
+        <strong>正在打开个股详情</strong>
+        <span>优先展示页面，K 线和财务数据随后从 SQLite 补齐。</span>
+      </div>
+    </section>
+  `;
+  reflectionList.innerHTML = `<div class="empty-state compact">正在准备反思记录。</div>`;
+  memoryList.innerHTML = `<div class="empty-state compact">正在读取分析记忆。</div>`;
+  if (sentimentAside) {
+    sentimentAside.innerHTML = `
+      <div class="sentiment-panel sentiment-panel-side empty">
+        <div class="stock-detail-empty">
+          <strong>正在读取情绪面</strong>
+          <span>等待个股详情返回后展示公告/财报、社区舆论和交易行为三类证据。</span>
+        </div>
+      </div>
+    `;
+  }
+}
+
 function renderDetails(stock) {
   const shouldLoadDetail = shouldLoadStockDetail(stock.symbol);
   if (shouldLoadDetail) {
     stockDetailLoading.add(stock.symbol);
     void loadStockDetail(stock.symbol, stock.market);
   }
+  const detailPayload = stockDetailCache.get(stock.symbol);
   detailTitle.textContent = `${stock.symbol} · ${stock.name}`;
-  detailAction.textContent = stock.action;
-  detailAction.className = `action-pill drawer-action-pill ${stock.freshnessStatus}`;
+  const refreshing = stockDetailRefreshing.has(stock.symbol);
+  detailAction.textContent = refreshing ? "刷新中" : stock.action;
+  detailAction.className = `action-pill drawer-action-pill ${refreshing ? "fresh" : stock.freshnessStatus}`;
+  renderDrawerFavoriteButton(stock);
   detailBody.innerHTML = `
     <div class="detail-grid">
       <div class="metric-box"><span>综合评分</span><strong>${stock.score}</strong></div>
@@ -2150,7 +3043,7 @@ function renderDetails(stock) {
       ${renderUncertainty(stock)}
     </div>
     <div class="factor-detail-grid">
-      ${Object.entries(stock.factors).map(([name, value]) => renderFactorTile(stock, name, value)).join("")}
+      ${Object.entries(stock.factors).map(([name, value]) => renderFactorTile(stock, name, value, detailPayload)).join("")}
     </div>
     <div class="evidence-list">
       ${stock.evidence.map((item, index) => renderEvidence(item, index)).join("")}
@@ -2171,7 +3064,21 @@ function renderDetails(stock) {
   `;
   reflectionList.innerHTML = stock.reflection.map(renderReflection).join("");
   renderMemory(stock);
-  requestAnimationFrame(drawStockDetailCharts);
+  renderSentimentAside(stock, detailPayload);
+  scheduleStockDetailChartDraw();
+}
+
+function renderDrawerFavoriteButton(stock) {
+  if (!detailFavorite) return;
+  const favorite = favoriteSymbols.has(stock.symbol);
+  detailFavorite.hidden = false;
+  detailFavorite.dataset.drawerFavorite = stock.symbol;
+  detailFavorite.className = `status-badge drawer-favorite-button ${favorite ? "active" : ""}`;
+  detailFavorite.setAttribute("aria-label", `${favorite ? "取消关注" : "关注"} ${stock.symbol}`);
+  detailFavorite.innerHTML = `
+    <span class="badge-icon bookmark-icon"></span>
+    <span>${favorite ? "已关注" : "关注"}</span>
+  `;
 }
 
 function renderPositionPanel(stock) {
@@ -2202,7 +3109,8 @@ function shouldLoadStockDetail(symbol) {
     && symbol
     && !stockDetailCache.has(symbol)
     && !stockDetailLoading.has(symbol)
-    && !stockDetailErrors.has(symbol);
+    && !stockDetailErrors.has(symbol)
+    && !stockDetailRefreshing.has(symbol);
 }
 
 async function loadStockDetail(symbol, market = "all") {
@@ -2221,10 +3129,12 @@ async function loadStockDetail(symbol, market = "all") {
     stockDetailErrors.set(symbol, error.message);
   } finally {
     stockDetailLoading.delete(symbol);
+    scheduleSparklineDraw();
     const current = stockBySymbol(symbol);
     if (current && selectedSymbol === symbol && !singleDrawer.hidden) {
       renderDetails(current);
     }
+    if (current) scheduleStockListRefresh();
   }
 }
 
@@ -2247,6 +3157,9 @@ function renderStockDetailPanel(stock) {
   const detail = stockDetailCache.get(stock.symbol);
   const loading = stockDetailLoading.has(stock.symbol);
   const error = stockDetailErrors.get(stock.symbol);
+  const refreshing = stockDetailRefreshing.has(stock.symbol);
+  const refreshError = stockDetailRefreshErrors.get(stock.symbol);
+  const refreshStep = stockDetailRefreshSteps.get(stock.symbol);
 
   if (!apiState.connected) {
     return `
@@ -2287,6 +3200,7 @@ function renderStockDetailPanel(stock) {
 
   const symbol = detail.symbol ?? stock;
   const summary = detail.summary ?? {};
+  const isIndexQuote = isIndexLikeStock({ ...stock, ...symbol });
   const period = activeStockDetailPeriod(stock.symbol, detail);
   const periodPayload = detail.market_data?.periods?.[period] ?? {};
   const bars = periodPayload.bars ?? [];
@@ -2311,10 +3225,21 @@ function renderStockDetailPanel(stock) {
         <div class="stock-quote-source">
           <span>${escapeHTML(detail.market_data?.latest_provider ?? "daily_bars")}</span>
           <span>${escapeHTML(detail.market_data?.preferred_adjust || "未复权")}</span>
+          <button class="mini-action stock-refresh-action" data-refresh-source="detail" type="button" ${refreshing ? "disabled" : ""} aria-label="刷新当前股票数据">
+            ${refreshing ? "刷新中" : "刷新"}
+          </button>
         </div>
       </div>
+      ${refreshError ? `<div class="stock-refresh-error">${escapeHTML(refreshError)}</div>` : ""}
+      ${refreshing ? `
+        <div class="stock-refresh-banner">
+          <strong>刷新中</strong>
+          <span>${escapeHTML(refreshStep || "正在刷新行情、K线、财务、公告和资讯数据。")}</span>
+          <div class="refresh-progress" aria-hidden="true"><span></span></div>
+        </div>
+      ` : ""}
       <div class="stock-quote-price-row">
-        <strong>${formatDetailPrice(summary.price, summary.currency)}</strong>
+        <strong>${formatDetailPrice(summary.price, summary.currency, isIndexQuote)}</strong>
         <span class="${changeClass}">${formatSignedNumber(summary.change, 2)} / ${formatSignedNumber(summary.change_pct, 2, "%")}</span>
         <em>${escapeHTML(summary.latest_trade_date ?? "暂无交易日")}</em>
       </div>
@@ -2326,9 +3251,9 @@ function renderStockDetailPanel(stock) {
         ${renderQuoteMetric("成交量", formatShareVolume(summary.volume))}
         ${renderQuoteMetric("成交额", formatLargeMoney(summary.amount, summary.currency))}
         ${renderQuoteMetric("换手", formatDetailNumber(summary.turnover_rate, 2, "%"))}
-        ${renderQuoteMetric("PE(TTM)", formatDetailNumber(summary.pe_ttm, 2))}
-        ${renderQuoteMetric("PB", formatDetailNumber(summary.pb, 2))}
-        ${renderQuoteMetric("PS(TTM)", formatDetailNumber(summary.ps_ttm, 2))}
+        ${renderQuoteMetric("PE(TTM)", formatPeTtm(summary.pe_ttm), Number(summary.pe_ttm) <= 0 ? "loss" : "")}
+        ${renderQuoteMetric("PB", formatPositiveDetailNumber(summary.pb, 2))}
+        ${renderQuoteMetric("PS(TTM)", formatPositiveDetailNumber(summary.ps_ttm, 2))}
         ${renderQuoteMetric("52周最高", formatDetailNumber(summary.high_52w, 2))}
         ${renderQuoteMetric("52周最低", formatDetailNumber(summary.low_52w, 2))}
         ${renderQuoteMetric("总股本", formatShareVolume(summary.total_share))}
@@ -2354,6 +3279,7 @@ function renderStockDetailPanel(stock) {
         `}
       </div>
       ${renderFinancialQuarterPanel(detail)}
+      ${renderStockInformationPanel(stock, detail)}
     </section>
   `;
 }
@@ -2365,6 +3291,282 @@ function renderQuoteMetric(label, value, valueClass = "") {
       <strong class="${valueClass}">${value}</strong>
     </div>
   `;
+}
+
+function renderSentimentAside(stock, detail) {
+  if (!sentimentAside) return;
+  sentimentAside.innerHTML = renderSentimentPanel(detail, {
+    stock,
+    interactive: true,
+    surface: "side"
+  });
+}
+
+function renderSentimentPanel(detail, options = {}) {
+  const snapshot = detail?.information?.sentiment;
+  const stock = options.stock ?? selectedStock();
+  const interactive = Boolean(options.interactive);
+  const sideClass = options.surface === "side" ? "sentiment-panel-side" : "";
+  const refreshing = stock ? sentimentRefreshing.has(stock.symbol) : false;
+  const refreshError = stock ? sentimentRefreshErrors.get(stock.symbol) : "";
+  const refreshResult = stock ? sentimentRefreshResults.get(stock.symbol) : null;
+  if (!snapshot) {
+    return `
+      <div class="sentiment-panel ${sideClass} empty">
+        <div class="stock-detail-empty">
+          <strong>暂无情绪快照</strong>
+          <span>当前股票还没有写入 sentiment_snapshots。点击刷新后会启动社区爬虫，并重新分析公告/财报、社区舆论和交易行为。</span>
+          ${interactive && stock && apiState.connected ? `
+            <button class="mini-action sentiment-refresh-action" data-sentiment-refresh="llm" type="button" ${refreshing ? "disabled" : ""}>
+              ${refreshing ? "刷新中" : "GLM情绪"}
+            </button>
+          ` : ""}
+        </div>
+        ${refreshing ? `
+          <div class="sentiment-refresh-banner">
+            <strong>正在刷新情绪</strong>
+            <span>启动社区爬虫，并重新分析公告/财报、社区舆论和交易行为。</span>
+            <div class="refresh-progress" aria-hidden="true"><span></span></div>
+          </div>
+        ` : ""}
+        ${refreshError ? `<div class="stock-refresh-error">${escapeHTML(refreshError)}</div>` : ""}
+        ${refreshResult ? renderSentimentRefreshResult(refreshResult) : ""}
+      </div>
+    `;
+  }
+  const composite = Number(snapshot.composite_score);
+  const tone = sentimentTone(composite, snapshot.sentiment_label);
+  const factorScore = sentimentFactorScore(snapshot);
+  const counts = snapshot.source_counts ?? {};
+  const sourceTotal = sentimentSourceCount(snapshot);
+  const expandedType = stock ? sentimentExpandedTypes.get(stock.symbol) : "";
+  return `
+    <div class="sentiment-panel ${sideClass}">
+      <div class="sentiment-head">
+        <div>
+          <strong>情绪面</strong>
+          <span>${escapeHTML(snapshot.as_of || "暂无日期")} · ${snapshot.window_days || 30} 天窗口 · ${sourceTotal} 条证据</span>
+        </div>
+        <div class="sentiment-head-actions">
+          <span class="sentiment-label ${tone}">${sentimentLabelText(snapshot.sentiment_label)}</span>
+          ${interactive ? `
+            <button class="mini-action sentiment-refresh-action" data-sentiment-refresh="llm" type="button" ${refreshing ? "disabled" : ""}>
+              ${refreshing ? "刷新中" : "GLM情绪"}
+            </button>
+          ` : ""}
+        </div>
+      </div>
+      ${refreshing ? `
+        <div class="sentiment-refresh-banner">
+          <strong>正在刷新情绪</strong>
+          <span>启动社区爬虫，并重新分析公告/财报、社区舆论和交易行为。</span>
+          <div class="refresh-progress" aria-hidden="true"><span></span></div>
+        </div>
+      ` : ""}
+      ${refreshError ? `<div class="stock-refresh-error">${escapeHTML(refreshError)}</div>` : ""}
+      ${refreshResult ? renderSentimentRefreshResult(refreshResult) : ""}
+      <div class="sentiment-summary-grid">
+        <div class="sentiment-score-card ${tone}">
+          <span>综合情绪</span>
+          <strong>${formatSentimentScore(composite)}</strong>
+          <em>因子换算 ${factorScore ?? "暂无"}</em>
+        </div>
+        <div class="sentiment-score-card">
+          <span>置信度</span>
+          <strong>${formatSentimentConfidence(snapshot.confidence)}</strong>
+          <em>证据充分度</em>
+        </div>
+      </div>
+      <div class="sentiment-breakdown">
+        ${sentimentTypeOptions.map((item) => {
+          const active = expandedType === item.id;
+          return `
+            ${renderSentimentBreakdownRow(item, snapshot[item.scoreKey], counts[item.id] || 0, { interactive, active })}
+            ${active ? renderSentimentEvidencePanel(stock, detail, item.id) : ""}
+          `;
+        }).join("")}
+      </div>
+      ${renderSentimentMethodCard(snapshot)}
+    </div>
+  `;
+}
+
+function renderSentimentBreakdownRow(item, value, count, options = {}) {
+  const numeric = Number(value);
+  const tone = sentimentTone(value);
+  const normalized = Number.isFinite(numeric) ? Math.max(0, Math.min(100, (numeric + 100) / 2)) : 50;
+  const activeClass = options.active ? "active" : "";
+  const tag = options.interactive ? "button" : "div";
+  const attrs = options.interactive
+    ? `type="button" data-sentiment-type="${escapeHTML(item.id)}" aria-expanded="${options.active ? "true" : "false"}"`
+    : "";
+  return `
+    <${tag} class="sentiment-breakdown-row ${tone} ${activeClass}" ${attrs}>
+      <div class="sentiment-breakdown-meta">
+        <span>${escapeHTML(item.label)}</span>
+        <strong>${formatSentimentScore(value)}</strong>
+        <em>${Number(count || 0)} 条${options.interactive ? (options.active ? " · 收起" : " · 展开") : ""}</em>
+      </div>
+      <div class="sentiment-track" aria-hidden="true">
+        <span style="width: ${normalized.toFixed(1)}%"></span>
+      </div>
+    </${tag}>
+  `;
+}
+
+function renderSentimentMethodCard(snapshot) {
+  const available = sentimentAvailableTypes(snapshot);
+  const weightText = sentimentTypeOptions
+    .map((item) => `${item.label} ${(item.weight * 100).toFixed(0)}%`)
+    .join(" · ");
+  const activeText = available.length
+    ? available.map((item) => `${item.label} ${(Number(sentimentEffectiveWeight(snapshot, item.id)) * 100).toFixed(0)}%`).join(" · ")
+    : "暂无有效证据";
+  return `
+    <div class="sentiment-method-card">
+      <strong>计算口径</strong>
+      <p>单条权重 = max(0.1, 置信度) × 时间衰减；本类分数 = Σ(单条分 × 单条权重) / Σ单条权重。</p>
+      <p>基础权重：${escapeHTML(weightText)}。本次有效权重：${escapeHTML(activeText)}。</p>
+      <p>标签阈值：≥35 积极，12 到 35 偏积极，-12 到 12 中性，-35 到 -12 偏消极，≤-35 消极。</p>
+    </div>
+  `;
+}
+
+function renderSentimentRefreshResult(result) {
+  const counts = result?.counts ?? {};
+  const errors = Array.isArray(result?.errors) ? result.errors : [];
+  return `
+    <div class="sentiment-refresh-result">
+      <span>已刷新 ${Number(counts.symbols || 0)} 只</span>
+      <span>社区帖 ${Number(counts.community_posts || 0)}</span>
+      <span>公告/财报证据 ${Number(counts.filing_news_evidence || 0)}</span>
+      <span>社区证据 ${Number(counts.community_evidence || 0)}</span>
+      <span>交易证据 ${Number(counts.market_evidence || 0)}</span>
+      ${errors.length ? `<strong>${errors.length} 个提示</strong>` : ""}
+    </div>
+  `;
+}
+
+function renderSentimentEvidencePanel(stock, detail, type) {
+  const snapshot = detail?.information?.sentiment;
+  if (!stock || !snapshot) {
+    return `<div class="sentiment-evidence-panel"><div class="stock-detail-empty"><strong>缺少情绪快照</strong><span>需要先刷新当前股票详情。</span></div></div>`;
+  }
+  const meta = sentimentMeta(type);
+  const windowDays = sentimentWindowDays(snapshot);
+  const key = sentimentPayloadKey(stock.symbol, windowDays);
+  const payload = sentimentPayloadCache.get(key);
+  const loading = sentimentPayloadLoading.has(key);
+  const error = sentimentPayloadErrors.get(key);
+  const typeScore = sentimentTypeScore(snapshot, type);
+  const typeStats = snapshot.raw?.type_scores?.[type] ?? {};
+  const effectiveWeight = sentimentEffectiveWeight(snapshot, type);
+
+  if (loading && !payload) {
+    return `
+      <div class="sentiment-evidence-panel">
+        <div class="stock-detail-empty">
+          <strong>正在读取${escapeHTML(meta.label)}证据</strong>
+          <span>从 sentiment_evidence 拉取原文片段、关键词和单条计算因子。</span>
+        </div>
+      </div>
+    `;
+  }
+  if (error && !payload) {
+    return `
+      <div class="sentiment-evidence-panel">
+        <div class="stock-detail-empty warn">
+          <strong>${escapeHTML(meta.label)}证据读取失败</strong>
+          <span>${escapeHTML(error)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const evidenceRows = payload?.evidence?.[type] ?? [];
+  const shownRows = evidenceRows.slice(0, 8);
+  return `
+    <div class="sentiment-evidence-panel">
+      <div class="sentiment-factor-strip">
+        <span>本类分 <strong>${formatSentimentScore(typeScore)}</strong></span>
+        <span>本类置信 <strong>${formatSentimentConfidence(typeStats.confidence)}</strong></span>
+        <span>基础权重 <strong>${(meta.weight * 100).toFixed(0)}%</strong></span>
+        <span>有效权重 <strong>${effectiveWeight === null ? "暂无" : formatDetailNumber(effectiveWeight * 100, 0, "%")}</strong></span>
+      </div>
+      <div class="sentiment-source-note">${escapeHTML(meta.sourceNote)}</div>
+      ${shownRows.length ? shownRows.map((item, index) => renderSentimentEvidenceCard(item, index, windowDays)).join("") : `
+        <div class="stock-detail-empty">
+          <strong>暂无可展开证据</strong>
+          <span>快照里有本类计数，但当前接口返回窗口内没有该类明细；可以提高 evidence_limit 或重新刷新情绪。</span>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+function renderSentimentEvidenceCard(item, index, windowDays) {
+  const terms = uniqueSentimentTerms(item);
+  const sourceText = displayText(item.title || item.evidence?.text || item.category || "暂无原文片段");
+  const recency = sentimentRecencyWeight(item.event_date || item.analyzed_at, windowDays);
+  const itemWeight = sentimentEvidenceWeight(item, windowDays);
+  const contribution = sentimentEvidenceContribution(item, windowDays);
+  const matches = Array.isArray(item.evidence?.rule_matches) ? item.evidence.rule_matches : [];
+  return `
+    <article class="sentiment-evidence-card">
+      <div class="sentiment-evidence-top">
+        <span>#${index + 1} · ${escapeHTML(displayText(item.source))}</span>
+        <strong class="${sentimentTone(item.sentiment_score, item.sentiment_label)}">${formatSentimentScore(item.sentiment_score)}</strong>
+      </div>
+      <p class="sentiment-quote">${renderHighlightedSentimentText(sourceText, terms)}</p>
+      ${terms.length ? `<div class="sentiment-keywords">${terms.map((term) => `<mark>${escapeHTML(term)}</mark>`).join("")}</div>` : ""}
+      <div class="sentiment-evidence-factors">
+        <span>置信度 ${formatSentimentConfidence(item.confidence)}</span>
+        <span>时间权重 ${recency.toFixed(2)}</span>
+        <span>证据权重 ${itemWeight.toFixed(2)}</span>
+        <span>加权贡献 ${contribution === null ? "暂无" : formatSentimentScore(contribution)}</span>
+      </div>
+      ${matches.length ? `
+        <div class="sentiment-rule-list">
+          <strong>命中规则</strong>
+          ${matches.map((match) => `<span>${escapeHTML(match.keyword)} <em>${formatSentimentScore(match.score, 0)}</em></span>`).join("")}
+        </div>
+      ` : renderSentimentStructuredEvidence(item.evidence)}
+      <div class="sentiment-evidence-meta">
+        <span>${escapeHTML(item.event_date || item.analyzed_at || "暂无日期")}</span>
+        <span>${escapeHTML(item.model_provider || "local")} / ${escapeHTML(item.model_name || "rule-v1")}</span>
+        ${item.url ? `<a href="${escapeHTML(item.url)}" target="_blank" rel="noreferrer">原文</a>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+function renderSentimentStructuredEvidence(evidence = {}) {
+  const entries = Object.entries(evidence || {})
+    .filter(([key, value]) => key !== "rule_matches" && value !== null && value !== undefined && value !== "")
+    .slice(0, 12);
+  if (!entries.length) return "";
+  return `
+    <div class="sentiment-rule-list structured">
+      <strong>结构化因子</strong>
+      ${entries.map(([key, value]) => `<span>${escapeHTML(displayColumnLabel(key))} <em>${escapeHTML(formatSentimentEvidenceValue(key, value))}</em></span>`).join("")}
+    </div>
+  `;
+}
+
+function formatSentimentEvidenceValue(key, value) {
+  const normalized = normalizeFieldKey(key);
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return displayCellValue(value);
+  if (["change_1d", "change_5d", "change_20d", "max_drawdown", "turnover_rate", "roe", "gross_margin", "net_margin", "debt_ratio", "revenue_growth"].includes(normalized)) {
+    return `${numeric.toFixed(2)}%`;
+  }
+  if (["amount_ratio_20d", "volume_ratio_20d"].includes(normalized)) {
+    return `${numeric.toFixed(2)}x`;
+  }
+  if (["bar_count", "limit_up_days", "limit_down_days", "text_length"].includes(normalized)) {
+    return String(Math.round(numeric));
+  }
+  return numeric.toFixed(Math.abs(numeric) >= 100 ? 0 : 2);
 }
 
 function renderFinancialQuarterPanel(detail) {
@@ -2417,8 +3619,60 @@ function renderFinancialQuarterPanel(detail) {
   `;
 }
 
-function formatDetailPrice(value, currency = "CNY") {
+function renderStockInformationPanel(stock, detail) {
+  const info = detail.information ?? {};
+  const currentTab = stockInfoTabs.get(stock.symbol) || "filings";
+  const rows = Array.isArray(info[currentTab]) ? info[currentTab] : [];
+  const tabs = stockInfoTabOptions.map((item) => {
+    const count = Array.isArray(info[item.id]) ? info[item.id].length : 0;
+    return `
+      <button class="stock-info-tab ${item.id === currentTab ? "active" : ""}" data-detail-info-tab="${item.id}" type="button">
+        ${item.label}<span>${count}</span>
+      </button>
+    `;
+  }).join("");
+  return `
+    <div class="stock-info-panel">
+      <div class="stock-info-head">
+        <strong>公告、资讯与讨论</strong>
+        <span>用于后续基本面、情绪面和事件催化分析</span>
+      </div>
+      <div class="stock-info-tabs">${tabs}</div>
+      <div class="stock-info-list">
+        ${rows.length ? rows.map(renderStockInfoItem).join("") : renderStockInfoEmpty(currentTab)}
+      </div>
+    </div>
+  `;
+}
+
+function renderStockInfoItem(item) {
+  const title = item.title || item.summary || "未命名信息";
+  const meta = [item.published_at, item.source, item.category].filter(Boolean).join(" · ");
+  const url = String(item.url ?? "").trim();
+  return `
+    <article class="stock-info-item">
+      <div>
+        <strong>${escapeHTML(title)}</strong>
+        <span>${escapeHTML(meta || "暂无来源时间")}</span>
+        ${item.summary ? `<p>${escapeHTML(item.summary)}</p>` : ""}
+      </div>
+      ${url ? `<a href="${escapeHTML(url)}" target="_blank" rel="noreferrer">原文</a>` : ""}
+    </article>
+  `;
+}
+
+function renderStockInfoEmpty(tab) {
+  const label = stockInfoTabOptions.find((item) => item.id === tab)?.label ?? "信息";
+  const text = tab === "discussions"
+    ? "讨论源还没有接入。后续可接入雪球、交易所互动平台或自有讨论数据。"
+    : `当前数据库还没有这只股票的${label}记录。刷新会优先补公告和已配置资讯源。`;
+  return `<div class="stock-detail-empty"><strong>暂无${label}</strong><span>${text}</span></div>`;
+}
+
+function formatDetailPrice(value, currency = "CNY", isIndex = false) {
+  if (value === null || value === undefined || value === "") return "暂无";
   if (!hasMetric(Number(value))) return "暂无";
+  if (isIndex) return Number(value).toFixed(2);
   if (currency === "CNY") return `¥${Number(value).toFixed(2)}`;
   return formatMoney(Number(value), currency);
 }
@@ -2426,6 +3680,18 @@ function formatDetailPrice(value, currency = "CNY") {
 function formatDetailNumber(value, digits = 2, suffix = "") {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? `${numeric.toFixed(digits)}${suffix}` : "暂无";
+}
+
+function formatPositiveDetailNumber(value, digits = 2, suffix = "") {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric > 0 ? `${numeric.toFixed(digits)}${suffix}` : "暂无";
+}
+
+function formatPeTtm(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "暂无";
+  if (numeric <= 0) return "亏损";
+  return numeric.toFixed(2);
 }
 
 function formatSignedNumber(value, digits = 2, suffix = "") {
@@ -2521,13 +3787,16 @@ function uncertaintyReasons(stock) {
   return reasons;
 }
 
-function renderFactorTile(stock, name, value) {
-  const detail = factorDetail(stock, name);
+function renderFactorTile(stock, name, value, detailPayload = null) {
+  const detail = factorDetail(stock, name, detailPayload);
+  const displayValue = name === "情绪" && detail.liveScore !== null && detail.liveScore !== undefined
+    ? detail.liveScore
+    : value;
   return `
     <article class="factor-tile">
       <div class="factor-tile-top">
         <strong>${name}</strong>
-        <span>${value}</span>
+        <span>${displayValue}</span>
       </div>
       <p>${detail.summary}</p>
       <button class="mini-action" data-factor="${name}" type="button">详情</button>
@@ -2535,8 +3804,11 @@ function renderFactorTile(stock, name, value) {
   `;
 }
 
-function factorDetail(stock, name) {
+function factorDetail(stock, name, detailPayload = null) {
   const m = stock.metrics;
+  const sentimentSnapshot = detailPayload?.information?.sentiment ?? stockDetailCache.get(stock.symbol)?.information?.sentiment;
+  const liveSentimentScore = sentimentFactorScore(sentimentSnapshot);
+  const sentimentCounts = sentimentSnapshot?.source_counts ?? {};
   const map = {
     基本面: {
       summary: `ROE ${formatMetric(m.roe, 1, "%")}，收入增速 ${formatMetric(m.revenueGrowth, 1, "%")}，自由现金流率 ${formatMetric(m.fcfMargin, 1, "%")}。`,
@@ -2583,15 +3855,31 @@ function factorDetail(stock, name) {
       process: "先从公告和新闻抽 claim，再按来源等级、实体匹配和时效降权；C级来源不能单独触发买入。"
     },
     情绪: {
-      summary: `情绪分 ${formatMetricInt(m.sentimentScore)}，未证实比例 ${formatRatio(m.unverifiedRatio)}，72小时热度 ${formatMetricInt(m.newsCount72h)}。`,
-      source: sourceDescriptionForKinds(stock, ["news"]),
-      values: [
-        ["情绪分", formatMetricInt(m.sentimentScore)],
-        ["未证实比例", formatRatio(m.unverifiedRatio)],
-        ["热度", formatMetricInt(m.newsCount72h)],
-        ["已验证催化", formatRatio(m.verifiedCatalystRatio)]
-      ],
-      process: "情绪只作为辅助。若未证实比例高，会降低结论强度，并要求补公告或公司来源。"
+      summary: sentimentSnapshot
+        ? `综合情绪 ${formatSentimentScore(sentimentSnapshot.composite_score)}（${sentimentLabelText(sentimentSnapshot.sentiment_label)}），公告/财报 ${formatSentimentScore(sentimentSnapshot.filing_news_score)}，社区 ${formatSentimentScore(sentimentSnapshot.community_score)}，交易 ${formatSentimentScore(sentimentSnapshot.market_score)}。`
+        : `情绪分 ${formatMetricInt(m.sentimentScore)}，未证实比例 ${formatRatio(m.unverifiedRatio)}，72小时热度 ${formatMetricInt(m.newsCount72h)}。`,
+      source: sentimentSnapshot
+        ? `sentiment_snapshots：${sentimentSnapshot.as_of || "暂无日期"}，${sentimentSnapshot.window_days || 30}天窗口，${sentimentSourceCount(sentimentSnapshot)}条证据。`
+        : sourceDescriptionForKinds(stock, ["news"]),
+      values: sentimentSnapshot
+        ? [
+            ["综合情绪", formatSentimentScore(sentimentSnapshot.composite_score)],
+            ["因子换算", liveSentimentScore ?? "暂无"],
+            ["公告/财报", `${formatSentimentScore(sentimentSnapshot.filing_news_score)} · ${sentimentCounts.filing_news || 0}条`],
+            ["社区舆论", `${formatSentimentScore(sentimentSnapshot.community_score)} · ${sentimentCounts.community || 0}条`],
+            ["交易行为", `${formatSentimentScore(sentimentSnapshot.market_score)} · ${sentimentCounts.market || 0}条`],
+            ["置信度", formatSentimentConfidence(sentimentSnapshot.confidence)]
+          ]
+        : [
+            ["情绪分", formatMetricInt(m.sentimentScore)],
+            ["未证实比例", formatRatio(m.unverifiedRatio)],
+            ["热度", formatMetricInt(m.newsCount72h)],
+            ["已验证催化", formatRatio(m.verifiedCatalystRatio)]
+          ],
+      process: sentimentSnapshot
+        ? "把公告/财报/新闻、社区讨论和交易行为按证据数量、置信度和时间衰减聚合；情绪只作为辅助因子，不单独生成交易动作。"
+        : "情绪只作为辅助。若未证实比例高，会降低结论强度，并要求补公告或公司来源。",
+      liveScore: liveSentimentScore
     },
     风险: {
       summary: `20日波动 ${m.volatility20d}%，60日最大回撤 ${m.maxDrawdown60d}%，ATR ${m.atrPct.toFixed(1)}%。`,
@@ -2687,6 +3975,7 @@ function renderUnknown(symbol) {
   detailTitle.textContent = `${normalized} · 未接入样本`;
   detailAction.textContent = "无法判断";
   detailAction.className = "action-pill drawer-action-pill stale";
+  if (detailFavorite) detailFavorite.hidden = true;
   detailBody.innerHTML = `
     <div class="detail-grid">
       <div class="metric-box"><span>综合评分</span><strong>N/A</strong></div>
@@ -2704,6 +3993,16 @@ function renderUnknown(symbol) {
     { round: "第 3 轮", label: "投资逻辑", status: "fail", text: "由于前置闸门失败，本轮不消耗更多分析。" }
   ].map(renderReflection).join("");
   memoryList.innerHTML = `<div class="empty-state compact">没有可复用记忆。</div>`;
+  if (sentimentAside) {
+    sentimentAside.innerHTML = `
+      <div class="sentiment-panel sentiment-panel-side empty">
+        <div class="stock-detail-empty warn">
+          <strong>暂无情绪面</strong>
+          <span>本地数据源没有找到 ${escapeHTML(normalized)}，无法展开情绪证据。</span>
+        </div>
+      </div>
+    `;
+  }
 }
 
 function renderWatchlist() {
@@ -2715,8 +4014,10 @@ function renderWatchlist() {
   renderHoldingRows();
   renderTradeRows();
   renderFavoriteRows();
-  requestAnimationFrame(drawPortfolioCurve);
-  requestAnimationFrame(drawPositionKline);
+  if (activeTab === "holdings") {
+    schedulePortfolioDraw();
+    schedulePositionDraw();
+  }
 }
 
 function renderPortfolioSummary() {
@@ -2840,12 +4141,60 @@ function renderTradeRows() {
 }
 
 function renderFavoriteRows() {
-  const favorites = [...favoriteSymbols].map(stockBySymbol).filter(Boolean);
-  favoriteCount.textContent = `${favorites.length} 只`;
-  favoriteGrid.innerHTML = favorites.length
-    ? favorites.map(renderStockCard).join("")
+  const favoriteItems = [...favoriteSymbols].map((symbol) => {
+    const stock = stockBySymbol(symbol);
+    if (!stock) queueFavoriteStockLoad(symbol);
+    return stock ?? { symbol, missing: true };
+  });
+  favoriteCount.textContent = `${favoriteItems.length} 只`;
+  favoriteGrid.innerHTML = favoriteItems.length
+    ? favoriteItems.map((item) => item.missing ? renderFavoritePlaceholder(item.symbol) : renderStockCard(item)).join("")
     : `<div class="empty-state">还没有加入关注的股票。</div>`;
-  requestAnimationFrame(drawAllSparklines);
+  scheduleSparklineDraw();
+}
+
+function renderFavoritePlaceholder(symbol) {
+  return `
+    <article class="stock-card favorite-placeholder" data-symbol="${escapeHTML(symbol)}">
+      <div class="card-head">
+        <div>
+          <p class="symbol">${escapeHTML(symbol)}</p>
+          <p class="company">正在补全股票资料</p>
+        </div>
+        <div class="card-actions">
+          <button class="status-badge active" data-favorite="${escapeHTML(symbol)}" type="button" aria-label="取消关注 ${escapeHTML(symbol)}">
+            <span class="badge-icon bookmark-icon"></span>
+            <span>已关注</span>
+          </button>
+        </div>
+      </div>
+      <div class="empty-state compact">已加入关注列表，正在从数据库读取名称、行情和 K 线。</div>
+    </article>
+  `;
+}
+
+async function queueFavoriteStockLoad(symbol) {
+  if (!apiState.connected || favoriteStockLoading.has(symbol) || favoriteStockLoadFailed.has(symbol) || stockBySymbol(symbol)) return;
+  favoriteStockLoading.add(symbol);
+  try {
+    const params = new URLSearchParams({
+      q: symbol,
+      market: "all",
+      account_id: apiState.accountId
+    });
+    const payload = await apiRequest(`/api/stocks/search?${params.toString()}`);
+    const apiStocks = Array.isArray(payload.stocks) ? payload.stocks : [];
+    if (!apiStocks.length) favoriteStockLoadFailed.add(symbol);
+    mergeApiStocks(apiStocks);
+  } catch (error) {
+    favoriteStockLoadFailed.add(symbol);
+    apiState.lastError = `关注股票补全失败：${error.message}`;
+    updateBackendStatus(apiState.lastError);
+  } finally {
+    favoriteStockLoading.delete(symbol);
+    renderFavoriteRows();
+    renderCandidates();
+  }
 }
 
 function portfolioCurvePoints() {
@@ -2995,6 +4344,285 @@ function drawPositionKline() {
   ctx.fillText(`当前价 ${formatMoney(stock.price, stock.currency)} · 流水 ${selectedTrades.length} 笔`, padX + 190, 24);
 }
 
+function drawStockDetailCharts() {
+  document.querySelectorAll("[data-stock-kline]").forEach((canvas) => {
+    const symbol = canvas.dataset.stockKline;
+    const period = canvas.dataset.period;
+    const detail = stockDetailCache.get(symbol);
+    const bars = detail?.market_data?.periods?.[period]?.bars ?? [];
+    drawStockKlineChart(canvas, bars, detail?.summary ?? {});
+  });
+}
+
+function drawStockKlineChart(canvas, bars, summary = {}) {
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+
+  const validBars = bars
+    .filter((bar) => Number.isFinite(Number(bar.close)))
+    .map((bar) => ({
+      ...bar,
+      open: Number.isFinite(Number(bar.open)) ? Number(bar.open) : Number(bar.close),
+      high: Number.isFinite(Number(bar.high)) ? Number(bar.high) : Number(bar.close),
+      low: Number.isFinite(Number(bar.low)) ? Number(bar.low) : Number(bar.close),
+      close: Number(bar.close),
+      volume: Number.isFinite(Number(bar.volume)) ? Number(bar.volume) : 0,
+      amount: Number.isFinite(Number(bar.amount)) ? Number(bar.amount) : 0
+    }));
+  const visible = validBars.slice(-170);
+  if (visible.length < 2) {
+    ctx.fillStyle = "#66737d";
+    ctx.font = "800 18px system-ui";
+    ctx.fillText("暂无足够 K 线数据", 42, 72);
+    return;
+  }
+
+  const padLeft = 62;
+  const padRight = 28;
+  const priceTop = 36;
+  const priceHeight = 310;
+  const volumeTop = 376;
+  const volumeHeight = 94;
+  const macdTop = 510;
+  const macdHeight = 78;
+  const plotWidth = width - padLeft - padRight;
+  const xStep = plotWidth / visible.length;
+  const candleWidth = Math.max(2, Math.min(11, xStep * 0.62));
+  const highs = visible.map((bar) => bar.high);
+  const lows = visible.map((bar) => bar.low);
+  const priceMin = Math.min(...lows);
+  const priceMax = Math.max(...highs);
+  const priceSpan = Math.max(priceMax - priceMin, 0.01);
+  const yPrice = (value) => priceTop + priceHeight - ((value - priceMin) / priceSpan) * priceHeight;
+  const xFor = (index) => padLeft + xStep * index + xStep / 2;
+
+  drawStockChartGrid(ctx, padLeft, padRight, priceTop, priceHeight, width, priceMin, priceMax);
+  visible.forEach((bar, index) => {
+    const x = xFor(index);
+    const up = bar.close >= bar.open;
+    const color = up ? "#e23b22" : "#059447";
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, yPrice(bar.high));
+    ctx.lineTo(x, yPrice(bar.low));
+    ctx.stroke();
+    const top = yPrice(Math.max(bar.open, bar.close));
+    const bottom = yPrice(Math.min(bar.open, bar.close));
+    ctx.fillRect(x - candleWidth / 2, top, candleWidth, Math.max(bottom - top, 2));
+  });
+
+  const maConfigs = [
+    { window: 5, color: "#ff8a00" },
+    { window: 10, color: "#1677d2" },
+    { window: 20, color: "#e018a6" },
+    { window: 60, color: "#13b56b" }
+  ];
+  maConfigs.forEach((config) => {
+    const values = movingAverage(validBars.map((bar) => bar.close), config.window).slice(-visible.length);
+    drawIndicatorLine(ctx, values, xFor, yPrice, config.color, 2);
+  });
+
+  drawStockVolumePanel(ctx, visible, xFor, candleWidth, padLeft, padRight, volumeTop, volumeHeight, width);
+  drawStockMacdPanel(ctx, validBars, visible.length, xFor, padLeft, padRight, macdTop, macdHeight, width);
+  drawStockXAxis(ctx, visible, xFor, height);
+  drawStockChartLegend(ctx, visible, maConfigs, validBars, summary);
+}
+
+function drawStockChartGrid(ctx, padLeft, padRight, top, panelHeight, width, min, max) {
+  ctx.strokeStyle = "#edf1f4";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let index = 0; index <= 4; index += 1) {
+    const ratio = index / 4;
+    const y = top + panelHeight * ratio;
+    ctx.moveTo(padLeft, y);
+    ctx.lineTo(width - padRight, y);
+  }
+  for (let index = 0; index <= 4; index += 1) {
+    const x = padLeft + ((width - padLeft - padRight) * index) / 4;
+    ctx.moveTo(x, top);
+    ctx.lineTo(x, top + panelHeight);
+  }
+  ctx.stroke();
+
+  ctx.fillStyle = "#66737d";
+  ctx.font = "700 13px system-ui";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  for (let index = 0; index <= 4; index += 1) {
+    const ratio = index / 4;
+    const value = max - (max - min) * ratio;
+    const y = top + panelHeight * ratio;
+    ctx.fillText(formatAxisNumber(value), 8, y);
+  }
+}
+
+function drawStockVolumePanel(ctx, visible, xFor, candleWidth, padLeft, padRight, top, panelHeight, width) {
+  const maxVolume = Math.max(...visible.map((bar) => bar.volume), 1);
+  ctx.fillStyle = "#f7f9fb";
+  ctx.fillRect(padLeft, top, width - padLeft - padRight, panelHeight);
+  ctx.strokeStyle = "#edf1f4";
+  ctx.beginPath();
+  [0, 0.5, 1].forEach((ratio) => {
+    const y = top + panelHeight * ratio;
+    ctx.moveTo(padLeft, y);
+    ctx.lineTo(width - padRight, y);
+  });
+  ctx.stroke();
+  visible.forEach((bar, index) => {
+    const x = xFor(index);
+    const up = bar.close >= bar.open;
+    const barHeight = (bar.volume / maxVolume) * (panelHeight - 16);
+    ctx.fillStyle = up ? "#e23b22" : "#059447";
+    ctx.fillRect(x - candleWidth / 2, top + panelHeight - barHeight, candleWidth, Math.max(barHeight, 1));
+  });
+  ctx.fillStyle = "#66737d";
+  ctx.font = "800 13px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(`成交量 ${formatShareVolume(visible.at(-1)?.volume)}`, padLeft, top + 18);
+}
+
+function drawStockMacdPanel(ctx, allBars, visibleLength, xFor, padLeft, padRight, top, panelHeight, width) {
+  const macd = computeMacd(allBars.map((bar) => bar.close));
+  const visibleMacd = macd.slice(-visibleLength);
+  const values = visibleMacd.flatMap((item) => [item.dif, item.dea, item.hist]);
+  const maxAbs = Math.max(...values.map((value) => Math.abs(value)).filter(Number.isFinite), 0.01);
+  const yMacd = (value) => top + panelHeight / 2 - (value / maxAbs) * (panelHeight / 2 - 8);
+  ctx.strokeStyle = "#edf1f4";
+  ctx.beginPath();
+  ctx.moveTo(padLeft, top + panelHeight / 2);
+  ctx.lineTo(width - padRight, top + panelHeight / 2);
+  ctx.stroke();
+  visibleMacd.forEach((item, index) => {
+    const x = xFor(index);
+    const y = yMacd(item.hist);
+    const zero = yMacd(0);
+    ctx.strokeStyle = item.hist >= 0 ? "#e23b22" : "#059447";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, zero);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  });
+  drawIndicatorLine(ctx, visibleMacd.map((item) => item.dif), xFor, yMacd, "#ff8a00", 2);
+  drawIndicatorLine(ctx, visibleMacd.map((item) => item.dea), xFor, yMacd, "#1677d2", 2);
+  const last = visibleMacd.at(-1);
+  ctx.fillStyle = "#66737d";
+  ctx.font = "800 13px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(`MACD DIF:${formatAxisNumber(last?.dif)} DEA:${formatAxisNumber(last?.dea)}`, padLeft, top + 16);
+}
+
+function drawStockXAxis(ctx, visible, xFor, height) {
+  ctx.fillStyle = "#66737d";
+  ctx.font = "800 13px system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  const count = Math.min(5, visible.length);
+  for (let index = 0; index < count; index += 1) {
+    const itemIndex = Math.round((visible.length - 1) * (index / Math.max(count - 1, 1)));
+    const bar = visible[itemIndex];
+    ctx.fillText(shortTradeDate(bar.date), xFor(itemIndex), height - 16);
+  }
+}
+
+function drawStockChartLegend(ctx, visible, maConfigs, allBars, summary) {
+  const latest = visible.at(-1);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "#172026";
+  ctx.font = "900 16px system-ui";
+  ctx.fillText(`O ${formatAxisNumber(latest.open)}  H ${formatAxisNumber(latest.high)}  L ${formatAxisNumber(latest.low)}  C ${formatAxisNumber(latest.close)}`, 62, 24);
+  let x = 420;
+  maConfigs.forEach((config) => {
+    const values = movingAverage(allBars.map((bar) => bar.close), config.window);
+    ctx.fillStyle = config.color;
+    ctx.font = "800 14px system-ui";
+    const text = `MA${config.window}:${formatAxisNumber(values.at(-1))}`;
+    ctx.fillText(text, x, 24);
+    x += 112;
+  });
+  ctx.fillStyle = "#66737d";
+  ctx.font = "800 13px system-ui";
+  ctx.fillText(`成交额 ${formatLargeMoney(latest.amount, summary.currency)} · 换手 ${formatDetailNumber(latest.turnover_rate, 2, "%")}`, 62, 366);
+}
+
+function drawIndicatorLine(ctx, values, xFor, yFor, color, width = 2) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  let hasPoint = false;
+  values.forEach((value, index) => {
+    if (!Number.isFinite(Number(value))) {
+      return;
+    }
+    const x = xFor(index);
+    const y = yFor(Number(value));
+    if (!hasPoint) {
+      ctx.moveTo(x, y);
+      hasPoint = true;
+    } else {
+      ctx.lineTo(x, y);
+    }
+  });
+  if (hasPoint) ctx.stroke();
+}
+
+function movingAverage(values, windowSize) {
+  const result = [];
+  let sum = 0;
+  values.forEach((value, index) => {
+    sum += Number(value);
+    if (index >= windowSize) sum -= Number(values[index - windowSize]);
+    result.push(index >= windowSize - 1 ? sum / windowSize : null);
+  });
+  return result;
+}
+
+function computeMacd(values) {
+  const ema12 = ema(values, 12);
+  const ema26 = ema(values, 26);
+  const dif = values.map((_, index) => ema12[index] - ema26[index]);
+  const dea = ema(dif, 9);
+  return values.map((_, index) => ({
+    dif: dif[index],
+    dea: dea[index],
+    hist: (dif[index] - dea[index]) * 2
+  }));
+}
+
+function ema(values, period) {
+  const multiplier = 2 / (period + 1);
+  const result = [];
+  let previous = Number(values[0] ?? 0);
+  values.forEach((raw, index) => {
+    const value = Number(raw);
+    previous = index === 0 ? value : value * multiplier + previous * (1 - multiplier);
+    result.push(previous);
+  });
+  return result;
+}
+
+function shortTradeDate(value) {
+  const text = String(value ?? "");
+  if (text.length >= 10) return text.slice(5, 10);
+  return text;
+}
+
+function formatAxisNumber(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "暂无";
+  if (Math.abs(numeric) >= 1000) return numeric.toFixed(0);
+  if (Math.abs(numeric) >= 100) return numeric.toFixed(1);
+  return numeric.toFixed(2);
+}
+
 function renderHealth() {
   if (!healthGrid) return;
   healthGrid.innerHTML = buildHealthSources().map((item) => `
@@ -3107,7 +4735,7 @@ function renderSourceCard(source) {
           <input data-source-key="${source.id}" type="${source.requires_key ? "password" : "text"}" placeholder="${escapeHTML(placeholder)}" ${source.requires_key ? "" : "disabled"} />
         </label>
         <button class="primary-action" data-source-save="${source.id}" type="button">保存配置</button>
-        ${["akshare", "baostock", "baostock-financial", "tushare", "finnhub"].includes(source.provider) ? `<button class="ghost-action small" data-source-refresh="${source.provider}" type="button">刷新数据</button>` : ""}
+        ${["akshare", "baostock", "baostock-financial", "cninfo_sse_szse", "cninfo", "sse", "szse", "tushare", "finnhub"].includes(source.provider) ? `<button class="ghost-action small" data-source-refresh="${source.provider}" type="button">刷新数据</button>` : ""}
       </div>
       <div class="source-meta">
         <span class="status-chip ${statusClass}">${status}</span>
@@ -3817,13 +5445,23 @@ async function refreshProviderData(provider) {
   }
 
   try {
-    const label = provider === "finnhub" ? "Finnhub" : provider === "tushare" ? "Tushare" : provider === "akshare" ? "AKShare" : provider === "baostock" ? "BaoStock 历史回刷" : provider === "baostock-financial" ? "BaoStock 季频财务" : provider;
+    const label = provider === "finnhub" ? "Finnhub"
+      : provider === "tushare" ? "Tushare"
+      : provider === "akshare" ? "AKShare"
+      : provider === "baostock" ? "BaoStock 历史回刷"
+      : provider === "baostock-financial" ? "BaoStock 季频财务"
+      : provider === "cninfo_sse_szse" ? "A 股公告自动源"
+      : provider === "cninfo" ? "CNINFO 公告"
+      : provider === "sse" ? "上交所公告"
+      : provider === "szse" ? "深交所公告"
+      : provider;
+    const backgroundProviders = ["baostock", "baostock-financial", "cninfo_sse_szse", "cninfo", "sse", "szse"];
     updateBackendStatus(`${label} 数据刷新中`);
     const payload = await apiRequest("/api/data/refresh", {
       method: "POST",
-      body: JSON.stringify({ provider, scope: provider, account_id: apiState.accountId, refresh_universe: provider === "baostock" || provider === "baostock-financial" })
+      body: JSON.stringify({ provider, scope: provider, account_id: apiState.accountId, refresh_universe: backgroundProviders.includes(provider) })
     });
-    if ((payload.mode === "baostock-backfill-background" || payload.mode === "baostock-quarterly-financials-background") && payload.run_id) {
+    if ((payload.mode === "baostock-backfill-background" || payload.mode === "baostock-quarterly-financials-background" || payload.mode === "a-share-filings-background") && payload.run_id) {
       startDataJobPolling(payload.run_id, label);
       const counts = payload.counts ?? payload.job?.counts ?? {};
       updateBackendStatus(`${label} 后台任务 ${payload.already_running ? "运行中" : "已启动"}：剩余 ${counts.remaining_candidates ?? "?"} 只`);
@@ -3875,6 +5513,9 @@ async function pollDataJob(runId, label) {
 function dataJobProgressText(counts) {
   if (counts.financial_metrics !== undefined || counts.company_reports !== undefined) {
     return `季频指标 ${counts.financial_metrics ?? 0}，公司报告 ${counts.company_reports ?? 0}`;
+  }
+  if (counts.filings !== undefined) {
+    return `公告 ${counts.filings ?? 0}，无公告 ${counts.no_data_symbols ?? 0}`;
   }
   return `日线 ${counts.daily_bars ?? 0}`;
 }
@@ -3949,6 +5590,43 @@ function closeModal() {
 async function refreshStockData(source) {
   const stock = selectedStock();
   if (!stock) return;
+  if (source === "detail" && stockDetailRefreshing.has(stock.symbol)) return;
+  stockDetailCache.delete(stock.symbol);
+  stockDetailErrors.delete(stock.symbol);
+  stockDetailRefreshErrors.delete(stock.symbol);
+  if (apiState.connected && source === "detail" && stock.market !== "US") {
+    stockDetailRefreshing.add(stock.symbol);
+    stockDetailRefreshSteps.set(stock.symbol, "正在刷新行情、K线、季度财务、公司报告、公告和资讯源。");
+    renderDetails(stock);
+    try {
+      updateBackendStatus(`刷新 ${stock.symbol} 数据中`);
+      const refreshResult = await apiRequest(`/api/stocks/${encodeURIComponent(stock.symbol)}/refresh?market=${encodeURIComponent(stock.market || "all")}&days=260&quarters=8`, {
+        method: "POST"
+      });
+      const slowestStep = [...(refreshResult.performance?.steps ?? [])].sort((a, b) => Number(b.duration_ms || 0) - Number(a.duration_ms || 0))[0];
+      const slowestText = slowestStep ? `最慢：${slowestStep.step} ${Math.round(Number(slowestStep.duration_ms || 0) / 1000)}秒。` : "";
+      stockDetailRefreshSteps.set(stock.symbol, `刷新完成，正在读取最新详情并重绘页面。${slowestText}`);
+      renderDetails(stock);
+      await loadStockDetail(stock.symbol, stock.market);
+      await loadStocksFromApi();
+      const refreshed = stockBySymbol(stock.symbol) ?? stock;
+      renderDetails(refreshed);
+      renderCandidates();
+      renderWatchlist();
+      updateBackendStatus(`${stock.symbol} 已刷新${slowestText ? `，${slowestText}` : ""}`);
+      return;
+    } catch (error) {
+      stockDetailRefreshErrors.set(stock.symbol, error.message);
+      apiState.lastError = `${stock.symbol} 刷新失败：${error.message}`;
+      updateBackendStatus(apiState.lastError);
+    } finally {
+      stockDetailRefreshing.delete(stock.symbol);
+      stockDetailRefreshSteps.delete(stock.symbol);
+      const current = stockBySymbol(stock.symbol) ?? stock;
+      renderDetails(current);
+    }
+    return;
+  }
   if (apiState.connected && source === "market" && stock.market === "US") {
     try {
       updateBackendStatus(`Finnhub 刷新 ${stock.symbol} 中`);
@@ -4147,8 +5825,12 @@ async function handleTradeSubmit(event) {
 
 async function toggleFavorite(symbol) {
   const nextFavorite = !favoriteSymbols.has(symbol);
-  if (nextFavorite) favoriteSymbols.add(symbol);
-  else favoriteSymbols.delete(symbol);
+  if (nextFavorite) {
+    favoriteSymbols.add(symbol);
+    favoriteStockLoadFailed.delete(symbol);
+  } else {
+    favoriteSymbols.delete(symbol);
+  }
   renderCandidates();
   renderWatchlist();
   const stock = selectedStock();
@@ -4181,12 +5863,7 @@ function setActiveTab(current, shouldUpdateHash = true) {
   if (shouldUpdateHash && location.hash !== `#${next}`) {
     history.replaceState(null, "", `#${next}`);
   }
-  requestAnimationFrame(() => {
-    drawAllSparklines();
-    drawPortfolioCurve();
-    drawPositionKline();
-    drawBacktestCurve();
-  });
+  scheduleActiveTabDraws(next);
 }
 
 function setActiveNav(current) {
@@ -4200,7 +5877,12 @@ document.querySelectorAll(".segment").forEach((button) => {
     document.querySelectorAll(".segment").forEach((item) => item.classList.remove("active"));
     button.classList.add("active");
     activeMarket = button.dataset.market;
-    renderCandidates();
+    activeIndustry = "";
+    hideStockSearchSuggestions();
+    void (async () => {
+      await loadIndustryOptions();
+      await runDatabaseScreener();
+    })();
   });
 });
 
@@ -4208,7 +5890,7 @@ document.querySelectorAll("[data-filter-mode]").forEach((button) => {
   button.addEventListener("click", () => {
     filterMode = button.dataset.filterMode;
     syncFilterModeButtons();
-    renderCandidates();
+    void runDatabaseScreener();
   });
 });
 
@@ -4218,7 +5900,13 @@ filterGroups.addEventListener("change", (event) => {
   if (checkbox.checked) activeFilterIds.add(checkbox.dataset.filterId);
   else activeFilterIds.delete(checkbox.dataset.filterId);
   renderActiveRules();
-  renderCandidates();
+  void runDatabaseScreener();
+});
+
+industryFilter?.addEventListener("change", () => {
+  activeIndustry = industryFilter.value;
+  renderActiveRules();
+  void runDatabaseScreener();
 });
 
 function handleStockGridClick(event) {
@@ -4269,29 +5957,96 @@ anomalyReport.addEventListener("click", (event) => {
 });
 
 detailBody.addEventListener("click", (event) => {
+  const periodButton = event.target.closest("[data-detail-period]");
+  const infoTabButton = event.target.closest("[data-detail-info-tab]");
   const claimButton = event.target.closest("[data-claim-index]");
   const factorButton = event.target.closest("[data-factor]");
   const refreshButton = event.target.closest("[data-refresh-source]");
   const supplementButton = event.target.closest("[data-focus-supplement]");
   const addEvidenceButton = event.target.closest("#addEvidence");
 
-  if (claimButton) openClaimDetail(Number(claimButton.dataset.claimIndex));
+  if (periodButton) {
+    const stock = selectedStock();
+    if (!stock) return;
+    stockDetailPeriods.set(stock.symbol, periodButton.dataset.detailPeriod);
+    renderDetails(stock);
+  }
+  else if (infoTabButton) {
+    const stock = selectedStock();
+    if (!stock) return;
+    stockInfoTabs.set(stock.symbol, infoTabButton.dataset.detailInfoTab);
+    renderDetails(stock);
+  }
+  else if (claimButton) openClaimDetail(Number(claimButton.dataset.claimIndex));
   else if (factorButton) openFactorDetail(factorButton.dataset.factor);
   else if (refreshButton) refreshStockData(refreshButton.dataset.refreshSource);
   else if (supplementButton) document.querySelector("#supplementText")?.focus();
   else if (addEvidenceButton) addSupplementEvidence();
 });
 
+sentimentAside?.addEventListener("click", (event) => {
+  const refreshButton = event.target.closest("[data-sentiment-refresh]");
+  if (refreshButton) {
+    refreshCurrentSentiment(refreshButton.dataset.sentimentRefresh === "llm");
+    return;
+  }
+  const sentimentButton = event.target.closest("[data-sentiment-type]");
+  if (!sentimentButton) return;
+  toggleSentimentEvidence(sentimentButton.dataset.sentimentType);
+});
+
 document.querySelector("#runAnalysis").addEventListener("click", () => {
-  void saveSearchHistory("stock_analysis", symbolInput.value);
-  selectStock(symbolInput.value);
+  submitStockSearch();
 });
 
 symbolInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    void saveSearchHistory("stock_analysis", symbolInput.value);
-    selectStock(symbolInput.value);
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    if (!stockSearchSuggestions.length) return;
+    event.preventDefault();
+    stockSearchOpen = true;
+    const direction = event.key === "ArrowDown" ? 1 : -1;
+    highlightedStockSuggestion = (highlightedStockSuggestion + direction + stockSearchSuggestions.length) % stockSearchSuggestions.length;
+    renderStockSearchSuggestions();
+    return;
   }
+  if (event.key === "Escape") {
+    hideStockSearchSuggestions();
+    return;
+  }
+  if (event.key === "Enter") {
+    event.preventDefault();
+    submitStockSearch();
+  }
+});
+
+symbolInput.addEventListener("input", scheduleStockSearchSuggestions);
+symbolInput.addEventListener("focus", scheduleStockSearchSuggestions);
+
+stockSearchList?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-stock-suggestion]");
+  if (!button) return;
+  chooseStockSearchSuggestion(button.dataset.stockSuggestion);
+});
+
+stockSearchList?.addEventListener("pointerdown", (event) => {
+  const button = event.target.closest("[data-stock-suggestion]");
+  if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  chooseStockSearchSuggestion(button.dataset.stockSuggestion);
+});
+
+stockSearchList?.addEventListener("mouseover", (event) => {
+  const button = event.target.closest("[data-stock-suggestion]");
+  if (!button) return;
+  const nextIndex = stockSearchSuggestions.findIndex((stock) => stock.symbol === button.dataset.stockSuggestion);
+  if (nextIndex < 0 || nextIndex === highlightedStockSuggestion) return;
+  const activeButton = stockSearchList.querySelector(".stock-suggestion.active");
+  activeButton?.classList.remove("active");
+  activeButton?.setAttribute("aria-selected", "false");
+  highlightedStockSuggestion = nextIndex;
+  button.classList.add("active");
+  button.setAttribute("aria-selected", "true");
 });
 
 document.querySelector("#applyPromptFilter").addEventListener("click", applyNaturalLanguageFilter);
@@ -4303,9 +6058,16 @@ filterPrompt.addEventListener("input", renderActiveRules);
 
 document.querySelector("#resetFilters").addEventListener("click", () => {
   activeFilterIds = new Set();
+  activeMarket = "all";
+  activeIndustry = "";
+  document.querySelectorAll(".segment").forEach((item) => item.classList.toggle("active", item.dataset.market === "all"));
+  if (industryFilter) industryFilter.value = "";
   filterPrompt.value = "";
   renderFilterGroups();
-  renderCandidates();
+  void (async () => {
+    await loadIndustryOptions();
+    await runDatabaseScreener();
+  })();
 });
 
 accountSelect.addEventListener("change", () => {
@@ -4320,7 +6082,7 @@ holdingRows.addEventListener("click", (event) => {
   selectedHoldingSymbol = row.dataset.holdingSymbol;
   renderHoldingRows();
   renderTradeRows();
-  requestAnimationFrame(drawPositionKline);
+  schedulePositionDraw();
 });
 
 toggleTradeDetails.addEventListener("click", () => {
@@ -4328,7 +6090,7 @@ toggleTradeDetails.addEventListener("click", () => {
   tradeDetails.hidden = !tradeDetailsOpen;
   toggleTradeDetails.textContent = tradeDetailsOpen ? "收起流水和K线" : "展开流水和K线";
   toggleTradeDetails.setAttribute("aria-expanded", String(tradeDetailsOpen));
-  if (tradeDetailsOpen) requestAnimationFrame(drawPositionKline);
+  if (tradeDetailsOpen) schedulePositionDraw();
 });
 
 tradeSymbol.addEventListener("change", syncTradePrice);
@@ -4431,16 +6193,25 @@ modalShell.addEventListener("click", (event) => {
 });
 
 singleDrawer.addEventListener("click", (event) => {
+  const favoriteButton = event.target.closest("[data-drawer-favorite]");
+  if (favoriteButton) {
+    toggleFavorite(favoriteButton.dataset.drawerFavorite);
+    return;
+  }
   if (event.target.closest("[data-close-drawer]")) closeSingleDrawer();
 });
 
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  if (!modalShell.hidden) closeModal();
+  if (stockSearchOpen) hideStockSearchSuggestions();
+  else if (!modalShell.hidden) closeModal();
   else if (!singleDrawer.hidden) closeSingleDrawer();
 });
 
 document.addEventListener("click", (event) => {
+  if (stockSearchOpen && !event.target.closest(".stock-search-control")) {
+    hideStockSearchSuggestions();
+  }
   const button = event.target.closest("[data-history-value]");
   if (!button) return;
   event.preventDefault();

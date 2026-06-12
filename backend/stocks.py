@@ -4,25 +4,36 @@ import sqlite3
 import json
 from copy import deepcopy
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 
 from fastapi import HTTPException
 
 from . import seed_data
 from .data_sources import DEFAULT_ACCOUNT_ID, SOURCE_KIND_LABELS, active_source_ids, active_source_kinds_by_market
 from .db import row_to_dict
+from .pinyin import pinyin_initials
 from .schemas import ScreenerInput
-from .symbol_resolver import resolve_symbol
+from .symbol_resolver import compact_query, resolve_symbol
 
 
 FILTERS: dict[str, Callable[[dict[str, Any]], bool]] = {
     "amount-high": lambda stock: stock["metrics"]["avgAmountCny"] >= 5000000000,
+    "amount-active": lambda stock: stock["metrics"]["avgAmountCny"] >= 1000000000,
     "turnover-high": lambda stock: stock["metrics"]["turnoverRate"] >= 1,
+    "turnover-healthy": lambda stock: 0.5 <= stock["metrics"]["turnoverRate"] <= 8,
     "spread-low": lambda stock: stock["metrics"]["spreadBps"] <= 5,
+    "pe-positive": lambda stock: stock["metrics"]["pe"] and stock["metrics"]["pe"] > 0,
+    "pe-low": lambda stock: stock["metrics"]["pe"] and 0 < stock["metrics"]["pe"] <= 30,
+    "pb-low": lambda stock: stock["metrics"]["pb"] and 0 < stock["metrics"]["pb"] <= 3,
     "valuation-not-hot": lambda stock: stock["metrics"]["pePercentile"] <= 70,
     "roe-high": lambda stock: stock["metrics"]["roe"] >= 15,
+    "revenue-growth-positive": lambda stock: stock["metrics"]["revenueGrowth"] and stock["metrics"]["revenueGrowth"] > 0,
+    "gross-margin-high": lambda stock: stock["metrics"]["grossMargin"] and stock["metrics"]["grossMargin"] >= 30,
     "cashflow-good": lambda stock: stock["metrics"]["fcfMargin"] >= 5,
+    "debt-low": lambda stock: stock["metrics"]["debtRatio"] and stock["metrics"]["debtRatio"] <= 60,
     "trend-strong": lambda stock: stock["metrics"]["ma20GapPct"] > 0,
+    "trend-medium": lambda stock: stock["metrics"].get("ma60GapPct", 0) > 0,
+    "near-52w-high": lambda stock: bool(stock["metrics"].get("nearHigh52w")),
     "volume-confirm": lambda stock: stock["metrics"]["volumeRatio"] >= 1.2,
     "catalyst-strong": lambda stock: stock["metrics"]["catalystScore"] >= 75,
     "data-fresh": lambda stock: stock["freshnessStatus"] == "fresh",
@@ -36,6 +47,7 @@ PROVIDER_LABELS = {
     "tushare-financial": "Tushare Pro 财务指标",
     "akshare-market": "AKShare A股行情",
     "baostock-market": "BaoStock 历史日线",
+    "baostock-financial": "BaoStock 季频财务",
     "finnhub-market": "Finnhub 美股行情",
     "finnhub-financial": "Finnhub 基本面",
     "finnhub-news": "Finnhub 公司新闻",
@@ -43,11 +55,17 @@ PROVIDER_LABELS = {
 }
 
 
-def search_stocks(conn: sqlite3.Connection, query: str = "", market: str = "all", account_id: str = DEFAULT_ACCOUNT_ID) -> dict[str, Any]:
-    normalized_query = query.strip().lower()
+def search_stocks(
+    conn: sqlite3.Connection,
+    query: str = "",
+    market: str = "all",
+    account_id: str = DEFAULT_ACCOUNT_ID,
+    limit: int = 0,
+) -> dict[str, Any]:
+    normalized_query = compact_query(query)
     resolved = resolve_symbol(conn, query, market) if normalized_query else None
     resolved_symbol = str(resolved["symbol"]).upper() if resolved else ""
-    stocks = all_stock_payloads(conn, normalized_query, account_id)
+    stocks = all_stock_payloads(conn, normalized_query, account_id, include_universe=not normalized_query)
     normalized_market = market.upper()
     if normalized_market != "ALL":
         stocks = [stock for stock in stocks if stock["market"] == normalized_market]
@@ -60,10 +78,11 @@ def search_stocks(conn: sqlite3.Connection, query: str = "", market: str = "all"
         stocks = [
             stock
             for stock in stocks
-            if normalized_query in stock["symbol"].lower()
-            or normalized_query in stock["name"].lower()
-            or (resolved_symbol and stock["symbol"].upper() == resolved_symbol)
+            if stock_matches_query(stock, normalized_query, resolved_symbol)
         ]
+        stocks.sort(key=lambda stock: stock_match_rank(stock, normalized_query, resolved_symbol))
+    if limit > 0:
+        stocks = stocks[:limit]
     mode = "provider-cached" if any(stock["sourceStatus"]["mode"] == "provider-cached" for stock in stocks) else "provider-configured"
     return {
         "stocks": stocks,
@@ -123,30 +142,43 @@ def stock_memory(conn: sqlite3.Connection, symbol: str) -> dict[str, Any]:
     return {"symbol": row_to_dict(stock), "memory": item, "scope": "shared"}
 
 
-def all_stock_payloads(conn: sqlite3.Connection, query: str = "", account_id: str = DEFAULT_ACCOUNT_ID) -> list[dict[str, Any]]:
+def all_stock_payloads(
+    conn: sqlite3.Connection,
+    query: str = "",
+    account_id: str = DEFAULT_ACCOUNT_ID,
+    include_universe: bool = False,
+    symbol_filter: Iterable[str] | None = None,
+) -> list[dict[str, Any]]:
     active_sources = active_source_kinds_by_market(conn, account_id)
     source_ids = active_source_ids(conn, account_id)
-    market_snapshots: dict[str, dict[str, Any]] = {}
-    financial_snapshots: dict[str, dict[str, Any]] = {}
-    news_snapshots: dict[str, dict[str, Any]] = latest_news_snapshots(conn)
-    if "cn-baostock-history" in source_ids:
-        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "baostock-market"))
-    if "cn-tushare-market" in source_ids:
-        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "tushare-market"))
-    if "cn-akshare-market" in source_ids:
-        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "akshare-market"))
-    if "us-finnhub-market" in source_ids:
-        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "finnhub-market"))
-    if "cn-tushare-financial" in source_ids:
-        merge_snapshots(financial_snapshots, latest_snapshots(conn, "financial_snapshots", "tushare-financial"))
-    if "us-finnhub-financial" in source_ids:
-        merge_snapshots(financial_snapshots, latest_snapshots(conn, "financial_snapshots", "finnhub-financial"))
     symbols = {
         row["symbol"]: row_to_dict(row)
         for row in conn.execute("select * from symbols order by market, symbol")
     }
+    market_snapshots: dict[str, dict[str, Any]] = {}
+    financial_snapshots: dict[str, dict[str, Any]] = {}
+    news_snapshots: dict[str, dict[str, Any]] = latest_news_snapshots(conn)
+    if "cn-baostock-history" in source_ids:
+        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "baostock-market"), symbols)
+    if "cn-tushare-market" in source_ids:
+        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "tushare-market"), symbols)
+    if "cn-akshare-market" in source_ids:
+        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "akshare-market"), symbols)
+    if {"us-finnhub-market", "hk-finnhub-market"} & source_ids:
+        merge_snapshots(market_snapshots, latest_snapshots(conn, "market_snapshots", "finnhub-market"), symbols)
+    if "cn-baostock-financial" in source_ids:
+        merge_snapshots(financial_snapshots, latest_financial_metric_snapshots(conn, "baostock-financial"))
+    if "cn-tushare-financial" in source_ids:
+        merge_snapshots(financial_snapshots, latest_financial_metric_snapshots(conn, "tushare-financial"))
+    if {"us-finnhub-financial", "hk-finnhub-financial"} & source_ids:
+        merge_snapshots(financial_snapshots, latest_financial_metric_snapshots(conn, "finnhub-financial"))
     payloads = []
-    for symbol in seed_data.STOCK_PROFILES:
+    symbol_filter_set = {str(symbol).upper() for symbol in symbol_filter or []}
+    if symbol_filter is not None:
+        base_symbols = symbol_filter_set
+    else:
+        base_symbols = symbols.keys() if include_universe else seed_data.STOCK_PROFILES.keys()
+    for symbol in base_symbols:
         if symbol not in symbols:
             continue
         payloads.append(
@@ -164,7 +196,7 @@ def all_stock_payloads(conn: sqlite3.Connection, query: str = "", account_id: st
         for symbol, row in symbols.items():
             if symbol in existing_symbols:
                 continue
-            if query not in symbol.lower() and query not in row["name"].lower():
+            if not symbol_row_matches_query(row, query):
                 continue
             payloads.append(
                 build_stock_payload(
@@ -176,6 +208,59 @@ def all_stock_payloads(conn: sqlite3.Connection, query: str = "", account_id: st
                 )
             )
     return payloads
+
+
+def stock_matches_query(stock: dict[str, Any], query: str, resolved_symbol: str = "") -> bool:
+    if resolved_symbol and stock["symbol"].upper() == resolved_symbol:
+        return True
+    return symbol_row_matches_query(stock, query)
+
+
+def symbol_row_matches_query(row: dict[str, Any], query: str) -> bool:
+    normalized = compact_query(query)
+    if not normalized:
+        return True
+    symbol = str(row.get("symbol") or "").lower()
+    code = symbol.split(".")[0]
+    name = str(row.get("name") or "").lower()
+    initials = pinyin_initials(name)
+    return (
+        normalized in symbol
+        or normalized in code
+        or normalized in name
+        or initials == normalized
+        or initials.startswith(normalized)
+    )
+
+
+def stock_match_rank(stock: dict[str, Any], query: str, resolved_symbol: str = "") -> tuple[int, int, str]:
+    symbol = str(stock.get("symbol") or "").lower()
+    code = symbol.split(".")[0]
+    name = str(stock.get("name") or "").lower()
+    initials = pinyin_initials(name)
+    upper_symbol = symbol.upper()
+    if resolved_symbol and upper_symbol == resolved_symbol:
+        return (0, symbol_seed_priority(upper_symbol), symbol)
+    if query in {symbol, code, name, initials}:
+        return (1, symbol_seed_priority(upper_symbol), symbol)
+    if symbol.startswith(query) or code.startswith(query):
+        return (2, symbol_seed_priority(upper_symbol), symbol)
+    if initials.startswith(query):
+        return (3, symbol_seed_priority(upper_symbol), symbol)
+    if name.startswith(query):
+        return (4, symbol_seed_priority(upper_symbol), symbol)
+    if query in name:
+        return (5, symbol_seed_priority(upper_symbol), symbol)
+    if query in symbol:
+        return (6, symbol_seed_priority(upper_symbol), symbol)
+    return (9, symbol_seed_priority(upper_symbol), symbol)
+
+
+def symbol_seed_priority(symbol: str) -> int:
+    try:
+        return list(seed_data.STOCK_PROFILES).index(symbol)
+    except ValueError:
+        return 1000
 
 
 def build_stock_payload(
@@ -269,6 +354,9 @@ def build_stock_payload(
         "market": market,
         "marketLabel": profile["market_label"],
         "currency": symbol_row["currency"],
+        "exchange": symbol_row.get("exchange"),
+        "sector": symbol_row.get("sector"),
+        "industry": symbol_row.get("industry"),
         "price": profile["price"],
         "change": profile["change"],
         "action": action,
@@ -387,10 +475,13 @@ def camel_metrics(metrics: dict[str, Any]) -> dict[str, Any]:
         "pb": metrics["pb"],
         "roe": metrics["roe"],
         "revenueGrowth": metrics["revenue_growth"],
+        "grossMargin": metrics.get("gross_margin"),
         "fcfMargin": metrics["fcf_margin"],
         "debtRatio": metrics["debt_ratio"],
         "volumeRatio": metrics["volume_ratio"],
         "ma20GapPct": metrics["ma20_gap_pct"],
+        "ma60GapPct": metrics.get("ma60_gap_pct", 0),
+        "nearHigh52w": metrics.get("near_high_52w", False),
         "atrPct": metrics["atr_pct"],
         "catalystScore": metrics["catalyst_score"],
         "newsCount72h": metrics["news_count_72h"],
@@ -444,18 +535,63 @@ def latest_snapshots(conn: sqlite3.Connection, table: str, provider: str) -> dic
     return snapshots
 
 
-def merge_snapshots(target: dict[str, dict[str, Any]], incoming: dict[str, dict[str, Any]]) -> None:
+def latest_financial_metric_snapshots(conn: sqlite3.Connection, provider: str) -> dict[str, dict[str, Any]]:
+    rows = conn.execute(
+        """
+        with ranked as (
+          select
+            symbol,
+            report_period as period,
+            provider,
+            revenue_growth,
+            roe,
+            fcf_margin,
+            debt_ratio,
+            gross_margin,
+            net_margin,
+            raw_json,
+            fetched_at,
+            row_number() over (
+              partition by symbol
+              order by report_period desc, fetched_at desc
+            ) as rn
+          from financial_metrics_history
+          where provider = ?
+            and coalesce(json_extract(raw_json, '$.status'), 'ok') != 'no_data'
+        )
+        select * from ranked where rn = 1
+        """,
+        (provider,),
+    )
+    snapshots: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        item = row_to_dict(row)
+        item["raw"] = parse_json(item.get("raw_json"))
+        snapshots[item["symbol"]] = item
+    return snapshots
+
+
+def merge_snapshots(
+    target: dict[str, dict[str, Any]],
+    incoming: dict[str, dict[str, Any]],
+    symbols: dict[str, dict[str, Any]] | None = None,
+) -> None:
     for symbol, snapshot in incoming.items():
         current = target.get(symbol)
-        if current is None or snapshot_sort_key(snapshot) > snapshot_sort_key(current):
+        symbol_row = (symbols or {}).get(symbol)
+        if current is None or snapshot_sort_key(snapshot, symbol_row) > snapshot_sort_key(current, symbol_row):
             target[symbol] = snapshot
 
 
-def snapshot_sort_key(snapshot: dict[str, Any]) -> tuple[str, int, str, int]:
+def snapshot_sort_key(snapshot: dict[str, Any], symbol_row: dict[str, Any] | None = None) -> tuple[Any, ...]:
     provider = str(snapshot.get("provider") or "")
     freshness = str(snapshot.get("as_of") or snapshot.get("period") or "")
     fetched_at = str(snapshot.get("fetched_at") or "")
     row_id = int(snapshot.get("id") or 0)
+    if symbol_row and is_index_symbol(symbol_row):
+        price = float(snapshot.get("price") or 0)
+        scale_score = 1 if abs(price) >= 100 else 0
+        return (scale_score, freshness, index_provider_priority(provider), fetched_at, row_id)
     return (freshness, provider_priority(provider), fetched_at, row_id)
 
 
@@ -465,10 +601,37 @@ def provider_priority(provider: str) -> int:
         "akshare-market": 40,
         "baostock-market": 30,
         "finnhub-market": 30,
+        "baostock-financial": 60,
         "tushare-financial": 50,
         "finnhub-financial": 40,
         "alpha_vantage-news": 40,
     }.get(provider, 10)
+
+
+def index_provider_priority(provider: str) -> int:
+    return {
+        "baostock-market": 60,
+        "tushare-market": 50,
+        "akshare-market": 20,
+        "finnhub-market": 20,
+    }.get(provider, provider_priority(provider))
+
+
+def is_index_symbol(symbol_row: dict[str, Any]) -> bool:
+    symbol = str(symbol_row.get("symbol") or "").upper()
+    name = str(symbol_row.get("name") or "")
+    sector = str(symbol_row.get("sector") or "")
+    industry = str(symbol_row.get("industry") or "")
+    if "指数" in name or "指数" in sector or "指数" in industry:
+        return True
+    return symbol in {
+        "000001.SH",
+        "000002.SH",
+        "000003.SH",
+        "399001.SZ",
+        "399006.SZ",
+        "399300.SZ",
+    }
 
 
 def latest_news_snapshots(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
@@ -519,10 +682,13 @@ def default_profile(symbol_row: dict[str, Any]) -> dict[str, Any]:
             "pb": 0,
             "roe": 0,
             "revenue_growth": 0,
+            "gross_margin": 0,
             "fcf_margin": 0,
             "debt_ratio": 0,
             "volume_ratio": 1,
             "ma20_gap_pct": 0,
+            "ma60_gap_pct": 0,
+            "near_high_52w": False,
             "atr_pct": 3,
             "catalyst_score": 45,
             "news_count_72h": 0,
@@ -576,25 +742,30 @@ def apply_market_snapshot(profile: dict[str, Any], snapshot: dict[str, Any]) -> 
 
 def apply_financial_snapshot(profile: dict[str, Any], snapshot: dict[str, Any]) -> None:
     metrics = profile["metrics"]
-    metrics["revenue_growth"] = float(snapshot["revenue_growth"])
-    metrics["roe"] = float(snapshot["roe"])
-    metrics["fcf_margin"] = float(snapshot["fcf_margin"])
-    metrics["debt_ratio"] = float(snapshot["debt_ratio"])
-    if snapshot["pe"]:
-        metrics["pe"] = float(snapshot["pe"])
-    if snapshot["pb"]:
-        metrics["pb"] = float(snapshot["pb"])
+    metrics["revenue_growth"] = percentish_metric(snapshot.get("revenue_growth"))
+    metrics["roe"] = percentish_metric(snapshot.get("roe"))
+    metrics["fcf_margin"] = percentish_metric(snapshot.get("fcf_margin"))
+    metrics["debt_ratio"] = percentish_metric(snapshot.get("debt_ratio"))
+    metrics["gross_margin"] = percentish_metric(snapshot.get("gross_margin"))
+    if snapshot.get("pe") not in (None, ""):
+        metrics["pe"] = metric_number(snapshot.get("pe"), metrics["pe"])
+    if snapshot.get("pb") not in (None, ""):
+        metrics["pb"] = metric_number(snapshot.get("pb"), metrics["pb"])
     profile["evidence"].append(
         {
             "tier": "A",
             "source": provider_label(snapshot["provider"]),
-            "claim": f"财务快照期末 {snapshot.get('period')}，ROE {metrics['roe']}%，营收增速 {metrics['revenue_growth']}%。",
+            "claim": (
+                f"财务快照期末 {snapshot.get('period')}，"
+                f"ROE {metric_text(metrics['roe'], '%')}，"
+                f"营收增速 {metric_text(metrics['revenue_growth'], '%')}。"
+            ),
             "confidence": 0.84,
             "rawFields": {
                 "provider": snapshot["provider"],
                 "period": snapshot["period"],
-                "pe": snapshot["pe"],
-                "pb": snapshot["pb"],
+                "pe": snapshot.get("pe"),
+                "pb": snapshot.get("pb"),
             },
         }
     )
@@ -622,7 +793,7 @@ def apply_news_snapshot(profile: dict[str, Any], snapshot: dict[str, Any]) -> No
 
 
 def clear_fundamental_metrics(metrics: dict[str, Any]) -> None:
-    for key in ["roe", "revenue_growth", "fcf_margin", "debt_ratio"]:
+    for key in ["roe", "revenue_growth", "gross_margin", "fcf_margin", "debt_ratio"]:
         metrics[key] = None
 
 
@@ -636,6 +807,32 @@ def clear_news_metrics(metrics: dict[str, Any]) -> None:
     metrics["verified_catalyst_ratio"] = None
     metrics["sentiment_score"] = None
     metrics["unverified_ratio"] = None
+
+
+def metric_number(value: Any, default: float | None = None) -> float | None:
+    if value in (None, ""):
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def percentish_metric(value: Any) -> float | None:
+    parsed = metric_number(value)
+    if parsed is None:
+        return None
+    if -1 <= parsed <= 1:
+        return parsed * 100
+    return parsed
+
+
+def metric_text(value: Any, suffix: str = "") -> str:
+    parsed = metric_number(value)
+    if parsed is None:
+        return "暂无"
+    text = f"{parsed:.2f}".rstrip("0").rstrip(".")
+    return f"{text}{suffix}"
 
 
 def score_metrics(metrics: dict[str, Any], previous: dict[str, int]) -> dict[str, int]:
@@ -675,12 +872,16 @@ def score_metrics(metrics: dict[str, Any], previous: dict[str, int]) -> dict[str
 
 
 def high_score(value: float, low: float, high: float) -> float:
+    if value is None:
+        return 50
     if high == low:
         return 50
     return max(0, min(100, (value - low) / (high - low) * 100))
 
 
 def low_score(value: float, high_bad: float, low_good: float) -> float:
+    if value is None:
+        return 50
     if high_bad == low_good:
         return 50
     return max(0, min(100, (high_bad - value) / (high_bad - low_good) * 100))

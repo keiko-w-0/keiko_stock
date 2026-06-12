@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+import time
 from collections import OrderedDict
 from datetime import date, datetime
 from typing import Any
@@ -35,23 +36,44 @@ def stock_detail_payload(
     market: str = "all",
     limit: int = 520,
 ) -> dict[str, Any]:
+    total_started = time.monotonic()
+    timings: list[dict[str, Any]] = []
     symbol_row = resolve_symbol(conn, symbol, market)
     if not symbol_row:
         raise HTTPException(status_code=404, detail="symbol not found")
 
     normalized = str(symbol_row["symbol"]).upper()
-    daily_bars = preferred_daily_bars(conn, normalized, limit=limit)
+    started = time.monotonic()
+    daily_bars = preferred_daily_bars(conn, normalized, symbol_row, limit=limit)
+    timings.append(detail_timing("daily_bars_sql", started, {"rows": len(daily_bars)}))
+    started = time.monotonic()
     financials = financial_history(conn, normalized, limit=12)
+    timings.append(detail_timing("financials_sql", started, {"rows": len(financials)}))
     latest_financial = financials[0] if financials else None
+    started = time.monotonic()
     periods = {
         "daily": period_payload("daily", "日K", daily_bars),
         "weekly": period_payload("weekly", "周K", aggregate_bars(daily_bars, "weekly")),
         "monthly": period_payload("monthly", "月K", aggregate_bars(daily_bars, "monthly")),
         "quarterly": period_payload("quarterly", "季K", aggregate_bars(daily_bars, "quarterly")),
     }
+    timings.append(detail_timing("periods_build", started, {"daily_rows": len(daily_bars)}))
 
     latest_bar = daily_bars[-1] if daily_bars else None
     previous_bar = daily_bars[-2] if len(daily_bars) > 1 else None
+    started = time.monotonic()
+    information = stock_information(conn, normalized)
+    timings.append(
+        detail_timing(
+            "information_sql",
+            started,
+            {
+                "filings": len(information["filings"]),
+                "news": len(information["news"]),
+                "discussions": len(information["discussions"]),
+            },
+        )
+    )
     return {
         "mode": "warehouse-stock-detail",
         "symbol": public_symbol(symbol_row),
@@ -68,20 +90,150 @@ def stock_detail_payload(
             "latest": latest_financial,
             "quarters": financials,
         },
+        "information": information,
         "data_status": {
             "has_daily_bars": bool(daily_bars),
             "has_financials": bool(financials),
+            "has_filings": bool(information["filings"]),
+            "has_news": bool(information["news"]),
+            "has_discussions": bool(information["discussions"]),
+            "has_sentiment": bool(information["sentiment"]),
             "daily_rows": len(daily_bars),
             "financial_rows": len(financials),
+            "filing_rows": len(information["filings"]),
+            "news_rows": len(information["news"]),
+            "discussion_rows": len(information["discussions"]),
+        },
+        "performance": {
+            "total_sql_ms": detail_elapsed_ms(total_started),
+            "steps": timings,
         },
     }
 
 
-def preferred_daily_bars(conn: sqlite3.Connection, symbol: str, limit: int = 520) -> list[dict[str, Any]]:
+def detail_timing(step: str, started: float, extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {"step": step, "duration_ms": detail_elapsed_ms(started), **(extra or {})}
+
+
+def detail_elapsed_ms(started: float) -> int:
+    return int(round((time.monotonic() - started) * 1000))
+
+
+def stock_information(conn: sqlite3.Connection, symbol: str) -> dict[str, Any]:
+    filings = [
+        {
+            "type": "filing",
+            "title": row["title"],
+            "source": row["source"],
+            "published_at": row["published_at"],
+            "url": row["url"],
+            "category": row["category"],
+            "summary": "",
+        }
+        for row in conn.execute(
+            """
+            select title, source, published_at, url, category
+            from filings_history
+            where symbol = ?
+            order by published_at desc, id desc
+            limit 20
+            """,
+            (symbol,),
+        ).fetchall()
+    ]
+    reports = [
+        {
+            "type": "company_report",
+            "title": row["title"],
+            "source": row["provider"],
+            "published_at": row["published_at"],
+            "url": "",
+            "category": row["report_type"],
+            "summary": row["summary"],
+        }
+        for row in conn.execute(
+            """
+            select title, provider, published_at, report_type, summary
+            from company_reports_history
+            where symbol = ?
+            order by published_at desc, id desc
+            limit 12
+            """,
+            (symbol,),
+        ).fetchall()
+    ]
+    news = [
+        {
+            "type": "news",
+            "title": row["title"],
+            "source": row["source"],
+            "published_at": row["published_at"],
+            "url": row["url"],
+            "category": row["source_tier"],
+            "summary": row["summary"],
+            "sentiment_score": number(row["sentiment_score"]),
+        }
+        for row in conn.execute(
+            """
+            select title, source, source_tier, published_at, url, summary, sentiment_score
+            from news_items
+            where symbol = ?
+            order by published_at desc, id desc
+            limit 20
+            """,
+            (symbol,),
+        ).fetchall()
+    ]
+    discussions = [
+        {
+            "type": "community",
+            "title": row["title"],
+            "source": row["source"],
+            "published_at": row["published_at"] or row["fetched_at"],
+            "url": row["url"],
+            "category": "discussion",
+            "summary": row["content"],
+        }
+        for row in conn.execute(
+            """
+            select title, source, published_at, fetched_at, url, content
+            from community_posts
+            where symbol = ?
+            order by coalesce(nullif(published_at, ''), fetched_at) desc, id desc
+            limit 20
+            """,
+            (symbol,),
+        ).fetchall()
+    ]
+    sentiment_row = conn.execute(
+        """
+        select *
+        from sentiment_snapshots
+        where symbol = ?
+        order by generated_at desc, id desc
+        limit 1
+        """,
+        (symbol,),
+    ).fetchone()
+    return {
+        "filings": filings + reports,
+        "news": news,
+        "discussions": discussions,
+        "sentiment": normalize_sentiment_snapshot(sentiment_row) if sentiment_row else None,
+    }
+
+
+def preferred_daily_bars(
+    conn: sqlite3.Connection,
+    symbol: str,
+    symbol_row: dict[str, Any],
+    limit: int = 520,
+) -> list[dict[str, Any]]:
     clean_limit = max(20, min(int(limit or 520), 1200))
-    rows = select_preferred_daily_bars(conn, symbol, clean_limit, include_mock=False)
+    is_index = is_index_symbol(symbol_row)
+    rows = select_preferred_daily_bars(conn, symbol, clean_limit, include_mock=False, is_index=is_index)
     if not rows:
-        rows = select_preferred_daily_bars(conn, symbol, clean_limit, include_mock=True)
+        rows = select_preferred_daily_bars(conn, symbol, clean_limit, include_mock=True, is_index=is_index)
     return [normalize_daily_bar(row) for row in reversed(rows)]
 
 
@@ -90,44 +242,87 @@ def select_preferred_daily_bars(
     symbol: str,
     limit: int,
     include_mock: bool,
+    is_index: bool,
 ) -> list[sqlite3.Row]:
     provider_filter = "" if include_mock else "and provider != 'mock-market'"
-    return conn.execute(
+    series_rows = conn.execute(
         f"""
-        with ranked_daily as (
-          select
-            *,
-            row_number() over (
-              partition by trade_date
-              order by
-                case lower(coalesce(adjust, ''))
-                  when 'qfq' then 5
-                  when 'hfq' then 4
-                  when '' then 3
-                  else 2
-                end desc,
-                case provider
-                  when 'tushare-market' then 5
-                  when 'akshare-market' then 4
-                  when 'baostock-market' then 3
-                  when 'finnhub-market' then 2
-                  when 'mock-market' then 1
-                  else 0
-                end desc,
-                fetched_at desc
-            ) as rn
-          from daily_bars
-          where upper(symbol) = upper(?)
-            {provider_filter}
-        )
+        select
+          provider,
+          coalesce(adjust, '') as adjust,
+          count(*) as row_count,
+          min(trade_date) as earliest_trade_date,
+          max(trade_date) as latest_trade_date,
+          min(close) as min_close,
+          max(close) as max_close,
+          avg(close) as avg_close,
+          max(fetched_at) as latest_fetch
+        from daily_bars
+        where symbol = ?
+          {provider_filter}
+        group by provider, coalesce(adjust, '')
+        """,
+        (symbol,),
+    ).fetchall()
+    if not series_rows:
+        return []
+
+    preferred = max(series_rows, key=lambda row: daily_bar_series_rank(row, is_index, limit))
+    return conn.execute(
+        """
         select *
-        from ranked_daily
-        where rn = 1
+        from daily_bars
+        where symbol = ?
+          and provider = ?
+          and coalesce(adjust, '') = ?
         order by trade_date desc
         limit ?
         """,
-        (symbol, limit),
+        (symbol, preferred["provider"], preferred["adjust"], limit),
     ).fetchall()
+
+
+def daily_bar_series_rank(row: sqlite3.Row, is_index: bool, limit: int) -> tuple[Any, ...]:
+    provider = str(row["provider"] or "")
+    adjust = str(row["adjust"] or "").lower()
+    row_count = int(row["row_count"] or 0)
+    avg_close = number(row["avg_close"], 0) or 0
+    latest_trade_date = str(row["latest_trade_date"] or "")
+    latest_fetch = str(row["latest_fetch"] or "")
+    provider_score = MARKET_PROVIDER_PRIORITY.get(provider, 0)
+    coverage_score = min(row_count, max(20, limit))
+
+    if is_index:
+        adjust_score = 8 if adjust == "" else 1
+        scale_score = 3 if avg_close >= 100 else 0
+        index_provider_score = {
+            "baostock-market": 6,
+            "tushare-market": 5,
+            "akshare-market": 4,
+            "finnhub-market": 2,
+            "mock-market": 1,
+        }.get(provider, provider_score)
+        return (adjust_score, scale_score, latest_trade_date, coverage_score, index_provider_score, latest_fetch)
+
+    adjust_score = {"qfq": 5, "hfq": 4, "": 3}.get(adjust, 2)
+    return (latest_trade_date, adjust_score, provider_score, coverage_score, latest_fetch)
+
+
+def is_index_symbol(symbol_row: dict[str, Any]) -> bool:
+    symbol = str(symbol_row.get("symbol") or "").upper()
+    name = str(symbol_row.get("name") or "")
+    sector = str(symbol_row.get("sector") or "")
+    industry = str(symbol_row.get("industry") or "")
+    if "指数" in name or "指数" in sector or "指数" in industry:
+        return True
+    return symbol in {
+        "000001.SH",
+        "000002.SH",
+        "000003.SH",
+        "399001.SZ",
+        "399006.SZ",
+        "399300.SZ",
+    }
 
 
 def normalize_daily_bar(row: sqlite3.Row) -> dict[str, Any]:
@@ -233,7 +428,7 @@ def financial_history(conn: sqlite3.Connection, symbol: str, limit: int = 12) ->
         """
         select *
         from financial_metrics_history
-        where upper(symbol) = upper(?)
+        where symbol = ?
         order by fetched_at desc
         limit 80
         """,
@@ -375,6 +570,13 @@ def normalize_financial_period(value: Any) -> str | None:
         day = {3: 31, 6: 30, 9: 30, 12: 31}[month]
         return date(year, month, day).isoformat()
     return text
+
+
+def normalize_sentiment_snapshot(row: sqlite3.Row) -> dict[str, Any]:
+    item = row_to_dict(row)
+    item["source_counts"] = parse_json(item.pop("source_counts_json", "{}"))
+    item["raw"] = parse_json(item.pop("raw_json", "{}"))
+    return item
 
 
 def parse_date(value: Any) -> date | None:
