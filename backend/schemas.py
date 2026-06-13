@@ -89,3 +89,15 @@ class CommunityCrawlInput(BaseModel):
     limit: int = Field(default=120, ge=1, le=200)
     timeout: int = Field(default=15, ge=3, le=60)
     sleep_seconds: float = Field(default=0.8, ge=0, le=10)
+
+
+class CommunitySentimentCycleInput(BaseModel):
+    symbols: list[str] = Field(default_factory=list)
+    use_llm: bool = True
+    community_limit: int = Field(default=120, ge=1, le=200)
+    evidence_limit: int = Field(default=120, ge=1, le=200)
+    analysis_days: int = Field(default=30, ge=1, le=365)
+    retention_days: int = Field(default=3, ge=1, le=30)
+    refresh_market: bool = True
+    refresh_filings: bool = True
+    market_days: int = Field(default=20, ge=3, le=80)

@@ -20,7 +20,7 @@ def main() -> int:
     parser.add_argument("symbols", nargs="*", help="Optional symbols or names. Empty means recent local candidates.")
     parser.add_argument("--days", type=int, default=30, help="Sentiment lookback window in calendar days.")
     parser.add_argument("--use-llm", dest="use_llm", action="store_true", default=True, help="Use GLM first, then DeepSeek, when local API keys are configured.")
-    parser.add_argument("--no-llm", dest="use_llm", action="store_false", help="Disable LLM analysis and use local rules only.")
+    parser.add_argument("--no-llm", dest="use_llm", action="store_false", help="Disable LLM analysis and use local fallback only.")
     parser.add_argument("--crawl-community", action="store_true", help="Crawl community posts before sentiment analysis.")
     parser.add_argument("--community-limit", type=int, default=120, help="Community posts per symbol when crawling.")
     parser.add_argument("--evidence-limit", type=int, default=120, help="Text evidence rows per symbol/type.")

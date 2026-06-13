@@ -24,7 +24,8 @@ def main() -> int:
     parser.add_argument("--sleep-seconds", type=float, default=0.8, help="Delay after each symbol request.")
     parser.add_argument("--days", type=int, default=30, help="Sentiment lookback window.")
     parser.add_argument("--no-analysis", action="store_true", help="Only crawl posts, do not refresh sentiment snapshots.")
-    parser.add_argument("--use-llm", action="store_true", help="Use GLM first, then DeepSeek, when local API keys are configured.")
+    parser.add_argument("--use-llm", dest="use_llm", action="store_true", default=True, help="Use GLM first, then DeepSeek, when local API keys are configured.")
+    parser.add_argument("--no-llm", dest="use_llm", action="store_false", help="Disable LLM analysis and use local fallback only.")
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     args = parser.parse_args()
 

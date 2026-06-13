@@ -5,6 +5,7 @@ import os
 import re
 import sqlite3
 import time
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, time as datetime_time, timedelta
 from typing import Any
@@ -50,6 +51,7 @@ STOCK_DETAIL_SENTIMENT_EVIDENCE_LIMIT = 120
 BAOSTOCK_DAILY_SCRIPT_NAMES = ["scripts/run_baostock_backfill.py", "run_baostock_backfill.py"]
 BAOSTOCK_FINANCIAL_SCRIPT_NAMES = ["scripts/run_baostock_financial_backfill.py", "run_baostock_financial_backfill.py"]
 A_SHARE_FILING_SCRIPT_NAMES = ["scripts/run_a_share_filings_backfill.py", "run_a_share_filings_backfill.py"]
+FILING_TITLE_DEDUPE_DELETE_CHUNK_SIZE = 800
 
 
 def warehouse_summary(conn: sqlite3.Connection) -> dict[str, Any]:
@@ -63,6 +65,7 @@ def warehouse_summary(conn: sqlite3.Connection) -> dict[str, Any]:
         "community_posts": scalar_count(conn, "community_posts"),
         "sentiment_evidence": scalar_count(conn, "sentiment_evidence"),
         "sentiment_snapshots": scalar_count(conn, "sentiment_snapshots"),
+        "community_sentiment_daily": scalar_count(conn, "community_sentiment_daily"),
         "latest_daily_bar": scalar_value(conn, "select max(trade_date) from daily_bars"),
     }
 
@@ -412,10 +415,10 @@ def refresh_stock_detail_filings_step(symbol: str) -> dict[str, Any]:
 
 
 def refresh_stock_detail_sentiment_step(symbol: str) -> dict[str, Any]:
-    from .sentiment import refresh_symbol_sentiment
+    from .sentiment import SENTIMENT_METHOD_VERSION, refresh_symbol_sentiment
 
     with get_db() as conn:
-        freshness = latest_sentiment_snapshot_freshness(conn, symbol)
+        freshness = latest_sentiment_snapshot_freshness(conn, symbol, method_version=SENTIMENT_METHOD_VERSION)
         if freshness.get("fresh"):
             return {
                 "status": "skipped",
@@ -439,16 +442,24 @@ def refresh_stock_detail_sentiment_step(symbol: str) -> dict[str, Any]:
         return result
 
 
-def latest_sentiment_snapshot_freshness(conn: sqlite3.Connection, symbol: str, max_age_minutes: int = 360) -> dict[str, Any]:
+def latest_sentiment_snapshot_freshness(
+    conn: sqlite3.Connection,
+    symbol: str,
+    max_age_minutes: int = 30,
+    method_version: str = "",
+) -> dict[str, Any]:
+    method_filter = "and method_version = ?" if method_version else ""
+    params: tuple[Any, ...] = (symbol, method_version) if method_version else (symbol,)
     row = conn.execute(
-        """
+        f"""
         select generated_at
         from sentiment_snapshots
         where symbol = ?
+          {method_filter}
         order by generated_at desc, id desc
         limit 1
         """,
-        (symbol,),
+        params,
     ).fetchone()
     if not row:
         return {"fresh": False, "reason": "no sentiment snapshot"}
@@ -516,6 +527,8 @@ def stock_detail_step_summary(step: dict[str, Any]) -> dict[str, Any]:
         summary["requested_days"] = result.get("requested_days")
     if result.get("planned_periods"):
         summary["planned_periods"] = result.get("planned_periods")
+    if result.get("performance"):
+        summary["performance"] = result.get("performance")
     return summary
 
 
@@ -1440,6 +1453,13 @@ def run_a_share_filings_backfill_job(
                     if not errors
                     else ("partial" if counts.get("symbols_refreshed") or counts.get("filings") or counts.get("remaining_candidates") == 0 else "failed")
                 )
+            try:
+                cleanup = dedupe_filing_history_by_title(conn)
+                merge_filing_dedupe_counts(counts, cleanup)
+                updated_symbols.extend(cleanup.get("symbols") or [])
+            except Exception as exc:
+                errors.append({"scope": "a-share-filings-dedupe", "error": str(exc)})
+                status = "partial" if status == "ok" else status
             finish_ingestion(conn, run_id, status, updated_symbols, counts, errors)
             conn.commit()
     except Exception as exc:
@@ -1462,6 +1482,7 @@ def apply_a_share_filings_background_batch(
 ) -> None:
     batch = refresh_a_share_filings_batch(conn, batch_symbols, source=source, days=days)
     counts["filings"] = counts.get("filings", 0) + batch["filings"]
+    merge_filing_dedupe_counts(counts, batch.get("dedupe") or {})
     counts["symbols_refreshed"] = counts.get("symbols_refreshed", 0) + len(batch["symbols"])
     counts["no_data_symbols"] = counts.get("no_data_symbols", 0) + len(batch["no_data_symbols"])
     counts["failed_symbols"] = counts.get("failed_symbols", 0) + len(batch["failed_symbols"])
@@ -1557,13 +1578,26 @@ def refresh_a_share_filings_batch(
                 }
             )
 
+    dedupe = dedupe_filing_history_by_title(conn, symbols)
     return {
         "symbols": refreshed_symbols,
         "no_data_symbols": no_data_symbols,
         "failed_symbols": failed_symbols,
         "filings": filing_count,
+        "dedupe": dedupe,
         "errors": errors,
     }
+
+
+def merge_filing_dedupe_counts(counts: dict[str, Any], cleanup: dict[str, Any]) -> None:
+    if not cleanup:
+        return
+    counts["filing_dedupe_checked_rows"] = int(counts.get("filing_dedupe_checked_rows") or 0) + int(cleanup.get("checked_rows") or 0)
+    counts["filing_duplicate_groups"] = int(counts.get("filing_duplicate_groups") or 0) + int(cleanup.get("duplicate_groups") or 0)
+    counts["duplicate_filings_deleted"] = int(counts.get("duplicate_filings_deleted") or 0) + int(cleanup.get("filings_deleted") or 0)
+    counts["duplicate_filing_evidence_deleted"] = int(counts.get("duplicate_filing_evidence_deleted") or 0) + int(
+        cleanup.get("sentiment_evidence_deleted") or 0
+    )
 
 
 def should_pause_after_filing_errors(counts: dict[str, Any], max_error_batches: int = 3) -> bool:
@@ -3261,6 +3295,105 @@ def upsert_filing_documents(conn: sqlite3.Connection, documents: list[dict[str, 
     return len(rows)
 
 
+def dedupe_filing_history_by_title(
+    conn: sqlite3.Connection,
+    symbols: list[str] | None = None,
+) -> dict[str, Any]:
+    normalized_symbols = normalize_symbols(conn, symbols or []) if symbols else []
+    where = ""
+    params: list[Any] = []
+    if normalized_symbols:
+        placeholders = ",".join("?" for _ in normalized_symbols)
+        where = f"where symbol in ({placeholders})"
+        params.extend(normalized_symbols)
+
+    rows = conn.execute(
+        f"""
+        select id, symbol, source, title, published_at, fetched_at
+        from filings_history
+        {where}
+        order by symbol, published_at desc, id desc
+        """,
+        tuple(params),
+    ).fetchall()
+    groups: dict[tuple[str, str], list[sqlite3.Row]] = {}
+    for row in rows:
+        title_key = normalize_filing_title_for_dedupe(row["title"])
+        if not title_key:
+            continue
+        groups.setdefault((str(row["symbol"]).upper(), title_key), []).append(row)
+
+    delete_ids: list[int] = []
+    affected_symbols: set[str] = set()
+    duplicate_groups = 0
+    for (symbol, _title_key), items in groups.items():
+        if len(items) <= 1:
+            continue
+        duplicate_groups += 1
+        keeper = max(items, key=filing_dedupe_keep_rank)
+        keeper_id = int(keeper["id"])
+        affected_symbols.add(symbol)
+        delete_ids.extend(int(item["id"]) for item in items if int(item["id"]) != keeper_id)
+
+    evidence_deleted = 0
+    filings_deleted = 0
+    for chunk in chunked(delete_ids, FILING_TITLE_DEDUPE_DELETE_CHUNK_SIZE):
+        placeholders = ",".join("?" for _ in chunk)
+        evidence_deleted += max(
+            0,
+            conn.execute(
+                f"""
+                delete from sentiment_evidence
+                where source_table = 'filings_history'
+                  and source_id in ({placeholders})
+                """,
+                tuple(str(item_id) for item_id in chunk),
+            ).rowcount,
+        )
+        filings_deleted += max(
+            0,
+            conn.execute(
+                f"delete from filings_history where id in ({placeholders})",
+                tuple(chunk),
+            ).rowcount,
+        )
+
+    return {
+        "checked_rows": len(rows),
+        "duplicate_groups": duplicate_groups,
+        "filings_deleted": filings_deleted,
+        "sentiment_evidence_deleted": evidence_deleted,
+        "symbols": sorted(affected_symbols),
+    }
+
+
+def normalize_filing_title_for_dedupe(value: Any) -> str:
+    text = unicodedata.normalize("NFKC", str(value or "")).casefold()
+    return re.sub(r"\s+", "", text)
+
+
+def filing_dedupe_keep_rank(row: sqlite3.Row) -> tuple[Any, ...]:
+    return (
+        filing_source_priority(row["source"]),
+        str(row["published_at"] or ""),
+        str(row["fetched_at"] or ""),
+        int(row["id"] or 0),
+    )
+
+
+def filing_source_priority(source: Any) -> int:
+    text = str(source or "").casefold()
+    if "cninfo" in text or "巨潮" in text:
+        return 50
+    if "sse" in text or "szse" in text or "上交所" in text or "深交所" in text:
+        return 40
+    if "hkex" in text or "sec" in text or "edgar" in text:
+        return 35
+    if "mock" in text:
+        return 0
+    return 10
+
+
 def upsert_akshare_universe(conn: sqlite3.Connection, rows: list[dict[str, Any]]) -> int:
     now = now_iso()
     symbols: list[dict[str, Any]] = []
@@ -3701,7 +3834,7 @@ def parse_json_value(value: Any, fallback: Any) -> Any:
         return fallback
 
 
-def chunked(items: list[str], size: int) -> list[list[str]]:
+def chunked(items: list[Any], size: int) -> list[list[Any]]:
     return [items[index : index + size] for index in range(0, len(items), max(size, 1))]
 
 

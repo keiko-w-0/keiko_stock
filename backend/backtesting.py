@@ -9,6 +9,7 @@ from typing import Any
 from . import seed_data
 from .history import daily_bars_for_backtest
 from .schemas import BacktestInput
+from .sentiment import SENTIMENT_METHOD_VERSION, decode_community_daily
 
 
 STRATEGIES = {
@@ -124,6 +125,7 @@ def run_backtest(payload: BacktestInput, conn: sqlite3.Connection | None = None)
         "rebalance_log": rebalance_rows[-8:],
         "attribution": attribution_for(symbols, payload.strategy, daily_returns, benchmark_returns),
         "research_notes": research_notes(payload, symbols),
+        "sentiment_panels": empty_sentiment_panels(),
     }
 
 
@@ -221,12 +223,256 @@ def run_database_backtest(payload: BacktestInput, conn: sqlite3.Connection) -> d
         "equity_curve": curve,
         "rebalance_log": rebalance_rows[-8:],
         "attribution": attribution_from_bars(symbols, by_symbol, dates[-1], payload.strategy),
+        "sentiment_panels": backtest_sentiment_panels(conn, symbols, dates),
         "research_notes": [
             "本次回测读取 daily_bars 历史仓库，不使用合成价格。",
             "结果仍需继续补充复权因子、停复牌、涨跌停、分红拆股和更完整的交易成本模型。",
             f"本次数据库样本数 {len(symbols)}，最大持仓 {payload.max_positions}，换仓频率 {payload.rebalance}。",
         ],
     }
+
+
+def empty_sentiment_panels() -> dict[str, Any]:
+    return {
+        "mode": "sentiment-panels-empty",
+        "daily_kline": {"rows": [], "summary": {"rows": 0}},
+        "realtime": {"rows": [], "summary": {"rows": 0}},
+        "notes": ["本地 fallback 回测没有读取社区情绪日汇总。"],
+    }
+
+
+def backtest_sentiment_panels(conn: sqlite3.Connection, symbols: list[str], dates: list[str]) -> dict[str, Any]:
+    rows = backtest_community_daily_kline_rows(conn, symbols, dates)
+    realtime = backtest_realtime_sentiment_rows(conn, symbols)
+    return {
+        "mode": "community-sentiment-panels",
+        "daily_kline": {
+            "rows": rows,
+            "summary": {
+                "rows": len(rows),
+                "symbols": len({row["symbol"] for row in rows}),
+                "latest_trade_date": max((row["trade_date"] for row in rows), default=""),
+            },
+        },
+        "realtime": {
+            "rows": realtime,
+            "summary": {
+                "rows": len(realtime),
+                "latest_trade_date": max((row.get("latest_trade_date") or "" for row in realtime), default=""),
+                "latest_sentiment_at": max((row.get("latest_sentiment_at") or "" for row in realtime), default=""),
+            },
+        },
+        "notes": [
+            "社区情绪日汇总永久保留；单条评论原文和单条分析由 agent 按 3 天清理。",
+            "半小时 agent 每轮刷新短窗口 K 线；财务不在社区情绪轮次重复拉取，公告通过 refresh_state 判断有缺口才拉。",
+        ],
+    }
+
+
+def backtest_community_daily_kline_rows(
+    conn: sqlite3.Connection,
+    symbols: list[str],
+    dates: list[str],
+    limit: int = 14,
+) -> list[dict[str, Any]]:
+    if not symbols or not dates:
+        return []
+    symbol_placeholders = ",".join("?" for _ in symbols)
+    start_date = min(dates)
+    end_date = max(max(dates), date.today().isoformat())
+    rows = conn.execute(
+        f"""
+        select csd.*, s.name
+        from community_sentiment_daily csd
+        left join symbols s on s.symbol = csd.symbol
+        where csd.symbol in ({symbol_placeholders})
+          and csd.method_version = ?
+          and csd.trade_date between ? and ?
+        order by csd.trade_date desc, abs(csd.sentiment_score) desc, csd.analyzed_count desc
+        limit ?
+        """,
+        (*symbols, SENTIMENT_METHOD_VERSION, start_date, end_date, limit),
+    ).fetchall()
+    result: list[dict[str, Any]] = []
+    for row in rows:
+        item = decode_community_daily(row)
+        bar = daily_bar_for_date(conn, item["symbol"], item["trade_date"])
+        result.append(
+            {
+                "symbol": item["symbol"],
+                "name": row["name"] or "",
+                "trade_date": item["trade_date"],
+                "analyzed_count": item["analyzed_count"],
+                "positive_count": item["positive_count"],
+                "negative_count": item["negative_count"],
+                "neutral_count": item["neutral_count"],
+                "sentiment_score": item["sentiment_score"],
+                "sentiment_label": item["sentiment_label"],
+                "confidence": item["confidence"],
+                "conclusion": item["conclusion"],
+                "keyword_counts": item["keyword_counts"],
+                "close": bar.get("close"),
+                "change_pct": bar.get("change_pct"),
+                "amount": bar.get("amount"),
+                "turnover_rate": bar.get("turnover_rate"),
+                "kline_trade_date": bar.get("trade_date", ""),
+                "kline_provider": bar.get("provider", ""),
+                "kline_fetched_at": bar.get("fetched_at", ""),
+            }
+        )
+    return result
+
+
+def backtest_realtime_sentiment_rows(
+    conn: sqlite3.Connection,
+    symbols: list[str],
+    limit: int = 8,
+) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    target_symbols = prioritized_realtime_symbols(conn, symbols, limit=limit)
+    for symbol in target_symbols:
+        symbol_row = conn.execute("select name from symbols where symbol = ?", (symbol,)).fetchone()
+        latest_bar = latest_daily_bar(conn, symbol)
+        latest_snapshot = conn.execute(
+            """
+            select *
+            from sentiment_snapshots
+            where symbol = ?
+              and method_version = ?
+            order by generated_at desc, id desc
+            limit 1
+            """,
+            (symbol, SENTIMENT_METHOD_VERSION),
+        ).fetchone()
+        latest_daily = conn.execute(
+            """
+            select *
+            from community_sentiment_daily
+            where symbol = ?
+              and method_version = ?
+            order by trade_date desc, generated_at desc, id desc
+            limit 1
+            """,
+            (symbol, SENTIMENT_METHOD_VERSION),
+        ).fetchone()
+        today = date.today().isoformat()
+        posts_today = conn.execute(
+            """
+            select count(*) as count
+            from community_posts
+            where symbol = ?
+              and substr(fetched_at, 1, 10) = ?
+            """,
+            (symbol, today),
+        ).fetchone()["count"]
+        daily_item = decode_community_daily(latest_daily) if latest_daily else {}
+        result.append(
+            {
+                "symbol": symbol,
+                "name": symbol_row["name"] if symbol_row else "",
+                "latest_trade_date": latest_bar.get("trade_date", ""),
+                "latest_close": latest_bar.get("close"),
+                "latest_change_pct": latest_bar.get("change_pct"),
+                "kline_provider": latest_bar.get("provider", ""),
+                "kline_fetched_at": latest_bar.get("fetched_at", ""),
+                "latest_sentiment_at": latest_snapshot["generated_at"] if latest_snapshot else "",
+                "composite_score": latest_snapshot["composite_score"] if latest_snapshot else None,
+                "community_score": latest_snapshot["community_score"] if latest_snapshot else None,
+                "sentiment_label": latest_snapshot["sentiment_label"] if latest_snapshot else "",
+                "daily_trade_date": daily_item.get("trade_date", ""),
+                "daily_analyzed_count": daily_item.get("analyzed_count", 0),
+                "daily_positive_count": daily_item.get("positive_count", 0),
+                "daily_negative_count": daily_item.get("negative_count", 0),
+                "daily_neutral_count": daily_item.get("neutral_count", 0),
+                "daily_conclusion": daily_item.get("conclusion", ""),
+                "community_posts_today": int(posts_today or 0),
+            }
+        )
+    result.sort(key=lambda row: (row.get("latest_sentiment_at") or "", abs(float(row.get("community_score") or 0))), reverse=True)
+    return result
+
+
+def prioritized_realtime_symbols(conn: sqlite3.Connection, symbols: list[str], limit: int = 8) -> list[str]:
+    symbol_set = set(symbols)
+    rows = conn.execute(
+        """
+        select symbol, max(generated_at) as latest_at
+        from community_sentiment_daily
+        where method_version = ?
+        group by symbol
+        order by latest_at desc
+        limit ?
+        """,
+        (SENTIMENT_METHOD_VERSION, max(limit * 3, 20)),
+    ).fetchall()
+    prioritized: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        symbol = str(row["symbol"] or "").upper()
+        if symbol in symbol_set and symbol not in seen:
+            prioritized.append(symbol)
+            seen.add(symbol)
+    for symbol in symbols:
+        if symbol not in seen:
+            prioritized.append(symbol)
+            seen.add(symbol)
+        if len(prioritized) >= limit:
+            break
+    return prioritized[:limit]
+
+
+def daily_bar_for_date(conn: sqlite3.Connection, symbol: str, trade_date: str) -> dict[str, Any]:
+    rows = conn.execute(
+        """
+        select *
+        from daily_bars
+        where symbol = ?
+          and trade_date <= ?
+        order by trade_date desc
+        limit 20
+        """,
+        (symbol, trade_date),
+    ).fetchall()
+    if not rows:
+        return {}
+    latest_date = rows[0]["trade_date"]
+    same_day = [row for row in rows if row["trade_date"] == latest_date]
+    row = max(same_day, key=daily_bar_rank)
+    return dict(row)
+
+
+def latest_daily_bar(conn: sqlite3.Connection, symbol: str) -> dict[str, Any]:
+    rows = conn.execute(
+        """
+        select *
+        from daily_bars
+        where symbol = ?
+        order by trade_date desc
+        limit 20
+        """,
+        (symbol,),
+    ).fetchall()
+    if not rows:
+        return {}
+    latest_date = rows[0]["trade_date"]
+    same_day = [row for row in rows if row["trade_date"] == latest_date]
+    return dict(max(same_day, key=daily_bar_rank))
+
+
+def daily_bar_rank(row: sqlite3.Row) -> tuple[Any, ...]:
+    provider_priority = {
+        "akshare-market": 5,
+        "baostock-market": 4,
+        "tushare-market": 3,
+        "finnhub-market": 2,
+        "mock-market": 1,
+    }
+    adjust_priority = {"qfq": 4, "hfq": 3, "": 2}
+    return (
+        provider_priority.get(str(row["provider"] or ""), 0),
+        adjust_priority.get(str(row["adjust"] or "").lower(), 0),
+        str(row["fetched_at"] or ""),
+    )
 
 
 def bar_return(previous: dict[str, Any], current: dict[str, Any]) -> float:

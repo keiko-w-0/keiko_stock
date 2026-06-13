@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.keiko.community-sentiment-agent</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/wangwenhui/miniconda3/bin/python3</string>
+    <string>scripts/run_community_sentiment_agent.py</string>
+    <string>--once</string>
+    <string>--community-limit</string>
+    <string>120</string>
+    <string>--evidence-limit</string>
+    <string>120</string>
+    <string>--retention-days</string>
+    <string>3</string>
+    <string>--market-days</string>
+    <string>20</string>
+    <string>--json</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock</string>
+
+  <key>StartInterval</key>
+  <integer>1800</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock/logs/community-sentiment-agent.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock/logs/community-sentiment-agent.err.log</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>

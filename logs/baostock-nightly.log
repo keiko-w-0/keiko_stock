@@ -5150,3 +5150,2845 @@ logout success!
     "latest_daily_bar": "2026-06-12"
   }
 }
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 88,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T02:01:01",
+  "finished_at": "2026-06-13T02:17:00",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "000525.SZ",
+    "000526.SZ",
+    "000528.SZ",
+    "000529.SZ",
+    "000530.SZ",
+    "000531.SZ",
+    "000532.SZ",
+    "000533.SZ",
+    "000534.SZ",
+    "000536.SZ",
+    "000537.SZ",
+    "000538.SZ",
+    "000539.SZ",
+    "000541.SZ",
+    "000543.SZ",
+    "000544.SZ",
+    "000545.SZ",
+    "000546.SZ",
+    "000547.SZ",
+    "000548.SZ",
+    "000550.SZ",
+    "000551.SZ",
+    "000552.SZ",
+    "000553.SZ",
+    "000554.SZ",
+    "000555.SZ",
+    "000557.SZ",
+    "000558.SZ",
+    "000559.SZ",
+    "000560.SZ",
+    "000561.SZ",
+    "000563.SZ",
+    "000564.SZ",
+    "000565.SZ",
+    "000566.SZ",
+    "000567.SZ",
+    "000568.SZ",
+    "000570.SZ",
+    "000571.SZ",
+    "000572.SZ",
+    "000573.SZ",
+    "000576.SZ",
+    "000581.SZ",
+    "000582.SZ",
+    "000586.SZ",
+    "000589.SZ",
+    "000590.SZ",
+    "000591.SZ",
+    "000592.SZ",
+    "000593.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 919,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 6970,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T02:17:00",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1102711,
+    "financial_metrics": 22431,
+    "filings": 9506,
+    "company_reports": 259,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 91,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T02:31:05",
+  "finished_at": "2026-06-13T02:52:02",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "000807.SZ",
+    "000808.SH",
+    "000809.SZ",
+    "000810.SZ",
+    "000811.SZ",
+    "000812.SZ",
+    "000813.SZ",
+    "000814.SH",
+    "000815.SZ",
+    "000816.SH",
+    "000816.SZ",
+    "000818.SZ",
+    "000819.SH",
+    "000819.SZ",
+    "000820.SZ",
+    "000821.SH",
+    "000821.SZ",
+    "000822.SZ",
+    "000823.SH",
+    "000823.SZ",
+    "000825.SZ",
+    "000826.SZ",
+    "000827.SH",
+    "000828.SH",
+    "000828.SZ",
+    "000829.SZ",
+    "000830.SZ",
+    "000831.SZ",
+    "000832.SH",
+    "000833.SH",
+    "000833.SZ",
+    "000837.SZ",
+    "000838.SZ",
+    "000839.SZ",
+    "000841.SH",
+    "000842.SH",
+    "000846.SH",
+    "000847.SH",
+    "000848.SZ",
+    "000849.SH",
+    "000850.SZ",
+    "000851.SH",
+    "000852.SH",
+    "000852.SZ",
+    "000853.SH",
+    "000854.SH",
+    "000855.SH",
+    "000856.SH",
+    "000856.SZ",
+    "000857.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 6786,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T02:52:02",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1103787,
+    "financial_metrics": 22479,
+    "filings": 9506,
+    "company_reports": 261,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 94,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T03:16:12",
+  "finished_at": "2026-06-13T03:34:04",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "000987.SZ",
+    "000988.SZ",
+    "000989.SH",
+    "000989.SZ",
+    "000990.SH",
+    "000990.SZ",
+    "000991.SH",
+    "000992.SH",
+    "000993.SH",
+    "000993.SZ",
+    "000995.SZ",
+    "000997.SZ",
+    "000998.SH",
+    "000998.SZ",
+    "000999.SZ",
+    "001201.SZ",
+    "001202.SZ",
+    "001203.SZ",
+    "001205.SZ",
+    "001206.SZ",
+    "001207.SZ",
+    "001208.SZ",
+    "001209.SZ",
+    "001210.SZ",
+    "001211.SZ",
+    "001212.SZ",
+    "001213.SZ",
+    "001215.SZ",
+    "001216.SZ",
+    "001217.SZ",
+    "001218.SZ",
+    "001219.SZ",
+    "001220.SZ",
+    "001221.SZ",
+    "001222.SZ",
+    "001223.SZ",
+    "001225.SZ",
+    "001226.SZ",
+    "001227.SZ",
+    "001228.SZ",
+    "001229.SZ",
+    "001230.SZ",
+    "001231.SZ",
+    "001233.SZ",
+    "001234.SZ",
+    "001236.SZ",
+    "001237.SZ",
+    "001238.SZ",
+    "001239.SZ",
+    "001255.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 919,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 6604,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T03:34:04",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1104838,
+    "financial_metrics": 22551,
+    "filings": 9506,
+    "company_reports": 263,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 96,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T03:46:17",
+  "finished_at": "2026-06-13T04:13:49",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "002056.SZ",
+    "002057.SZ",
+    "002058.SZ",
+    "002059.SZ",
+    "002060.SZ",
+    "002061.SZ",
+    "002062.SZ",
+    "002063.SZ",
+    "002064.SZ",
+    "002065.SZ",
+    "002066.SZ",
+    "002067.SZ",
+    "002068.SZ",
+    "002069.SZ",
+    "002072.SZ",
+    "002073.SZ",
+    "002074.SZ",
+    "002075.SZ",
+    "002076.SZ",
+    "002077.SZ",
+    "002078.SZ",
+    "002079.SZ",
+    "002080.SZ",
+    "002081.SZ",
+    "002082.SZ",
+    "002083.SZ",
+    "002084.SZ",
+    "002085.SZ",
+    "002086.SZ",
+    "002088.SZ",
+    "002090.SZ",
+    "002091.SZ",
+    "002092.SZ",
+    "002093.SZ",
+    "002094.SZ",
+    "002095.SZ",
+    "002096.SZ",
+    "002097.SZ",
+    "002098.SZ",
+    "002099.SZ",
+    "002100.SZ",
+    "002101.SZ",
+    "002102.SZ",
+    "002103.SZ",
+    "002104.SZ",
+    "002105.SZ",
+    "002106.SZ",
+    "002107.SZ",
+    "002108.SZ",
+    "002109.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 919,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 6428,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T04:13:49",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1105872,
+    "financial_metrics": 22599,
+    "filings": 9506,
+    "company_reports": 264,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 99,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T04:31:24",
+  "finished_at": "2026-06-13T04:46:12",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "002250.SZ",
+    "002251.SZ",
+    "002252.SZ",
+    "002253.SZ",
+    "002254.SZ",
+    "002255.SZ",
+    "002256.SZ",
+    "002258.SZ",
+    "002259.SZ",
+    "002261.SZ",
+    "002262.SZ",
+    "002263.SZ",
+    "002264.SZ",
+    "002265.SZ",
+    "002266.SZ",
+    "002267.SZ",
+    "002268.SZ",
+    "002269.SZ",
+    "002270.SZ",
+    "002271.SZ",
+    "002272.SZ",
+    "002273.SZ",
+    "002274.SZ",
+    "002275.SZ",
+    "002276.SZ",
+    "002277.SZ",
+    "002278.SZ",
+    "002279.SZ",
+    "002281.SZ",
+    "002282.SZ",
+    "002283.SZ",
+    "002284.SZ",
+    "002285.SZ",
+    "002286.SZ",
+    "002287.SZ",
+    "002289.SZ",
+    "002290.SZ",
+    "002291.SZ",
+    "002292.SZ",
+    "002293.SZ",
+    "002294.SZ",
+    "002295.SZ",
+    "002296.SZ",
+    "002297.SZ",
+    "002298.SZ",
+    "002299.SZ",
+    "002300.SZ",
+    "002301.SZ",
+    "002302.SZ",
+    "002303.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 916,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 6245,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T04:46:12",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1106880,
+    "financial_metrics": 22599,
+    "filings": 9506,
+    "company_reports": 264,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 101,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T05:01:28",
+  "finished_at": "2026-06-13T05:13:30",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "002448.SZ",
+    "002449.SZ",
+    "002451.SZ",
+    "002452.SZ",
+    "002453.SZ",
+    "002454.SZ",
+    "002455.SZ",
+    "002456.SZ",
+    "002457.SZ",
+    "002458.SZ",
+    "002459.SZ",
+    "002460.SZ",
+    "002461.SZ",
+    "002462.SZ",
+    "002463.SZ",
+    "002465.SZ",
+    "002466.SZ",
+    "002467.SZ",
+    "002468.SZ",
+    "002469.SZ",
+    "002470.SZ",
+    "002471.SZ",
+    "002472.SZ",
+    "002474.SZ",
+    "002475.SZ",
+    "002476.SZ",
+    "002478.SZ",
+    "002479.SZ",
+    "002480.SZ",
+    "002481.SZ",
+    "002482.SZ",
+    "002483.SZ",
+    "002484.SZ",
+    "002485.SZ",
+    "002486.SZ",
+    "002487.SZ",
+    "002488.SZ",
+    "002489.SZ",
+    "002490.SZ",
+    "002491.SZ",
+    "002492.SZ",
+    "002493.SZ",
+    "002494.SZ",
+    "002495.SZ",
+    "002496.SZ",
+    "002497.SZ",
+    "002498.SZ",
+    "002500.SZ",
+    "002501.SZ",
+    "002506.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 919,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 6061,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T05:13:30",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1107983,
+    "financial_metrics": 22647,
+    "filings": 9506,
+    "company_reports": 264,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 103,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T05:31:33",
+  "finished_at": "2026-06-13T05:42:42",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "002648.SZ",
+    "002649.SZ",
+    "002650.SZ",
+    "002651.SZ",
+    "002652.SZ",
+    "002653.SZ",
+    "002654.SZ",
+    "002655.SZ",
+    "002656.SZ",
+    "002657.SZ",
+    "002658.SZ",
+    "002659.SZ",
+    "002660.SZ",
+    "002661.SZ",
+    "002662.SZ",
+    "002663.SZ",
+    "002664.SZ",
+    "002666.SZ",
+    "002667.SZ",
+    "002668.SZ",
+    "002669.SZ",
+    "002670.SZ",
+    "002671.SZ",
+    "002672.SZ",
+    "002673.SZ",
+    "002674.SZ",
+    "002675.SZ",
+    "002676.SZ",
+    "002677.SZ",
+    "002678.SZ",
+    "002679.SZ",
+    "002681.SZ",
+    "002682.SZ",
+    "002683.SZ",
+    "002685.SZ",
+    "002686.SZ",
+    "002687.SZ",
+    "002688.SZ",
+    "002689.SZ",
+    "002690.SZ",
+    "002691.SZ",
+    "002692.SZ",
+    "002693.SZ",
+    "002694.SZ",
+    "002695.SZ",
+    "002696.SZ",
+    "002697.SZ",
+    "002698.SZ",
+    "002700.SZ",
+    "002701.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 919,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 5878,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T05:42:42",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1109086,
+    "financial_metrics": 22695,
+    "filings": 9506,
+    "company_reports": 266,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 105,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T06:01:38",
+  "finished_at": "2026-06-13T06:12:55",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "002858.SZ",
+    "002859.SZ",
+    "002860.SZ",
+    "002861.SZ",
+    "002862.SZ",
+    "002863.SZ",
+    "002864.SZ",
+    "002865.SZ",
+    "002866.SZ",
+    "002867.SZ",
+    "002868.SZ",
+    "002869.SZ",
+    "002870.SZ",
+    "002871.SZ",
+    "002872.SZ",
+    "002873.SZ",
+    "002875.SZ",
+    "002876.SZ",
+    "002877.SZ",
+    "002878.SZ",
+    "002879.SZ",
+    "002880.SZ",
+    "002881.SZ",
+    "002882.SZ",
+    "002883.SZ",
+    "002884.SZ",
+    "002885.SZ",
+    "002886.SZ",
+    "002887.SZ",
+    "002888.SZ",
+    "002889.SZ",
+    "002890.SZ",
+    "002891.SZ",
+    "002892.SZ",
+    "002893.SZ",
+    "002895.SZ",
+    "002896.SZ",
+    "002897.SZ",
+    "002899.SZ",
+    "002900.SZ",
+    "002901.SZ",
+    "002902.SZ",
+    "002903.SZ",
+    "002905.SZ",
+    "002906.SZ",
+    "002907.SZ",
+    "002908.SZ",
+    "002909.SZ",
+    "002910.SZ",
+    "002911.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 5694,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T06:12:55",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1110190,
+    "financial_metrics": 22743,
+    "filings": 9506,
+    "company_reports": 267,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 107,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T06:31:43",
+  "finished_at": "2026-06-13T06:47:30",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "159018.SZ",
+    "159019.SZ",
+    "159020.SZ",
+    "159021.SZ",
+    "159022.SZ",
+    "159026.SZ",
+    "159027.SZ",
+    "159028.SZ",
+    "159029.SZ",
+    "159030.SZ",
+    "159031.SZ",
+    "159032.SZ",
+    "159033.SZ",
+    "159035.SZ",
+    "159038.SZ",
+    "159100.SZ",
+    "159101.SZ",
+    "159102.SZ",
+    "159103.SZ",
+    "159105.SZ",
+    "159106.SZ",
+    "159107.SZ",
+    "159108.SZ",
+    "159109.SZ",
+    "159110.SZ",
+    "159111.SZ",
+    "159112.SZ",
+    "159113.SZ",
+    "159115.SZ",
+    "159116.SZ",
+    "159117.SZ",
+    "159118.SZ",
+    "159119.SZ",
+    "159120.SZ",
+    "159121.SZ",
+    "159122.SZ",
+    "159123.SZ",
+    "159125.SZ",
+    "159126.SZ",
+    "159127.SZ",
+    "159128.SZ",
+    "159129.SZ",
+    "159130.SZ",
+    "159131.SZ",
+    "159132.SZ",
+    "159133.SZ",
+    "159135.SZ",
+    "159136.SZ",
+    "159137.SZ",
+    "159138.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 919,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 5572,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T06:47:30",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1111415,
+    "financial_metrics": 22791,
+    "filings": 9506,
+    "company_reports": 267,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 109,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T07:01:49",
+  "finished_at": "2026-06-13T07:23:52",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "159292.SZ",
+    "159293.SZ",
+    "159295.SZ",
+    "159296.SZ",
+    "159297.SZ",
+    "159298.SZ",
+    "159299.SZ",
+    "159300.SZ",
+    "159301.SZ",
+    "159302.SZ",
+    "159303.SZ",
+    "159305.SZ",
+    "159306.SZ",
+    "159307.SZ",
+    "159309.SZ",
+    "159310.SZ",
+    "159311.SZ",
+    "159312.SZ",
+    "159315.SZ",
+    "159316.SZ",
+    "159318.SZ",
+    "159320.SZ",
+    "159321.SZ",
+    "159322.SZ",
+    "159323.SZ",
+    "159325.SZ",
+    "159326.SZ",
+    "159327.SZ",
+    "159328.SZ",
+    "159329.SZ",
+    "159330.SZ",
+    "159331.SZ",
+    "159332.SZ",
+    "159333.SZ",
+    "159335.SZ",
+    "159336.SZ",
+    "159337.SZ",
+    "159338.SZ",
+    "159339.SZ",
+    "159350.SZ",
+    "159351.SZ",
+    "159352.SZ",
+    "159353.SZ",
+    "159355.SZ",
+    "159356.SZ",
+    "159357.SZ",
+    "159358.SZ",
+    "159359.SZ",
+    "159360.SZ",
+    "159361.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 5572,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T07:23:52",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1112335,
+    "financial_metrics": 22851,
+    "filings": 9506,
+    "company_reports": 267,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 112,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T07:46:56",
+  "finished_at": "2026-06-13T08:03:30",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "159618.SZ",
+    "159619.SZ",
+    "159620.SZ",
+    "159621.SZ",
+    "159622.SZ",
+    "159623.SZ",
+    "159625.SZ",
+    "159627.SZ",
+    "159628.SZ",
+    "159629.SZ",
+    "159630.SZ",
+    "159631.SZ",
+    "159632.SZ",
+    "159633.SZ",
+    "159635.SZ",
+    "159636.SZ",
+    "159637.SZ",
+    "159638.SZ",
+    "159639.SZ",
+    "159640.SZ",
+    "159641.SZ",
+    "159642.SZ",
+    "159643.SZ",
+    "159645.SZ",
+    "159647.SZ",
+    "159649.SZ",
+    "159650.SZ",
+    "159651.SZ",
+    "159652.SZ",
+    "159653.SZ",
+    "159655.SZ",
+    "159656.SZ",
+    "159657.SZ",
+    "159658.SZ",
+    "159659.SZ",
+    "159660.SZ",
+    "159661.SZ",
+    "159662.SZ",
+    "159663.SZ",
+    "159665.SZ",
+    "159666.SZ",
+    "159667.SZ",
+    "159669.SZ",
+    "159670.SZ",
+    "159671.SZ",
+    "159672.SZ",
+    "159673.SZ",
+    "159675.SZ",
+    "159676.SZ",
+    "159677.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 5572,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T08:03:30",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1113255,
+    "financial_metrics": 22887,
+    "filings": 9506,
+    "company_reports": 268,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 114,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T08:17:01",
+  "finished_at": "2026-06-13T08:35:52",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "159862.SZ",
+    "159863.SZ",
+    "159864.SZ",
+    "159865.SZ",
+    "159866.SZ",
+    "159867.SZ",
+    "159869.SZ",
+    "159870.SZ",
+    "159871.SZ",
+    "159872.SZ",
+    "159873.SZ",
+    "159875.SZ",
+    "159876.SZ",
+    "159877.SZ",
+    "159880.SZ",
+    "159881.SZ",
+    "159883.SZ",
+    "159885.SZ",
+    "159886.SZ",
+    "159887.SZ",
+    "159888.SZ",
+    "159889.SZ",
+    "159890.SZ",
+    "159891.SZ",
+    "159892.SZ",
+    "159895.SZ",
+    "159896.SZ",
+    "159898.SZ",
+    "159899.SZ",
+    "159901.SZ",
+    "159902.SZ",
+    "159903.SZ",
+    "159905.SZ",
+    "159906.SZ",
+    "159907.SZ",
+    "159908.SZ",
+    "159909.SZ",
+    "159910.SZ",
+    "159912.SZ",
+    "159913.SZ",
+    "159915.SZ",
+    "159916.SZ",
+    "159918.SZ",
+    "159919.SZ",
+    "159920.SZ",
+    "159922.SZ",
+    "159923.SZ",
+    "159925.SZ",
+    "159928.SZ",
+    "159929.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 5572,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T08:35:52",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1114175,
+    "financial_metrics": 22935,
+    "filings": 9506,
+    "company_reports": 268,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 116,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T08:47:06",
+  "finished_at": "2026-06-13T09:01:47",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "300094.SZ",
+    "300095.SZ",
+    "300096.SZ",
+    "300097.SZ",
+    "300098.SZ",
+    "300099.SZ",
+    "300100.SZ",
+    "300101.SZ",
+    "300102.SZ",
+    "300103.SZ",
+    "300105.SZ",
+    "300106.SZ",
+    "300107.SZ",
+    "300109.SZ",
+    "300110.SZ",
+    "300111.SZ",
+    "300112.SZ",
+    "300113.SZ",
+    "300115.SZ",
+    "300118.SZ",
+    "300119.SZ",
+    "300120.SZ",
+    "300121.SZ",
+    "300122.SZ",
+    "300123.SZ",
+    "300124.SZ",
+    "300125.SZ",
+    "300126.SZ",
+    "300127.SZ",
+    "300128.SZ",
+    "300129.SZ",
+    "300130.SZ",
+    "300131.SZ",
+    "300132.SZ",
+    "300133.SZ",
+    "300134.SZ",
+    "300135.SZ",
+    "300136.SZ",
+    "300137.SZ",
+    "300138.SZ",
+    "300139.SZ",
+    "300140.SZ",
+    "300141.SZ",
+    "300142.SZ",
+    "300143.SZ",
+    "300144.SZ",
+    "300145.SZ",
+    "300146.SZ",
+    "300147.SZ",
+    "300148.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 919,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 5437,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T09:01:47",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1115094,
+    "financial_metrics": 22935,
+    "filings": 9506,
+    "company_reports": 268,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 118,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T09:17:11",
+  "finished_at": "2026-06-13T09:23:07",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "300293.SZ",
+    "300294.SZ",
+    "300295.SZ",
+    "300296.SZ",
+    "300298.SZ",
+    "300299.SZ",
+    "300300.SZ",
+    "300301.SZ",
+    "300302.SZ",
+    "300303.SZ",
+    "300304.SZ",
+    "300305.SZ",
+    "300306.SZ",
+    "300307.SZ",
+    "300308.SZ",
+    "300310.SZ",
+    "300311.SZ",
+    "300313.SZ",
+    "300314.SZ",
+    "300315.SZ",
+    "300316.SZ",
+    "300317.SZ",
+    "300318.SZ",
+    "300319.SZ",
+    "300320.SZ",
+    "300321.SZ",
+    "300322.SZ",
+    "300323.SZ",
+    "300324.SZ",
+    "300326.SZ",
+    "300327.SZ",
+    "300328.SZ",
+    "300329.SZ",
+    "300331.SZ",
+    "300332.SZ",
+    "300333.SZ",
+    "300334.SZ",
+    "300335.SZ",
+    "300337.SZ",
+    "300338.SZ",
+    "300339.SZ",
+    "300340.SZ",
+    "300341.SZ",
+    "300342.SZ",
+    "300343.SZ",
+    "300345.SZ",
+    "300346.SZ",
+    "300347.SZ",
+    "300348.SZ",
+    "300349.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 919,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 5253,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T09:23:07",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1116148,
+    "financial_metrics": 22983,
+    "filings": 9506,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 120,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T09:47:16",
+  "finished_at": "2026-06-13T09:53:10",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "300493.SZ",
+    "300494.SZ",
+    "300496.SZ",
+    "300497.SZ",
+    "300498.SZ",
+    "300499.SZ",
+    "300500.SZ",
+    "300501.SZ",
+    "300502.SZ",
+    "300503.SZ",
+    "300504.SZ",
+    "300505.SZ",
+    "300506.SZ",
+    "300507.SZ",
+    "300508.SZ",
+    "300509.SZ",
+    "300510.SZ",
+    "300511.SZ",
+    "300512.SZ",
+    "300513.SZ",
+    "300514.SZ",
+    "300515.SZ",
+    "300516.SZ",
+    "300517.SZ",
+    "300518.SZ",
+    "300519.SZ",
+    "300520.SZ",
+    "300521.SZ",
+    "300522.SZ",
+    "300523.SZ",
+    "300525.SZ",
+    "300527.SZ",
+    "300528.SZ",
+    "300529.SZ",
+    "300530.SZ",
+    "300531.SZ",
+    "300532.SZ",
+    "300533.SZ",
+    "300534.SZ",
+    "300535.SZ",
+    "300536.SZ",
+    "300537.SZ",
+    "300538.SZ",
+    "300539.SZ",
+    "300540.SZ",
+    "300541.SZ",
+    "300542.SZ",
+    "300543.SZ",
+    "300545.SZ",
+    "300546.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 918,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 5070,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T09:53:10",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1117250,
+    "financial_metrics": 22983,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 122,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T10:17:20",
+  "finished_at": "2026-06-13T10:25:45",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "300684.SZ",
+    "300685.SZ",
+    "300686.SZ",
+    "300687.SZ",
+    "300688.SZ",
+    "300689.SZ",
+    "300690.SZ",
+    "300691.SZ",
+    "300692.SZ",
+    "300693.SZ",
+    "300694.SZ",
+    "300695.SZ",
+    "300696.SZ",
+    "300697.SZ",
+    "300698.SZ",
+    "300699.SZ",
+    "300700.SZ",
+    "300701.SZ",
+    "300702.SZ",
+    "300703.SZ",
+    "300705.SZ",
+    "300706.SZ",
+    "300707.SZ",
+    "300708.SZ",
+    "300709.SZ",
+    "300710.SZ",
+    "300711.SZ",
+    "300712.SZ",
+    "300713.SZ",
+    "300715.SZ",
+    "300716.SZ",
+    "300717.SZ",
+    "300718.SZ",
+    "300719.SZ",
+    "300720.SZ",
+    "300721.SZ",
+    "300722.SZ",
+    "300723.SZ",
+    "300724.SZ",
+    "300725.SZ",
+    "300726.SZ",
+    "300727.SZ",
+    "300729.SZ",
+    "300730.SZ",
+    "300731.SZ",
+    "300732.SZ",
+    "300733.SZ",
+    "300735.SZ",
+    "300736.SZ",
+    "300737.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 4886,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T10:25:45",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1118354,
+    "financial_metrics": 23031,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 124,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T10:47:25",
+  "finished_at": "2026-06-13T10:56:01",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "300879.SZ",
+    "300880.SZ",
+    "300881.SZ",
+    "300882.SZ",
+    "300883.SZ",
+    "300884.SZ",
+    "300885.SZ",
+    "300886.SZ",
+    "300887.SZ",
+    "300888.SZ",
+    "300889.SZ",
+    "300890.SZ",
+    "300891.SZ",
+    "300892.SZ",
+    "300893.SZ",
+    "300894.SZ",
+    "300895.SZ",
+    "300896.SZ",
+    "300897.SZ",
+    "300898.SZ",
+    "300899.SZ",
+    "300900.SZ",
+    "300901.SZ",
+    "300902.SZ",
+    "300903.SZ",
+    "300904.SZ",
+    "300905.SZ",
+    "300906.SZ",
+    "300907.SZ",
+    "300908.SZ",
+    "300909.SZ",
+    "300910.SZ",
+    "300911.SZ",
+    "300912.SZ",
+    "300913.SZ",
+    "300915.SZ",
+    "300916.SZ",
+    "300917.SZ",
+    "300918.SZ",
+    "300919.SZ",
+    "300920.SZ",
+    "300921.SZ",
+    "300922.SZ",
+    "300923.SZ",
+    "300925.SZ",
+    "300926.SZ",
+    "300927.SZ",
+    "300928.SZ",
+    "300929.SZ",
+    "300930.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 919,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 4702,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T10:56:01",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1119457,
+    "financial_metrics": 23079,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 126,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T11:17:30",
+  "finished_at": "2026-06-13T11:27:56",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "301075.SZ",
+    "301076.SZ",
+    "301077.SZ",
+    "301078.SZ",
+    "301079.SZ",
+    "301080.SZ",
+    "301081.SZ",
+    "301082.SZ",
+    "301083.SZ",
+    "301085.SZ",
+    "301086.SZ",
+    "301087.SZ",
+    "301088.SZ",
+    "301089.SZ",
+    "301090.SZ",
+    "301091.SZ",
+    "301092.SZ",
+    "301093.SZ",
+    "301095.SZ",
+    "301096.SZ",
+    "301097.SZ",
+    "301098.SZ",
+    "301099.SZ",
+    "301100.SZ",
+    "301101.SZ",
+    "301102.SZ",
+    "301103.SZ",
+    "301105.SZ",
+    "301106.SZ",
+    "301107.SZ",
+    "301108.SZ",
+    "301109.SZ",
+    "301110.SZ",
+    "301111.SZ",
+    "301112.SZ",
+    "301113.SZ",
+    "301115.SZ",
+    "301116.SZ",
+    "301117.SZ",
+    "301118.SZ",
+    "301119.SZ",
+    "301120.SZ",
+    "301121.SZ",
+    "301122.SZ",
+    "301123.SZ",
+    "301125.SZ",
+    "301126.SZ",
+    "301127.SZ",
+    "301128.SZ",
+    "301129.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 4518,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T11:27:56",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1120561,
+    "financial_metrics": 23127,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 128,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T11:47:35",
+  "finished_at": "2026-06-13T11:58:44",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "301296.SZ",
+    "301297.SZ",
+    "301298.SZ",
+    "301299.SZ",
+    "301300.SZ",
+    "301301.SZ",
+    "301302.SZ",
+    "301303.SZ",
+    "301305.SZ",
+    "301306.SZ",
+    "301307.SZ",
+    "301308.SZ",
+    "301309.SZ",
+    "301310.SZ",
+    "301311.SZ",
+    "301312.SZ",
+    "301313.SZ",
+    "301314.SZ",
+    "301315.SZ",
+    "301316.SZ",
+    "301317.SZ",
+    "301318.SZ",
+    "301319.SZ",
+    "301320.SZ",
+    "301321.SZ",
+    "301322.SZ",
+    "301323.SZ",
+    "301325.SZ",
+    "301326.SZ",
+    "301327.SZ",
+    "301328.SZ",
+    "301329.SZ",
+    "301330.SZ",
+    "301331.SZ",
+    "301332.SZ",
+    "301333.SZ",
+    "301335.SZ",
+    "301336.SZ",
+    "301337.SZ",
+    "301338.SZ",
+    "301339.SZ",
+    "301345.SZ",
+    "301348.SZ",
+    "301349.SZ",
+    "301353.SZ",
+    "301355.SZ",
+    "301356.SZ",
+    "301357.SZ",
+    "301358.SZ",
+    "301359.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 4334,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T11:58:44",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1121665,
+    "financial_metrics": 23175,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 130,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T12:17:40",
+  "finished_at": "2026-06-13T12:28:03",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "301622.SZ",
+    "301626.SZ",
+    "301628.SZ",
+    "301629.SZ",
+    "301630.SZ",
+    "301631.SZ",
+    "301632.SZ",
+    "301633.SZ",
+    "301636.SZ",
+    "301638.SZ",
+    "301656.SZ",
+    "301658.SZ",
+    "301662.SZ",
+    "301665.SZ",
+    "301666.SZ",
+    "301667.SZ",
+    "301668.SZ",
+    "301678.SZ",
+    "301680.SZ",
+    "301682.SZ",
+    "301683.SZ",
+    "301687.SZ",
+    "301696.SZ",
+    "302132.SZ",
+    "399001.SZ",
+    "399002.SZ",
+    "399003.SZ",
+    "399004.SZ",
+    "399005.SZ",
+    "399006.SZ",
+    "399007.SZ",
+    "399008.SZ",
+    "399009.SZ",
+    "399010.SZ",
+    "399011.SZ",
+    "399012.SZ",
+    "399013.SZ",
+    "399015.SZ",
+    "399100.SZ",
+    "399101.SZ",
+    "399102.SZ",
+    "399103.SZ",
+    "399106.SZ",
+    "399107.SZ",
+    "399108.SZ",
+    "399231.SZ",
+    "399232.SZ",
+    "399233.SZ",
+    "399234.SZ",
+    "399235.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 4161,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T12:28:03",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1122769,
+    "financial_metrics": 23223,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 132,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T12:47:45",
+  "finished_at": "2026-06-13T12:56:04",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "399604.SZ",
+    "399606.SZ",
+    "399608.SZ",
+    "399610.SZ",
+    "399611.SZ",
+    "399612.SZ",
+    "399613.SZ",
+    "399614.SZ",
+    "399615.SZ",
+    "399616.SZ",
+    "399617.SZ",
+    "399618.SZ",
+    "399619.SZ",
+    "399620.SZ",
+    "399621.SZ",
+    "399622.SZ",
+    "399623.SZ",
+    "399624.SZ",
+    "399625.SZ",
+    "399626.SZ",
+    "399627.SZ",
+    "399628.SZ",
+    "399629.SZ",
+    "399630.SZ",
+    "399631.SZ",
+    "399632.SZ",
+    "399633.SZ",
+    "399634.SZ",
+    "399635.SZ",
+    "399636.SZ",
+    "399637.SZ",
+    "399638.SZ",
+    "399639.SZ",
+    "399640.SZ",
+    "399641.SZ",
+    "399642.SZ",
+    "399643.SZ",
+    "399644.SZ",
+    "399645.SZ",
+    "399646.SZ",
+    "399647.SZ",
+    "399648.SZ",
+    "399649.SZ",
+    "399650.SZ",
+    "399651.SZ",
+    "399652.SZ",
+    "399653.SZ",
+    "399654.SZ",
+    "399655.SZ",
+    "399656.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 3977,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T12:56:04",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1123847,
+    "financial_metrics": 23271,
+    "filings": 9533,
+    "company_reports": 270,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 134,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T13:17:49",
+  "finished_at": "2026-06-13T13:32:21",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "511030.SH",
+    "511060.SH",
+    "511070.SH",
+    "511090.SH",
+    "511100.SH",
+    "511110.SH",
+    "511120.SH",
+    "511130.SH",
+    "511150.SH",
+    "511160.SH",
+    "511180.SH",
+    "511190.SH",
+    "511200.SH",
+    "511220.SH",
+    "511260.SH",
+    "511270.SH",
+    "511360.SH",
+    "511380.SH",
+    "511520.SH",
+    "511580.SH",
+    "511600.SH",
+    "511620.SH",
+    "511650.SH",
+    "511660.SH",
+    "511670.SH",
+    "511690.SH",
+    "511700.SH",
+    "511770.SH",
+    "511800.SH",
+    "511810.SH",
+    "511820.SH",
+    "511830.SH",
+    "511850.SH",
+    "511860.SH",
+    "511880.SH",
+    "511900.SH",
+    "511910.SH",
+    "511920.SH",
+    "511930.SH",
+    "511950.SH",
+    "511960.SH",
+    "511970.SH",
+    "511980.SH",
+    "511990.SH",
+    "512000.SH",
+    "512010.SH",
+    "512020.SH",
+    "512030.SH",
+    "512040.SH",
+    "512050.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 3901,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T13:32:21",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1124767,
+    "financial_metrics": 23319,
+    "filings": 9533,
+    "company_reports": 271,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 136,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T13:47:54",
+  "finished_at": "2026-06-13T14:08:42",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "513910.SH",
+    "513920.SH",
+    "513930.SH",
+    "513950.SH",
+    "513970.SH",
+    "513980.SH",
+    "513990.SH",
+    "515000.SH",
+    "515010.SH",
+    "515020.SH",
+    "515030.SH",
+    "515050.SH",
+    "515060.SH",
+    "515070.SH",
+    "515080.SH",
+    "515090.SH",
+    "515100.SH",
+    "515110.SH",
+    "515120.SH",
+    "515130.SH",
+    "515150.SH",
+    "515160.SH",
+    "515170.SH",
+    "515180.SH",
+    "515190.SH",
+    "515200.SH",
+    "515210.SH",
+    "515220.SH",
+    "515230.SH",
+    "515250.SH",
+    "515260.SH",
+    "515290.SH",
+    "515300.SH",
+    "515310.SH",
+    "515320.SH",
+    "515330.SH",
+    "515350.SH",
+    "515360.SH",
+    "515370.SH",
+    "515380.SH",
+    "515390.SH",
+    "515400.SH",
+    "515450.SH",
+    "515460.SH",
+    "515530.SH",
+    "515550.SH",
+    "515560.SH",
+    "515580.SH",
+    "515590.SH",
+    "515600.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 3901,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T14:08:42",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1125687,
+    "financial_metrics": 23367,
+    "filings": 11273,
+    "company_reports": 273,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 144,
+  "provider": "baostock",
+  "scope": "a-share-history-background",
+  "status": "partial",
+  "started_at": "2026-06-13T15:33:13",
+  "finished_at": "2026-06-13T16:01:52",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 184,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "517990.SH",
+    "518600.SH",
+    "518660.SH",
+    "518680.SH",
+    "518800.SH",
+    "518850.SH",
+    "518860.SH",
+    "518880.SH",
+    "518890.SH",
+    "520500.SH",
+    "520510.SH",
+    "520520.SH",
+    "520530.SH",
+    "520550.SH",
+    "520560.SH",
+    "520570.SH",
+    "520580.SH",
+    "520590.SH",
+    "520600.SH",
+    "520610.SH",
+    "520620.SH",
+    "520630.SH",
+    "520650.SH",
+    "520660.SH",
+    "520670.SH",
+    "520680.SH",
+    "520690.SH",
+    "520700.SH",
+    "520710.SH",
+    "520720.SH",
+    "520730.SH",
+    "520760.SH",
+    "520770.SH",
+    "520780.SH",
+    "520790.SH",
+    "520810.SH",
+    "520820.SH",
+    "520830.SH",
+    "520840.SH",
+    "520850.SH",
+    "520860.SH",
+    "520870.SH",
+    "520880.SH",
+    "520890.SH",
+    "520900.SH",
+    "520910.SH",
+    "520920.SH",
+    "520930.SH",
+    "520940.SH",
+    "520950.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "daily_bars": 920,
+    "market_snapshots": 184,
+    "batches": 8,
+    "batch_size": 30,
+    "batch_sleep_seconds": 1.0,
+    "days": 260,
+    "requested_symbol_count": 0,
+    "target_start": "2025-09-25",
+    "target_end": "2026-06-12",
+    "last_batch_symbol_count": 30,
+    "remaining_candidates": 3901,
+    "consecutive_error_batches": 0,
+    "consecutive_no_progress_batches": 0,
+    "last_progress_at": "2026-06-13T16:01:52",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1126607,
+    "financial_metrics": 23511,
+    "filings": 10946,
+    "company_reports": 274,
+    "community_posts": 432,
+    "sentiment_evidence": 902,
+    "sentiment_snapshots": 18,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}

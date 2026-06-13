@@ -57,6 +57,7 @@ from .schemas import (
     AnomalyInput,
     BacktestInput,
     CommunityCrawlInput,
+    CommunitySentimentCycleInput,
     DataRefreshInput,
     DataSourceTestInput,
     DataSourceUpdate,
@@ -67,7 +68,14 @@ from .schemas import (
     TradeInput,
 )
 from .search_history import list_search_history, record_search
-from .sentiment import crawl_community_for_symbols, refresh_sentiment, sentiment_payload, sentiment_status
+from .sentiment import (
+    community_daily_payload,
+    crawl_community_for_symbols,
+    refresh_sentiment,
+    run_community_sentiment_cycle,
+    sentiment_payload,
+    sentiment_status,
+)
 from .stock_detail import stock_detail_payload
 from .stocks import all_stock_payloads, run_screener, search_stocks, stock_memory
 from .symbol_resolver import normalize_symbol_query
@@ -166,6 +174,15 @@ def api_stock_sentiment(
         return sentiment_payload(conn, symbol, days=days, evidence_limit=evidence_limit)
 
 
+@app.get("/api/sentiment/community/daily/{symbol}")
+def api_community_daily_sentiment(
+    symbol: str,
+    days: int = Query(30, ge=1, le=365),
+) -> dict[str, Any]:
+    with get_db() as conn:
+        return community_daily_payload(conn, symbol, days=days)
+
+
 @app.post("/api/sentiment/refresh")
 def api_refresh_sentiment(payload: SentimentRefreshInput | None = Body(default=None)) -> dict[str, Any]:
     payload = payload or SentimentRefreshInput()
@@ -178,6 +195,24 @@ def api_refresh_sentiment(payload: SentimentRefreshInput | None = Body(default=N
             crawl_community=payload.crawl_community,
             community_limit=payload.community_limit,
             evidence_limit=payload.evidence_limit,
+        )
+
+
+@app.post("/api/sentiment/community/cycle")
+def api_community_sentiment_cycle(payload: CommunitySentimentCycleInput | None = Body(default=None)) -> dict[str, Any]:
+    payload = payload or CommunitySentimentCycleInput()
+    with get_db() as conn:
+        return run_community_sentiment_cycle(
+            conn,
+            symbols=payload.symbols,
+            use_llm=payload.use_llm,
+            community_limit=payload.community_limit,
+            evidence_limit=payload.evidence_limit,
+            analysis_days=payload.analysis_days,
+            retention_days=payload.retention_days,
+            refresh_market=payload.refresh_market,
+            refresh_filings=payload.refresh_filings,
+            market_days=payload.market_days,
         )
 
 

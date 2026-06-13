@@ -1,4 +1,4 @@
-const CACHE_NAME = "jubao-pen-stock-search-click-v1";
+const CACHE_NAME = "jubao-pen-community-card-v1";
 const APP_SHELL = [
   "/",
   "/index.html",

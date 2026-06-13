@@ -391,3 +391,2046 @@ logout success!
     "latest_daily_bar": "2026-06-11"
   }
 }
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 85,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T01:00:06",
+  "finished_at": "2026-06-13T01:21:59",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 3,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "600863.SH",
+    "600864.SH",
+    "600865.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 12,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1697,
+    "consecutive_error_batches": 1,
+    "last_progress_at": "2026-06-13T01:21:59",
+    "paused_after_max_batches": true
+  },
+  "errors": [
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1101705,
+    "financial_metrics": 22395,
+    "filings": 9506,
+    "company_reports": 259,
+    "community_posts": 419,
+    "sentiment_evidence": 682,
+    "sentiment_snapshots": 13,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 87,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T01:45:58",
+  "finished_at": "2026-06-13T02:05:38",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 9,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "600866.SH",
+    "600867.SH",
+    "600868.SH",
+    "600869.SH",
+    "600871.SH",
+    "600872.SH",
+    "600873.SH",
+    "600874.SH",
+    "600875.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 36,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1688,
+    "consecutive_error_batches": 1,
+    "last_progress_at": "2026-06-13T02:05:38",
+    "paused_after_max_batches": true
+  },
+  "errors": [
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1101820,
+    "financial_metrics": 22431,
+    "filings": 9506,
+    "company_reports": 259,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 90,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background:universe",
+  "status": "partial",
+  "started_at": "2026-06-13T02:30:07",
+  "finished_at": "2026-06-13T04:15:43",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 43,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "600876.SH",
+    "600877.SH",
+    "600879.SH",
+    "600880.SH",
+    "600881.SH",
+    "600882.SH",
+    "600883.SH",
+    "600884.SH",
+    "600885.SH",
+    "600886.SH",
+    "600887.SH",
+    "600888.SH",
+    "600889.SH",
+    "600892.SH",
+    "600893.SH",
+    "600894.SH",
+    "600895.SH",
+    "600897.SH",
+    "600900.SH",
+    "600901.SH",
+    "600903.SH",
+    "600905.SH",
+    "600906.SH",
+    "600908.SH",
+    "600909.SH",
+    "600916.SH",
+    "600917.SH",
+    "600918.SH",
+    "600919.SH",
+    "600925.SH",
+    "600926.SH",
+    "600927.SH",
+    "600928.SH",
+    "600929.SH",
+    "600930.SH",
+    "600933.SH",
+    "600935.SH",
+    "600936.SH",
+    "600938.SH",
+    "600955.SH",
+    "600939.SH",
+    "600941.SH",
+    "600955.SH"
+  ],
+  "counts": {
+    "symbols": 7273,
+    "financial_metrics": 168,
+    "company_reports": 6,
+    "batches": 20,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "remaining_candidates": 1646,
+    "last_progress_at": "2026-06-13T04:15:43",
+    "last_batch_symbol_count": 3,
+    "consecutive_error_batches": 3,
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "scope": "baostock-company-reports-batch",
+      "error": "BaoStock company reports timed out after 60s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1105872,
+    "financial_metrics": 22599,
+    "filings": 9506,
+    "company_reports": 264,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 100,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T04:46:26",
+  "finished_at": "2026-06-13T05:00:43",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "600956.SH",
+    "600958.SH",
+    "600959.SH",
+    "600960.SH",
+    "600961.SH",
+    "600962.SH",
+    "600963.SH",
+    "600965.SH",
+    "600966.SH",
+    "600967.SH",
+    "600968.SH",
+    "600969.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1634,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T05:00:43",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1107064,
+    "financial_metrics": 22647,
+    "filings": 9506,
+    "company_reports": 264,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 102,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T05:16:31",
+  "finished_at": "2026-06-13T05:31:33",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "600970.SH",
+    "600971.SH",
+    "600973.SH",
+    "600975.SH",
+    "600976.SH",
+    "600977.SH",
+    "600979.SH",
+    "600980.SH",
+    "600981.SH",
+    "600982.SH",
+    "600983.SH",
+    "600984.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 2,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1622,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T05:31:33",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1108167,
+    "financial_metrics": 22695,
+    "filings": 9506,
+    "company_reports": 266,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 104,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T05:46:36",
+  "finished_at": "2026-06-13T06:00:04",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "600985.SH",
+    "600986.SH",
+    "600987.SH",
+    "600988.SH",
+    "600989.SH",
+    "600990.SH",
+    "600992.SH",
+    "600993.SH",
+    "600995.SH",
+    "600996.SH",
+    "600997.SH",
+    "600998.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 1,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1610,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T06:00:04",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1109270,
+    "financial_metrics": 22743,
+    "filings": 9506,
+    "company_reports": 267,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 106,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T06:16:40",
+  "finished_at": "2026-06-13T06:28:26",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "600999.SH",
+    "601000.SH",
+    "601001.SH",
+    "601002.SH",
+    "601003.SH",
+    "601005.SH",
+    "601006.SH",
+    "601007.SH",
+    "601008.SH",
+    "601009.SH",
+    "601010.SH",
+    "601011.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1598,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T06:28:26",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1110374,
+    "financial_metrics": 22791,
+    "filings": 9506,
+    "company_reports": 267,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 108,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T06:46:47",
+  "finished_at": "2026-06-13T06:58:42",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601012.SH",
+    "601015.SH",
+    "601016.SH",
+    "601018.SH",
+    "601019.SH",
+    "601020.SH",
+    "601021.SH",
+    "601022.SH",
+    "601026.SH",
+    "601033.SH",
+    "601038.SH",
+    "601058.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1586,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T06:58:42",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1111415,
+    "financial_metrics": 22839,
+    "filings": 9506,
+    "company_reports": 267,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 110,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T07:16:51",
+  "finished_at": "2026-06-13T07:33:22",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601059.SH",
+    "601061.SH",
+    "601065.SH",
+    "601066.SH",
+    "601068.SH",
+    "601069.SH",
+    "601077.SH",
+    "601083.SH",
+    "601086.SH",
+    "601088.SH",
+    "601089.SH",
+    "601096.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 1,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1574,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T07:33:22",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1112335,
+    "financial_metrics": 22887,
+    "filings": 9506,
+    "company_reports": 268,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 113,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T08:01:59",
+  "finished_at": "2026-06-13T08:18:00",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601098.SH",
+    "601099.SH",
+    "601100.SH",
+    "601101.SH",
+    "601106.SH",
+    "601107.SH",
+    "601108.SH",
+    "601111.SH",
+    "601112.SH",
+    "601113.SH",
+    "601116.SH",
+    "601117.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1562,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T08:18:00",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1113255,
+    "financial_metrics": 22935,
+    "filings": 9506,
+    "company_reports": 268,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 117,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T09:02:08",
+  "finished_at": "2026-06-13T09:17:45",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601118.SH",
+    "601121.SH",
+    "601126.SH",
+    "601127.SH",
+    "601128.SH",
+    "601133.SH",
+    "601136.SH",
+    "601137.SH",
+    "601138.SH",
+    "601139.SH",
+    "601155.SH",
+    "601156.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 1,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1550,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T09:17:45",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1115229,
+    "financial_metrics": 22983,
+    "filings": 9506,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 121,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T10:02:18",
+  "finished_at": "2026-06-13T10:08:43",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601158.SH",
+    "601162.SH",
+    "601163.SH",
+    "601166.SH",
+    "601168.SH",
+    "601169.SH",
+    "601177.SH",
+    "601179.SH",
+    "601186.SH",
+    "601187.SH",
+    "601188.SH",
+    "601198.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1538,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T10:08:43",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1117434,
+    "financial_metrics": 23031,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 123,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T10:32:23",
+  "finished_at": "2026-06-13T10:42:34",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601199.SH",
+    "601200.SH",
+    "601208.SH",
+    "601211.SH",
+    "601212.SH",
+    "601216.SH",
+    "601218.SH",
+    "601222.SH",
+    "601225.SH",
+    "601226.SH",
+    "601228.SH",
+    "601229.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1526,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T10:42:34",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1118538,
+    "financial_metrics": 23079,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 125,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T11:02:28",
+  "finished_at": "2026-06-13T11:13:59",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601231.SH",
+    "601233.SH",
+    "601236.SH",
+    "601238.SH",
+    "601279.SH",
+    "601288.SH",
+    "601298.SH",
+    "601311.SH",
+    "601318.SH",
+    "601319.SH",
+    "601326.SH",
+    "601328.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1514,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T11:13:59",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1119641,
+    "financial_metrics": 23127,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 127,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T11:32:33",
+  "finished_at": "2026-06-13T11:44:40",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601330.SH",
+    "601333.SH",
+    "601336.SH",
+    "601339.SH",
+    "601360.SH",
+    "601366.SH",
+    "601368.SH",
+    "601369.SH",
+    "601375.SH",
+    "601377.SH",
+    "601388.SH",
+    "601390.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1502,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T11:44:40",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1120745,
+    "financial_metrics": 23175,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 129,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T12:02:37",
+  "finished_at": "2026-06-13T12:13:31",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601398.SH",
+    "601399.SH",
+    "601456.SH",
+    "601500.SH",
+    "601512.SH",
+    "601515.SH",
+    "601518.SH",
+    "601519.SH",
+    "601528.SH",
+    "601555.SH",
+    "601566.SH",
+    "601567.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1490,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T12:13:31",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1121849,
+    "financial_metrics": 23223,
+    "filings": 9533,
+    "company_reports": 269,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 131,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T12:32:42",
+  "finished_at": "2026-06-13T12:43:32",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601568.SH",
+    "601577.SH",
+    "601579.SH",
+    "601588.SH",
+    "601595.SH",
+    "601598.SH",
+    "601599.SH",
+    "601600.SH",
+    "601601.SH",
+    "601606.SH",
+    "601607.SH",
+    "601608.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 1,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1478,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T12:43:32",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1122927,
+    "financial_metrics": 23271,
+    "filings": 9533,
+    "company_reports": 270,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 133,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T13:02:47",
+  "finished_at": "2026-06-13T13:16:42",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601609.SH",
+    "601611.SH",
+    "601615.SH",
+    "601616.SH",
+    "601618.SH",
+    "601619.SH",
+    "601628.SH",
+    "601633.SH",
+    "601636.SH",
+    "601658.SH",
+    "601665.SH",
+    "601666.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 1,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1466,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T13:16:42",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1123847,
+    "financial_metrics": 23319,
+    "filings": 9533,
+    "company_reports": 271,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 135,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T13:32:52",
+  "finished_at": "2026-06-13T13:48:04",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601668.SH",
+    "601669.SH",
+    "601677.SH",
+    "601678.SH",
+    "601686.SH",
+    "601688.SH",
+    "601689.SH",
+    "601696.SH",
+    "601698.SH",
+    "601699.SH",
+    "601700.SH",
+    "601702.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 2,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1454,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T13:48:04",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1124767,
+    "financial_metrics": 23367,
+    "filings": 9533,
+    "company_reports": 273,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 138,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T14:17:59",
+  "finished_at": "2026-06-13T14:30:36",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601717.SH",
+    "601718.SH",
+    "601727.SH",
+    "601728.SH",
+    "601766.SH",
+    "601777.SH",
+    "601778.SH",
+    "601788.SH",
+    "601789.SH",
+    "601798.SH",
+    "601799.SH",
+    "601800.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1442,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T14:30:36",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1125687,
+    "financial_metrics": 23415,
+    "filings": 11273,
+    "company_reports": 273,
+    "community_posts": 419,
+    "sentiment_evidence": 771,
+    "sentiment_snapshots": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 140,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T14:48:04",
+  "finished_at": "2026-06-13T15:02:06",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601801.SH",
+    "601808.SH",
+    "601811.SH",
+    "601816.SH",
+    "601818.SH",
+    "601825.SH",
+    "601827.SH",
+    "601828.SH",
+    "601838.SH",
+    "601857.SH",
+    "601858.SH",
+    "601860.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1430,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T15:02:06",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1125687,
+    "financial_metrics": 23463,
+    "filings": 11273,
+    "company_reports": 273,
+    "community_posts": 424,
+    "sentiment_evidence": 873,
+    "sentiment_snapshots": 17,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 143,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T15:18:10",
+  "finished_at": "2026-06-13T15:38:47",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601865.SH",
+    "601866.SH",
+    "601868.SH",
+    "601869.SH",
+    "601872.SH",
+    "601877.SH",
+    "601878.SH",
+    "601880.SH",
+    "601881.SH",
+    "601882.SH",
+    "601886.SH",
+    "601888.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 1,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1418,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T15:38:47",
+    "paused_after_max_batches": true
+  },
+  "errors": [
+    {
+      "scope": "baostock-company-reports-batch",
+      "error": "BaoStock company reports timed out after 60s"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1125802,
+    "financial_metrics": 23511,
+    "filings": 11273,
+    "company_reports": 274,
+    "community_posts": 424,
+    "sentiment_evidence": 967,
+    "sentiment_snapshots": 18,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 147,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "interrupted",
+  "started_at": "2026-06-13T16:03:19",
+  "finished_at": "2026-06-13T16:09:53",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 3,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601890.SH",
+    "601898.SH",
+    "601900.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 12,
+    "company_reports": 0,
+    "batches": 1,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1415,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T16:09:53",
+    "priority_refresh_requested_at": "2026-06-13T16:09:33",
+    "priority_refresh_symbol": "600489.SH",
+    "preempted_by_priority_refresh_at": "2026-06-13T16:09:53",
+    "preempted_by_priority_refresh_symbol": "600489.SH"
+  },
+  "errors": [
+    {
+      "scope": "priority-refresh",
+      "error": "Priority single-stock refresh requested for 600489.SH; background job will pause at the next batch boundary."
+    },
+    {
+      "scope": "priority-refresh",
+      "error": "Background job preempted so priority single-stock refresh for 600489.SH can run first."
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1126607,
+    "financial_metrics": 23535,
+    "filings": 10946,
+    "company_reports": 274,
+    "community_posts": 461,
+    "sentiment_evidence": 921,
+    "sentiment_snapshots": 20,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}

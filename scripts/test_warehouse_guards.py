@@ -27,7 +27,9 @@ def main() -> int:
             finish_ingestion,
             start_ingestion,
             update_ingestion_progress,
+            dedupe_filing_history_by_title,
             upsert_baostock_financial_metrics,
+            upsert_filing_documents,
         )
         from backend.finnhub_service import (
             insert_financial_snapshot as insert_finnhub_financial_snapshot,
@@ -44,6 +46,7 @@ def main() -> int:
             test_daily_backfill_plan(conn, BAOSTOCK_MARKET_PROVIDER, baostock_daily_backfill_plan)
             test_quarterly_no_data_retry(conn, upsert_baostock_financial_metrics, baostock_financial_backfill_plan)
             test_tushare_fcf_margin_standardization(conn, insert_tushare_financial_snapshot)
+            test_filing_title_dedupe(conn, upsert_filing_documents, dedupe_filing_history_by_title)
             test_finnhub_financial_history_and_hk_symbols(
                 conn,
                 insert_finnhub_financial_snapshot,
@@ -180,6 +183,108 @@ def test_tushare_fcf_margin_standardization(conn, insert_tushare_financial_snaps
         """
     ).fetchone()
     assert snapshot["fcf_margin"] == 0, snapshot
+
+
+def test_filing_title_dedupe(conn, upsert_filing_documents, dedupe_filing_history_by_title) -> None:
+    insert_symbol(conn, "TEST05.SH", "公告消重")
+    insert_symbol(conn, "TEST06.SH", "公告同名隔离")
+    duplicate_title = "关于以集中竞价交易方式回购公司股份方案的公告"
+    upsert_filing_documents(
+        conn,
+        [
+            {
+                "symbol": "TEST05.SH",
+                "source": "sse",
+                "published_at": "2026-06-12",
+                "title": f" {duplicate_title} ",
+                "url": "https://example.test/sse-duplicate.pdf",
+                "category": "其它",
+                "source_tier": "S",
+            },
+            {
+                "symbol": "TEST05.SH",
+                "source": "cninfo",
+                "published_at": "2026-06-12T00:00:00+08:00",
+                "title": duplicate_title,
+                "url": "https://example.test/cninfo-duplicate.pdf",
+                "category": "其它",
+                "source_tier": "S",
+            },
+            {
+                "symbol": "TEST05.SH",
+                "source": "sse",
+                "published_at": "2026-06-13",
+                "title": "第二届董事会第二十三次会议决议公告",
+                "url": "https://example.test/sse-unique.pdf",
+                "category": "其它",
+                "source_tier": "S",
+            },
+            {
+                "symbol": "TEST06.SH",
+                "source": "sse",
+                "published_at": "2026-06-12",
+                "title": duplicate_title,
+                "url": "https://example.test/other-symbol.pdf",
+                "category": "其它",
+                "source_tier": "S",
+            },
+        ],
+    )
+    duplicate_row = conn.execute(
+        """
+        select id
+        from filings_history
+        where symbol = 'TEST05.SH' and source = 'sse' and url = 'https://example.test/sse-duplicate.pdf'
+        """
+    ).fetchone()
+    assert duplicate_row is not None
+    now = datetime.now().isoformat(timespec="seconds")
+    conn.execute(
+        """
+        insert into sentiment_evidence (
+          symbol, sentiment_type, source_table, source_id, source, event_date, title, url, category,
+          sentiment_score, sentiment_label, confidence, impact_horizon,
+          keywords_json, evidence_json, model_provider, model_name, method_version, analyzed_at
+        )
+        values (?, 'filing_news', 'filings_history', ?, 'sse', '2026-06-12', ?, '', 'filing',
+          10, 'neutral', 0.8, '1w', '[]', '{}', 'local', 'fallback-v1', 'test-method', ?)
+        """,
+        ("TEST05.SH", str(duplicate_row["id"]), duplicate_title, now),
+    )
+
+    cleanup = dedupe_filing_history_by_title(conn)
+    assert cleanup["duplicate_groups"] == 1, cleanup
+    assert cleanup["filings_deleted"] == 1, cleanup
+    assert cleanup["sentiment_evidence_deleted"] == 1, cleanup
+
+    rows = conn.execute(
+        """
+        select symbol, source, title
+        from filings_history
+        where symbol in ('TEST05.SH', 'TEST06.SH')
+        order by symbol, title
+        """
+    ).fetchall()
+    assert len(rows) == 3, [dict(row) for row in rows]
+    kept_duplicate = conn.execute(
+        """
+        select source
+        from filings_history
+        where symbol = 'TEST05.SH' and title = ?
+        """,
+        (duplicate_title,),
+    ).fetchone()
+    assert kept_duplicate["source"] == "cninfo", kept_duplicate
+    evidence_count = conn.execute(
+        """
+        select count(*) as count
+        from sentiment_evidence
+        where source_table = 'filings_history'
+          and source_id = ?
+        """,
+        (str(duplicate_row["id"]),),
+    ).fetchone()
+    assert evidence_count["count"] == 0, evidence_count
 
 
 def test_finnhub_financial_history_and_hk_symbols(

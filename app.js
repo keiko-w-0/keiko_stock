@@ -479,6 +479,7 @@ const fieldDisplayLabels = {
   overall_sentiment_label: "整体情绪标签",
   overall_sentiment_score: "整体情绪分",
   previous_close: "前收盘价",
+  prompt_version: "Prompt版本",
   price: "最新价",
   published_at: "发布时间",
   quarterlyreports: "季度报告",
@@ -496,7 +497,13 @@ const fieldDisplayLabels = {
   latest_trade_date: "最新交易日",
   limit_down_days: "跌停天数",
   limit_up_days: "涨停天数",
+  llm_error: "GLM错误",
+  llm_id: "GLM输入ID",
+  llm_reason: "GLM理由",
+  sentiment_class: "情绪分类",
+  fallback_reason: "降级原因",
   max_drawdown: "最大回撤",
+  structured_financial_score: "财务结构分",
   text_length: "文本长度",
   turnover_rate: "换手率",
   volume_ratio_20d: "20日成交量倍数",
@@ -689,6 +696,7 @@ let highlightedStockSuggestion = -1;
 let backtestPayload = null;
 let backtestLoading = false;
 let backtestError = "";
+let backtestAutoRunQueued = false;
 let dataJobPoller = null;
 const stockDetailCache = new Map();
 const stockDetailLoading = new Set();
@@ -700,11 +708,14 @@ const sentimentPayloadLoading = new Set();
 const sentimentPayloadErrors = new Map();
 const sentimentExpandedTypes = new Map();
 const sentimentRefreshing = new Set();
+const sentimentRefreshStartedAt = new Map();
 const sentimentRefreshErrors = new Map();
 const sentimentRefreshResults = new Map();
 const stockDetailRefreshing = new Set();
+const stockDetailRefreshStartedAt = new Map();
 const stockDetailRefreshErrors = new Map();
 const stockDetailRefreshSteps = new Map();
+let refreshElapsedTimer = null;
 const favoriteStockLoading = new Set();
 const favoriteStockLoadFailed = new Set();
 const stockCardDetailQueue = [];
@@ -1128,6 +1139,25 @@ function sentimentTone(value, label = "") {
   return "neutral";
 }
 
+function sentimentToneForType(value, label = "", type = "") {
+  if (type !== "community") return sentimentTone(value, label);
+  if (value === null || value === undefined || value === "") return "neutral";
+  const numeric = Number(value);
+  const labelText = String(label || "");
+  if (labelText.includes("positive") || numeric >= 0.5) return "positive";
+  if (labelText.includes("negative") || numeric <= -0.5) return "negative";
+  return "neutral";
+}
+
+function sentimentTrackPercent(value, type = "") {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 50;
+  if (type === "community") {
+    return Math.max(0, Math.min(100, ((numeric + 2) / 4) * 100));
+  }
+  return Math.max(0, Math.min(100, (numeric + 100) / 2));
+}
+
 function sentimentFactorScore(snapshot) {
   const numeric = Number(snapshot?.composite_score);
   if (!Number.isFinite(numeric)) return null;
@@ -1206,7 +1236,45 @@ function sentimentEvidenceWeight(item, windowDays = 30) {
 function sentimentEvidenceContribution(item, windowDays = 30) {
   const score = Number(item?.sentiment_score);
   if (!Number.isFinite(score)) return null;
+  if (item?.sentiment_type === "community") return score;
   return score * sentimentEvidenceWeight(item, windowDays);
+}
+
+const communityClassOrder = ["正面", "偏正面", "中性", "偏负面", "负面"];
+
+function communityClassLabel(label) {
+  return label === "中性" ? "中" : label;
+}
+
+function communityClassFromScore(value) {
+  const numeric = Number(value);
+  if (numeric >= 1.5) return "正面";
+  if (numeric >= 0.5) return "偏正面";
+  if (numeric <= -1.5) return "负面";
+  if (numeric <= -0.5) return "偏负面";
+  return "中性";
+}
+
+function communityClassFromItem(item) {
+  const direct = String(item?.evidence?.sentiment_class || item?.category || "").trim();
+  if (communityClassOrder.includes(direct)) return direct;
+  return communityClassFromScore(item?.sentiment_score);
+}
+
+function communityClassCountsFromRows(rows = []) {
+  const counts = Object.fromEntries(communityClassOrder.map((item) => [item, 0]));
+  rows.forEach((row) => {
+    const label = communityClassFromItem(row);
+    counts[label] = Number(counts[label] || 0) + 1;
+  });
+  return counts;
+}
+
+function normalizedCommunityClassCounts(typeStats = {}, rows = []) {
+  const raw = typeStats.class_counts && typeof typeStats.class_counts === "object"
+    ? typeStats.class_counts
+    : communityClassCountsFromRows(rows);
+  return Object.fromEntries(communityClassOrder.map((item) => [item, Number(raw[item] || 0)]));
 }
 
 function escapeRegExp(value) {
@@ -1214,10 +1282,7 @@ function escapeRegExp(value) {
 }
 
 function uniqueSentimentTerms(item) {
-  const terms = [
-    ...(Array.isArray(item?.keywords) ? item.keywords : []),
-    ...((item?.evidence?.rule_matches ?? []).map((match) => match.keyword))
-  ];
+  const terms = Array.isArray(item?.keywords) ? item.keywords : [];
   return [...new Set(terms.map((term) => String(term || "").trim()).filter((term) => term.length >= 2))]
     .sort((a, b) => b.length - a.length)
     .slice(0, 12);
@@ -1396,6 +1461,55 @@ function escapeHTML(value) {
     .replaceAll("'", "&#039;");
 }
 
+function refreshStartedAtFor(kind) {
+  return kind === "sentiment" ? sentimentRefreshStartedAt : stockDetailRefreshStartedAt;
+}
+
+function formatRefreshElapsed(startedAt) {
+  const timestamp = Number(startedAt);
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return "00:00";
+  const totalSeconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+  const seconds = totalSeconds % 60;
+  const minutes = Math.floor(totalSeconds / 60) % 60;
+  const hours = Math.floor(totalSeconds / 3600);
+  const pad = (value) => String(value).padStart(2, "0");
+  if (hours) return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+  return `${pad(minutes)}:${pad(seconds)}`;
+}
+
+function refreshElapsedText(kind, symbol) {
+  return `用时 ${formatRefreshElapsed(refreshStartedAtFor(kind).get(symbol))}`;
+}
+
+function renderRefreshElapsed(kind, symbol) {
+  return `
+    <span
+      class="refresh-elapsed"
+      data-refresh-elapsed-kind="${escapeHTML(kind)}"
+      data-refresh-elapsed-symbol="${escapeHTML(symbol)}"
+    >${escapeHTML(refreshElapsedText(kind, symbol))}</span>
+  `;
+}
+
+function updateRefreshElapsedElements() {
+  document.querySelectorAll("[data-refresh-elapsed-kind][data-refresh-elapsed-symbol]").forEach((item) => {
+    item.textContent = refreshElapsedText(item.dataset.refreshElapsedKind, item.dataset.refreshElapsedSymbol);
+  });
+  stopRefreshElapsedTimerIfIdle();
+}
+
+function ensureRefreshElapsedTimer() {
+  updateRefreshElapsedElements();
+  if (refreshElapsedTimer) return;
+  refreshElapsedTimer = window.setInterval(updateRefreshElapsedElements, 1000);
+}
+
+function stopRefreshElapsedTimerIfIdle() {
+  if (stockDetailRefreshing.size || sentimentRefreshing.size || !refreshElapsedTimer) return;
+  window.clearInterval(refreshElapsedTimer);
+  refreshElapsedTimer = null;
+}
+
 function normalizeFieldKey(key) {
   return String(key ?? "")
     .trim()
@@ -1501,8 +1615,10 @@ async function refreshCurrentSentiment(useLlm = true) {
   const detail = stockDetailCache.get(stock.symbol);
   const windowDays = sentimentWindowDays(detail?.information?.sentiment);
   sentimentRefreshing.add(stock.symbol);
+  sentimentRefreshStartedAt.set(stock.symbol, Date.now());
   sentimentRefreshErrors.delete(stock.symbol);
   sentimentRefreshResults.delete(stock.symbol);
+  ensureRefreshElapsedTimer();
   renderSentimentAside(stock, detail);
   try {
     updateBackendStatus(`刷新 ${stock.symbol} 情绪中`);
@@ -1533,6 +1649,8 @@ async function refreshCurrentSentiment(useLlm = true) {
     renderSentimentAside(stock, stockDetailCache.get(stock.symbol));
   } finally {
     sentimentRefreshing.delete(stock.symbol);
+    sentimentRefreshStartedAt.delete(stock.symbol);
+    stopRefreshElapsedTimerIfIdle();
     renderSentimentAside(stockBySymbol(stock.symbol) ?? stock, stockDetailCache.get(stock.symbol));
   }
 }
@@ -2041,6 +2159,7 @@ async function loadAccountFromApi(accountId = apiState.accountId) {
     renderDetails(selectedStock() ?? stocks[0]);
     renderWatchlist();
     renderStockAnomalyReport(selectedAnomalySymbol);
+    maybeAutoRunBacktest();
   } catch (error) {
     apiState.connected = false;
     apiState.sharedCache = null;
@@ -2055,6 +2174,7 @@ async function loadAccountFromApi(accountId = apiState.accountId) {
     await loadSourceTestCatalog();
     await loadIndustryOptions();
     updateBackendStatus(apiState.lastError);
+    maybeAutoRunBacktest();
   }
 }
 
@@ -2137,16 +2257,19 @@ function compactFilterLabel(value) {
 function renderFilterGroups() {
   filterGroups.innerHTML = filterCatalog.map((group) => `
     <section class="filter-group">
-      <h4>${group.group}</h4>
+      <h4>${escapeHTML(group.group)}</h4>
       <div class="filter-options">
         ${group.items.map((item) => `
-          <label class="check-row">
-            <input type="checkbox" data-filter-id="${item.id}" ${activeFilterIds.has(item.id) ? "checked" : ""} />
-            <span>
-              <strong>${item.label}</strong>
-              <small>${escapeHTML(item.logic ?? "")}</small>
-            </span>
-          </label>
+          <div class="check-row">
+            <input id="filter-${escapeHTML(item.id)}" type="checkbox" data-filter-id="${escapeHTML(item.id)}" ${activeFilterIds.has(item.id) ? "checked" : ""} />
+            <div class="check-copy">
+              <div class="check-title">
+                <label for="filter-${escapeHTML(item.id)}"><strong>${escapeHTML(item.label)}</strong></label>
+                <button class="rule-help" type="button" aria-label="查看 ${escapeHTML(item.label)} 的解释" aria-describedby="filter-help-${escapeHTML(item.id)}">?</button>
+                <span id="filter-help-${escapeHTML(item.id)}" class="rule-tooltip" role="tooltip">${escapeHTML(item.logic ?? "")}</span>
+              </div>
+            </div>
+          </div>
         `).join("")}
       </div>
     </section>
@@ -2427,7 +2550,10 @@ function backtestConfigFromForm() {
 
 async function handleBacktestSubmit(event) {
   event?.preventDefault();
-  const config = backtestConfigFromForm();
+  await runBacktest(backtestConfigFromForm());
+}
+
+async function runBacktest(config = backtestConfigFromForm()) {
   backtestLoading = true;
   backtestError = "";
   renderBacktestResult();
@@ -2442,6 +2568,17 @@ async function handleBacktestSubmit(event) {
     backtestLoading = false;
     renderBacktestResult();
   }
+}
+
+function maybeAutoRunBacktest() {
+  if (activeTab !== "backtests" || backtestPayload || backtestLoading || backtestError || backtestAutoRunQueued) return;
+  if (!apiState.connected && !apiState.lastError) return;
+  backtestAutoRunQueued = true;
+  requestIdleTask(async () => {
+    backtestAutoRunQueued = false;
+    if (activeTab !== "backtests" || backtestPayload || backtestLoading || backtestError) return;
+    await runBacktest();
+  });
 }
 
 function renderBacktestResult() {
@@ -2505,6 +2642,7 @@ function renderBacktestResult() {
         </div>
       </section>
     </div>
+    ${renderBacktestSentimentPanels(backtestPayload.sentiment_panels)}
     <section class="backtest-panel">
       <h4>调仓记录</h4>
       <div class="backtest-log">
@@ -2551,6 +2689,116 @@ function renderBacktestLog(item) {
       </div>
     </article>
   `;
+}
+
+function renderBacktestSentimentPanels(panels = {}) {
+  const dailyRows = panels?.daily_kline?.rows ?? [];
+  const realtimeRows = panels?.realtime?.rows ?? [];
+  const notes = panels?.notes ?? [];
+  return `
+    <div class="backtest-sentiment-layout">
+      <section class="backtest-panel backtest-sentiment-panel">
+        <div class="curve-head">
+          <div>
+            <p class="eyebrow">Guba sentiment</p>
+            <h4>股吧日情绪 × K线</h4>
+          </div>
+          <span class="confidence">${Number(dailyRows.length || 0)} 条日汇总</span>
+        </div>
+        <div class="backtest-sentiment-list">
+          ${dailyRows.length ? dailyRows.map(renderBacktestSentimentDailyRow).join("") : `<div class="empty-state compact">暂无社区情绪日汇总。</div>`}
+        </div>
+      </section>
+      <section class="backtest-panel backtest-sentiment-panel">
+        <div class="curve-head">
+          <div>
+            <p class="eyebrow">Realtime pulse</p>
+            <h4>实时变化</h4>
+          </div>
+          <span class="confidence">${Number(realtimeRows.length || 0)} 只标的</span>
+        </div>
+        <div class="backtest-realtime-list">
+          ${realtimeRows.length ? realtimeRows.map(renderBacktestRealtimeRow).join("") : `<div class="empty-state compact">暂无实时情绪快照。</div>`}
+        </div>
+        ${notes.length ? `<div class="backtest-sentiment-notes">${notes.map((note) => `<span>${escapeHTML(note)}</span>`).join("")}</div>` : ""}
+      </section>
+    </div>
+  `;
+}
+
+function renderBacktestSentimentDailyRow(row) {
+  const score = Number(row.sentiment_score);
+  const change = Number(row.change_pct);
+  const tone = sentimentTone(score, row.sentiment_label);
+  const changeClass = Number.isFinite(change) && change >= 0 ? "profit" : "loss";
+  const total = Math.max(Number(row.analyzed_count || 0), 1);
+  const positiveWidth = Math.max(0, Math.min(100, Number(row.positive_count || 0) / total * 100));
+  const neutralWidth = Math.max(0, Math.min(100, Number(row.neutral_count || 0) / total * 100));
+  const negativeWidth = Math.max(0, Math.min(100, Number(row.negative_count || 0) / total * 100));
+  const keywords = (row.keyword_counts ?? []).slice(0, 4);
+  const klineDate = row.kline_trade_date && row.kline_trade_date !== row.trade_date ? ` · K ${row.kline_trade_date}` : "";
+  return `
+    <article class="backtest-sentiment-row">
+      <div class="backtest-sentiment-main">
+        <div>
+          <strong>${escapeHTML(row.symbol)} ${escapeHTML(row.name || "")}</strong>
+          <span>${escapeHTML(row.trade_date || "")}${escapeHTML(klineDate)} · ${Number(row.analyzed_count || 0)} 条</span>
+        </div>
+        <div class="backtest-sentiment-values">
+          <b class="${tone}">${formatSentimentScore(score)}</b>
+          <b class="${changeClass}">${formatPct(change)}</b>
+        </div>
+      </div>
+      <div class="backtest-sentiment-bars" aria-hidden="true">
+        <span class="positive" style="width:${positiveWidth.toFixed(1)}%"></span>
+        <span class="neutral" style="width:${neutralWidth.toFixed(1)}%"></span>
+        <span class="negative" style="width:${negativeWidth.toFixed(1)}%"></span>
+      </div>
+      <div class="backtest-sentiment-meta">
+        <span>正 ${Number(row.positive_count || 0)}</span>
+        <span>中 ${Number(row.neutral_count || 0)}</span>
+        <span>负 ${Number(row.negative_count || 0)}</span>
+        <span>收盘 ${formatDetailNumber(row.close, 2)}</span>
+        <span>额 ${formatBacktestAmount(row.amount)}</span>
+      </div>
+      <p>${escapeHTML(row.conclusion || "暂无日级结论。")}</p>
+      ${keywords.length ? `<div class="backtest-sentiment-keywords">${keywords.map((item) => `<mark>${escapeHTML(item.keyword)} ${Number(item.count || 0)}</mark>`).join("")}</div>` : ""}
+    </article>
+  `;
+}
+
+function renderBacktestRealtimeRow(row) {
+  const score = Number(row.community_score ?? row.composite_score);
+  const change = Number(row.latest_change_pct);
+  const tone = sentimentTone(score, row.sentiment_label);
+  const changeClass = Number.isFinite(change) && change >= 0 ? "profit" : "loss";
+  return `
+    <article class="backtest-realtime-row">
+      <div>
+        <strong>${escapeHTML(row.symbol)} ${escapeHTML(row.name || "")}</strong>
+        <span>${escapeHTML(row.latest_trade_date || "暂无K线")} · ${escapeHTML(row.kline_provider || "daily_bars")}</span>
+      </div>
+      <div class="backtest-realtime-metrics">
+        <span class="${changeClass}">${formatPct(change)}</span>
+        <span class="${tone}">${formatSentimentScore(score)}</span>
+        <span>帖 ${Number(row.community_posts_today || 0)}</span>
+        <span>析 ${Number(row.daily_analyzed_count || 0)}</span>
+      </div>
+      <p>${escapeHTML(row.daily_conclusion || "暂无最新社区总评。")}</p>
+      <div class="backtest-sentiment-meta">
+        <span>K线 ${escapeHTML(row.kline_fetched_at || "暂无")}</span>
+        <span>情绪 ${escapeHTML(row.latest_sentiment_at || "暂无")}</span>
+      </div>
+    </article>
+  `;
+}
+
+function formatBacktestAmount(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "暂无";
+  if (Math.abs(numeric) >= 100000000) return `${(numeric / 100000000).toFixed(1)}亿`;
+  if (Math.abs(numeric) >= 10000) return `${(numeric / 10000).toFixed(1)}万`;
+  return numeric.toFixed(0);
 }
 
 function drawBacktestCurve() {
@@ -3027,8 +3275,9 @@ function renderDetails(stock) {
   const detailPayload = stockDetailCache.get(stock.symbol);
   detailTitle.textContent = `${stock.symbol} · ${stock.name}`;
   const refreshing = stockDetailRefreshing.has(stock.symbol);
-  detailAction.textContent = refreshing ? "刷新中" : stock.action;
   detailAction.className = `action-pill drawer-action-pill ${refreshing ? "fresh" : stock.freshnessStatus}`;
+  if (refreshing) detailAction.innerHTML = `刷新中 ${renderRefreshElapsed("stock", stock.symbol)}`;
+  else detailAction.textContent = stock.action;
   renderDrawerFavoriteButton(stock);
   detailBody.innerHTML = `
     <div class="detail-grid">
@@ -3153,6 +3402,20 @@ function activeStockDetailPeriod(symbol, payload) {
   return fallback;
 }
 
+function renderStockRefreshBanner(stock, message) {
+  const symbol = stock?.symbol ?? "";
+  return `
+    <div class="stock-refresh-banner" role="status" aria-live="polite">
+      <div class="refresh-banner-head">
+        <strong>正在刷新数据</strong>
+        ${renderRefreshElapsed("stock", symbol)}
+      </div>
+      <span>${escapeHTML(message || "正在刷新行情、K线、季度财务、公司报告、公告和资讯源。")}</span>
+      <div class="refresh-progress" aria-hidden="true"><span></span></div>
+    </div>
+  `;
+}
+
 function renderStockDetailPanel(stock) {
   const detail = stockDetailCache.get(stock.symbol);
   const loading = stockDetailLoading.has(stock.symbol);
@@ -3168,6 +3431,14 @@ function renderStockDetailPanel(stock) {
           <strong>数据库行情详情未连接</strong>
           <span>启动后端后，这里会从 SQLite 的 daily_bars 和 financial_metrics_history 拉取 K 线、成交额和季度财务。</span>
         </div>
+      </section>
+    `;
+  }
+
+  if (refreshing && !detail) {
+    return `
+      <section class="stock-detail-panel refresh-state">
+        ${renderStockRefreshBanner(stock, refreshStep)}
       </section>
     `;
   }
@@ -3231,13 +3502,7 @@ function renderStockDetailPanel(stock) {
         </div>
       </div>
       ${refreshError ? `<div class="stock-refresh-error">${escapeHTML(refreshError)}</div>` : ""}
-      ${refreshing ? `
-        <div class="stock-refresh-banner">
-          <strong>刷新中</strong>
-          <span>${escapeHTML(refreshStep || "正在刷新行情、K线、财务、公告和资讯数据。")}</span>
-          <div class="refresh-progress" aria-hidden="true"><span></span></div>
-        </div>
-      ` : ""}
+      ${refreshing ? renderStockRefreshBanner(stock, refreshStep || "正在刷新行情、K线、财务、公告和资讯数据。") : ""}
       <div class="stock-quote-price-row">
         <strong>${formatDetailPrice(summary.price, summary.currency, isIndexQuote)}</strong>
         <span class="${changeClass}">${formatSignedNumber(summary.change, 2)} / ${formatSignedNumber(summary.change_pct, 2, "%")}</span>
@@ -3302,6 +3567,20 @@ function renderSentimentAside(stock, detail) {
   });
 }
 
+function renderSentimentRefreshBanner(stock) {
+  const symbol = stock?.symbol ?? "";
+  return `
+    <div class="sentiment-refresh-banner" role="status" aria-live="polite">
+      <div class="refresh-banner-head">
+        <strong>正在刷新情绪</strong>
+        ${renderRefreshElapsed("sentiment", symbol)}
+      </div>
+      <span>启动社区爬虫，并重新分析公告/财报、社区舆论和交易行为。</span>
+      <div class="refresh-progress" aria-hidden="true"><span></span></div>
+    </div>
+  `;
+}
+
 function renderSentimentPanel(detail, options = {}) {
   const snapshot = detail?.information?.sentiment;
   const stock = options.stock ?? selectedStock();
@@ -3315,20 +3594,14 @@ function renderSentimentPanel(detail, options = {}) {
       <div class="sentiment-panel ${sideClass} empty">
         <div class="stock-detail-empty">
           <strong>暂无情绪快照</strong>
-          <span>当前股票还没有写入 sentiment_snapshots。点击刷新后会启动社区爬虫，并重新分析公告/财报、社区舆论和交易行为。</span>
+          <span>当前股票还没有写入 sentiment_snapshots。后台每 30 分钟会自动刷新；也可以手动启动 GLM 情绪分析。</span>
           ${interactive && stock && apiState.connected ? `
             <button class="mini-action sentiment-refresh-action" data-sentiment-refresh="llm" type="button" ${refreshing ? "disabled" : ""}>
               ${refreshing ? "刷新中" : "GLM情绪"}
             </button>
           ` : ""}
         </div>
-        ${refreshing ? `
-          <div class="sentiment-refresh-banner">
-            <strong>正在刷新情绪</strong>
-            <span>启动社区爬虫，并重新分析公告/财报、社区舆论和交易行为。</span>
-            <div class="refresh-progress" aria-hidden="true"><span></span></div>
-          </div>
-        ` : ""}
+        ${refreshing ? renderSentimentRefreshBanner(stock) : ""}
         ${refreshError ? `<div class="stock-refresh-error">${escapeHTML(refreshError)}</div>` : ""}
         ${refreshResult ? renderSentimentRefreshResult(refreshResult) : ""}
       </div>
@@ -3356,13 +3629,8 @@ function renderSentimentPanel(detail, options = {}) {
           ` : ""}
         </div>
       </div>
-      ${refreshing ? `
-        <div class="sentiment-refresh-banner">
-          <strong>正在刷新情绪</strong>
-          <span>启动社区爬虫，并重新分析公告/财报、社区舆论和交易行为。</span>
-          <div class="refresh-progress" aria-hidden="true"><span></span></div>
-        </div>
-      ` : ""}
+      ${renderSentimentSnapshotStatus(snapshot, refreshResult)}
+      ${refreshing ? renderSentimentRefreshBanner(stock) : ""}
       ${refreshError ? `<div class="stock-refresh-error">${escapeHTML(refreshError)}</div>` : ""}
       ${refreshResult ? renderSentimentRefreshResult(refreshResult) : ""}
       <div class="sentiment-summary-grid">
@@ -3392,9 +3660,8 @@ function renderSentimentPanel(detail, options = {}) {
 }
 
 function renderSentimentBreakdownRow(item, value, count, options = {}) {
-  const numeric = Number(value);
-  const tone = sentimentTone(value);
-  const normalized = Number.isFinite(numeric) ? Math.max(0, Math.min(100, (numeric + 100) / 2)) : 50;
+  const tone = sentimentToneForType(value, "", item.id);
+  const normalized = sentimentTrackPercent(value, item.id);
   const activeClass = options.active ? "active" : "";
   const tag = options.interactive ? "button" : "div";
   const attrs = options.interactive
@@ -3425,7 +3692,7 @@ function renderSentimentMethodCard(snapshot) {
   return `
     <div class="sentiment-method-card">
       <strong>计算口径</strong>
-      <p>单条权重 = max(0.1, 置信度) × 时间衰减；本类分数 = Σ(单条分 × 单条权重) / Σ单条权重。</p>
+      <p>公告/交易按置信度与时间衰减加权；社区只统计今天评论，五档分类映射为 +2/+1/0/-1/-2 后取算术平均。</p>
       <p>基础权重：${escapeHTML(weightText)}。本次有效权重：${escapeHTML(activeText)}。</p>
       <p>标签阈值：≥35 积极，12 到 35 偏积极，-12 到 12 中性，-35 到 -12 偏消极，≤-35 消极。</p>
     </div>
@@ -3435,6 +3702,10 @@ function renderSentimentMethodCard(snapshot) {
 function renderSentimentRefreshResult(result) {
   const counts = result?.counts ?? {};
   const errors = Array.isArray(result?.errors) ? result.errors : [];
+  const performance = result?.performance ?? {};
+  const llm = performance.llm ?? {};
+  const slowest = [...(performance.steps ?? [])].sort((a, b) => Number(b.duration_ms || 0) - Number(a.duration_ms || 0))[0];
+  const llmLabel = llm.provider === "glm" ? "GLM" : displayText(llm.provider || "LLM");
   return `
     <div class="sentiment-refresh-result">
       <span>已刷新 ${Number(counts.symbols || 0)} 只</span>
@@ -3442,7 +3713,64 @@ function renderSentimentRefreshResult(result) {
       <span>公告/财报证据 ${Number(counts.filing_news_evidence || 0)}</span>
       <span>社区证据 ${Number(counts.community_evidence || 0)}</span>
       <span>交易证据 ${Number(counts.market_evidence || 0)}</span>
+      ${llm.configured ? `<span>${escapeHTML(llmLabel)} ${Number(llm.items || 0)} 条 / ${Number(llm.requests || 0)} 批 · ${formatSentimentDuration(llm.duration_ms)}</span>` : `<span>GLM 未配置</span>`}
+      ${Number(llm.cache_hits || 0) ? `<span>缓存 ${Number(llm.cache_hits || 0)} 条</span>` : ""}
+      ${slowest ? `<span>最慢 ${escapeHTML(displayText(slowest.step))} ${formatSentimentDuration(slowest.duration_ms)}</span>` : ""}
       ${errors.length ? `<strong>${errors.length} 个提示</strong>` : ""}
+    </div>
+  `;
+}
+
+function formatSentimentDuration(value) {
+  const ms = Number(value || 0);
+  if (!Number.isFinite(ms) || ms <= 0) return "0秒";
+  if (ms < 1000) return `${Math.round(ms)}ms`;
+  return `${(ms / 1000).toFixed(ms < 10000 ? 1 : 0)}秒`;
+}
+
+function parseLocalDateTime(value) {
+  const text = String(value || "").trim();
+  if (!text) return null;
+  const normalized = text.includes("T") ? text : text.replace(" ", "T");
+  const parsed = new Date(normalized);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatSentimentSnapshotTime(value) {
+  const parsed = parseLocalDateTime(value);
+  if (!parsed) return "暂无刷新时间";
+  return parsed.toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  }).replace(/\//g, "-");
+}
+
+function formatSentimentSnapshotAge(value) {
+  const parsed = parseLocalDateTime(value);
+  if (!parsed) return "";
+  const minutes = Math.max(0, Math.round((Date.now() - parsed.getTime()) / 60000));
+  if (minutes < 1) return "刚刚";
+  if (minutes < 60) return `约 ${minutes} 分钟前`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours < 24) return rest ? `约 ${hours}小时${rest}分钟前` : `约 ${hours}小时前`;
+  const days = Math.floor(hours / 24);
+  return `约 ${days} 天前`;
+}
+
+function renderSentimentSnapshotStatus(snapshot, refreshResult) {
+  const generatedAt = snapshot?.generated_at || refreshResult?.refreshed_at || "";
+  const age = formatSentimentSnapshotAge(generatedAt);
+  return `
+    <div class="sentiment-snapshot-status">
+      <span>上次刷新 <strong>${escapeHTML(formatSentimentSnapshotTime(generatedAt))}</strong></span>
+      ${age ? `<span>${escapeHTML(age)}</span>` : ""}
+      <span>后台每 30 分钟自动刷新</span>
     </div>
   `;
 }
@@ -3484,15 +3812,19 @@ function renderSentimentEvidencePanel(stock, detail, type) {
   }
 
   const evidenceRows = payload?.evidence?.[type] ?? [];
-  const shownRows = evidenceRows.slice(0, 8);
+  const shownRows = evidenceRows.slice(0, type === "community" ? 12 : 8);
   return `
     <div class="sentiment-evidence-panel">
-      <div class="sentiment-factor-strip">
-        <span>本类分 <strong>${formatSentimentScore(typeScore)}</strong></span>
-        <span>本类置信 <strong>${formatSentimentConfidence(typeStats.confidence)}</strong></span>
-        <span>基础权重 <strong>${(meta.weight * 100).toFixed(0)}%</strong></span>
-        <span>有效权重 <strong>${effectiveWeight === null ? "暂无" : formatDetailNumber(effectiveWeight * 100, 0, "%")}</strong></span>
-      </div>
+      ${type === "community"
+        ? renderCommunitySentimentStrip(typeScore, typeStats, evidenceRows, shownRows.length)
+        : `
+          <div class="sentiment-factor-strip">
+            <span>本类分 <strong>${formatSentimentScore(typeScore)}</strong></span>
+            <span>本类置信 <strong>${formatSentimentConfidence(typeStats.confidence)}</strong></span>
+            <span>基础权重 <strong>${(meta.weight * 100).toFixed(0)}%</strong></span>
+            <span>有效权重 <strong>${effectiveWeight === null ? "暂无" : formatDetailNumber(effectiveWeight * 100, 0, "%")}</strong></span>
+          </div>
+        `}
       <div class="sentiment-source-note">${escapeHTML(meta.sourceNote)}</div>
       ${shownRows.length ? shownRows.map((item, index) => renderSentimentEvidenceCard(item, index, windowDays)).join("") : `
         <div class="stock-detail-empty">
@@ -3504,45 +3836,74 @@ function renderSentimentEvidencePanel(stock, detail, type) {
   `;
 }
 
+function renderCommunitySentimentStrip(typeScore, typeStats, rows, shownCount) {
+  const counts = normalizedCommunityClassCounts(typeStats, rows);
+  const total = communityClassOrder.reduce((sum, item) => sum + Number(counts[item] || 0), 0);
+  return `
+    <div class="sentiment-factor-strip community-summary">
+      <span>今日均分 <strong>${formatSentimentScore(typeScore)}</strong></span>
+      ${communityClassOrder.map((item) => `<span>${escapeHTML(communityClassLabel(item))} <strong>${Number(counts[item] || 0)}</strong></span>`).join("")}
+      <span>展示 <strong>${shownCount}/${total || rows.length}</strong></span>
+    </div>
+  `;
+}
+
 function renderSentimentEvidenceCard(item, index, windowDays) {
   const terms = uniqueSentimentTerms(item);
-  const sourceText = displayText(item.title || item.evidence?.text || item.category || "暂无原文片段");
+  const isCommunity = item.sentiment_type === "community";
+  const sourceText = displayText((isCommunity ? item.source_text : "") || item.title || item.evidence?.text || item.category || "暂无原文片段");
+  const failed = isSentimentLlmFailure(item);
   const recency = sentimentRecencyWeight(item.event_date || item.analyzed_at, windowDays);
-  const itemWeight = sentimentEvidenceWeight(item, windowDays);
-  const contribution = sentimentEvidenceContribution(item, windowDays);
-  const matches = Array.isArray(item.evidence?.rule_matches) ? item.evidence.rule_matches : [];
+  const itemWeight = failed ? 0 : sentimentEvidenceWeight(item, windowDays);
+  const contribution = failed ? null : sentimentEvidenceContribution(item, windowDays);
+  const communityClass = isCommunity && !failed ? communityClassLabel(communityClassFromItem(item)) : "";
+  const scoreTone = failed ? "warning" : sentimentToneForType(item.sentiment_score, item.sentiment_label, item.sentiment_type);
   return `
-    <article class="sentiment-evidence-card">
+    <article class="sentiment-evidence-card${failed ? " failed" : ""}">
       <div class="sentiment-evidence-top">
         <span>#${index + 1} · ${escapeHTML(displayText(item.source))}</span>
-        <strong class="${sentimentTone(item.sentiment_score, item.sentiment_label)}">${formatSentimentScore(item.sentiment_score)}</strong>
+        <div class="sentiment-evidence-score ${scoreTone}">
+          ${communityClass ? `<span>${escapeHTML(communityClass)}</span>` : ""}
+          <strong>${failed ? "GLM失败" : formatSentimentScore(item.sentiment_score)}</strong>
+        </div>
       </div>
       <p class="sentiment-quote">${renderHighlightedSentimentText(sourceText, terms)}</p>
-      ${terms.length ? `<div class="sentiment-keywords">${terms.map((term) => `<mark>${escapeHTML(term)}</mark>`).join("")}</div>` : ""}
-      <div class="sentiment-evidence-factors">
-        <span>置信度 ${formatSentimentConfidence(item.confidence)}</span>
-        <span>时间权重 ${recency.toFixed(2)}</span>
-        <span>证据权重 ${itemWeight.toFixed(2)}</span>
-        <span>加权贡献 ${contribution === null ? "暂无" : formatSentimentScore(contribution)}</span>
-      </div>
-      ${matches.length ? `
-        <div class="sentiment-rule-list">
-          <strong>命中规则</strong>
-          ${matches.map((match) => `<span>${escapeHTML(match.keyword)} <em>${formatSentimentScore(match.score, 0)}</em></span>`).join("")}
+      ${terms.length && !isCommunity ? `<div class="sentiment-keywords">${terms.map((term) => `<mark>${escapeHTML(term)}</mark>`).join("")}</div>` : ""}
+      ${isCommunity ? "" : `
+        <div class="sentiment-evidence-factors">
+          <span>置信度 ${formatSentimentConfidence(item.confidence)}</span>
+          <span>时间权重 ${recency.toFixed(2)}</span>
+          <span>证据权重 ${itemWeight.toFixed(2)}</span>
+          <span>加权贡献 ${failed ? "未计入" : (contribution === null ? "暂无" : formatSentimentScore(contribution))}</span>
         </div>
-      ` : renderSentimentStructuredEvidence(item.evidence)}
+      `}
+      ${failed ? `<div class="sentiment-failure-note">GLM分析失败，仅保留排查信息，不计入情绪分。</div>` : ""}
+      ${isCommunity ? "" : renderSentimentStructuredEvidence(item.evidence, item)}
       <div class="sentiment-evidence-meta">
         <span>${escapeHTML(item.event_date || item.analyzed_at || "暂无日期")}</span>
-        <span>${escapeHTML(item.model_provider || "local")} / ${escapeHTML(item.model_name || "rule-v1")}</span>
+        <span>${escapeHTML(item.model_provider || "local")} / ${escapeHTML(item.model_name || "fallback-v1")}</span>
         ${item.url ? `<a href="${escapeHTML(item.url)}" target="_blank" rel="noreferrer">原文</a>` : ""}
       </div>
     </article>
   `;
 }
 
-function renderSentimentStructuredEvidence(evidence = {}) {
+function isSentimentLlmFailure(item) {
+  const evidence = item?.evidence ?? {};
+  const modelProvider = String(item?.model_provider || "");
+  const hasStructuredScore = evidence.structured_financial_score !== null && evidence.structured_financial_score !== undefined;
+  if (hasStructuredScore) return false;
+  return Boolean(evidence.llm_error) || (modelProvider === "local" && evidence.fallback_reason);
+}
+
+function renderSentimentStructuredEvidence(evidence = {}, item = {}) {
+  const hiddenCommunityFields = new Set(["text_length", "prompt_version", "llm_id", "llm_reason"]);
   const entries = Object.entries(evidence || {})
-    .filter(([key, value]) => key !== "rule_matches" && value !== null && value !== undefined && value !== "")
+    .filter(([key, value]) => {
+      if (key === "rule_matches" || value === null || value === undefined || value === "") return false;
+      if (item?.sentiment_type === "community" && hiddenCommunityFields.has(key)) return false;
+      return true;
+    })
     .slice(0, 12);
   if (!entries.length) return "";
   return `
@@ -5596,7 +5957,9 @@ async function refreshStockData(source) {
   stockDetailRefreshErrors.delete(stock.symbol);
   if (apiState.connected && source === "detail" && stock.market !== "US") {
     stockDetailRefreshing.add(stock.symbol);
+    stockDetailRefreshStartedAt.set(stock.symbol, Date.now());
     stockDetailRefreshSteps.set(stock.symbol, "正在刷新行情、K线、季度财务、公司报告、公告和资讯源。");
+    ensureRefreshElapsedTimer();
     renderDetails(stock);
     try {
       updateBackendStatus(`刷新 ${stock.symbol} 数据中`);
@@ -5621,7 +5984,9 @@ async function refreshStockData(source) {
       updateBackendStatus(apiState.lastError);
     } finally {
       stockDetailRefreshing.delete(stock.symbol);
+      stockDetailRefreshStartedAt.delete(stock.symbol);
       stockDetailRefreshSteps.delete(stock.symbol);
+      stopRefreshElapsedTimerIfIdle();
       const current = stockBySymbol(stock.symbol) ?? stock;
       renderDetails(current);
     }
@@ -5864,6 +6229,7 @@ function setActiveTab(current, shouldUpdateHash = true) {
     history.replaceState(null, "", `#${next}`);
   }
   scheduleActiveTabDraws(next);
+  maybeAutoRunBacktest();
 }
 
 function setActiveNav(current) {

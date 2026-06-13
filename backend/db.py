@@ -345,6 +345,29 @@ def init_db() -> None:
               unique (symbol, as_of, window_days, method_version)
             );
 
+            create table if not exists community_sentiment_daily (
+              id integer primary key autoincrement,
+              symbol text not null references symbols(symbol),
+              source text not null default 'eastmoney_guba',
+              trade_date text not null,
+              analyzed_count integer not null default 0,
+              positive_count integer not null default 0,
+              negative_count integer not null default 0,
+              neutral_count integer not null default 0,
+              sentiment_score real not null default 0,
+              sentiment_label text not null default 'neutral',
+              confidence real not null default 0,
+              conclusion text not null default '',
+              label_counts_json text not null default '{}',
+              keyword_counts_json text not null default '{}',
+              model_provider text not null default 'local',
+              model_name text not null default 'fallback-v1',
+              method_version text not null,
+              generated_at text not null,
+              raw_json text not null default '{}',
+              unique (symbol, source, trade_date, method_version)
+            );
+
             create table if not exists claims (
               id integer primary key autoincrement,
               symbol text not null references symbols(symbol),
@@ -520,6 +543,9 @@ def init_db() -> None:
 
             create index if not exists idx_sentiment_snapshots_symbol_generated
             on sentiment_snapshots(symbol, generated_at desc);
+
+            create index if not exists idx_community_sentiment_daily_symbol_date
+            on community_sentiment_daily(symbol, trade_date desc);
             """
         )
         seed_if_empty(conn)

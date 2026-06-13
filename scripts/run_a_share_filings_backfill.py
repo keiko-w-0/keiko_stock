@@ -14,6 +14,7 @@ if str(ROOT_DIR) not in sys.path:
 from backend.db import get_db, init_db
 from backend.history import (
     create_a_share_filings_backfill_job,
+    dedupe_filing_history_by_title,
     ingestion_run_payload,
     run_a_share_filings_backfill_job,
     warehouse_summary,
@@ -28,10 +29,33 @@ def main() -> int:
     parser.add_argument("--batch-size", type=int, default=20, help="Symbols per filing batch.")
     parser.add_argument("--max-batches", type=int, default=0, help="Stop after this many batches. 0 means run until no candidates remain.")
     parser.add_argument("--no-universe-refresh", action="store_true", help="Skip BaoStock query_all_stock before filing backfill.")
+    parser.add_argument("--dedupe-only", action="store_true", help="Only remove duplicate filings by symbol/title; do not fetch new documents.")
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     args = parser.parse_args()
 
     init_db()
+    if args.dedupe_only:
+        with get_db() as conn:
+            cleanup = dedupe_filing_history_by_title(conn, list(args.symbols))
+            conn.commit()
+            payload = {
+                "mode": "a-share-filings-dedupe",
+                "status": "ok",
+                "cleanup": cleanup,
+                "warehouse": warehouse_summary(conn),
+            }
+        if args.json:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        else:
+            print(
+                "filing dedupe "
+                f"checked_rows={cleanup.get('checked_rows', 0)} "
+                f"duplicate_groups={cleanup.get('duplicate_groups', 0)} "
+                f"filings_deleted={cleanup.get('filings_deleted', 0)} "
+                f"sentiment_evidence_deleted={cleanup.get('sentiment_evidence_deleted', 0)}"
+            )
+        return 0
+
     refresh_universe = not args.no_universe_refresh
     with get_db() as conn:
         job = create_a_share_filings_backfill_job(
@@ -71,6 +95,7 @@ def main() -> int:
             f"no_data_symbols={counts.get('no_data_symbols', 0)} "
             f"failed_symbols={counts.get('failed_symbols', 0)} "
             f"batches={counts.get('batches', 0)} "
+            f"duplicate_filings_deleted={counts.get('duplicate_filings_deleted', 0)} "
             f"remaining_candidates={counts.get('remaining_candidates', 0)} "
             f"last_progress_at={counts.get('last_progress_at', '')}"
         )

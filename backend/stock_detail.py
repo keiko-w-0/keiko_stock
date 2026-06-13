@@ -120,6 +120,8 @@ def detail_elapsed_ms(started: float) -> int:
 
 
 def stock_information(conn: sqlite3.Connection, symbol: str) -> dict[str, Any]:
+    from .sentiment import SENTIMENT_METHOD_VERSION, apply_current_community_snapshot
+
     filings = [
         {
             "type": "filing",
@@ -210,16 +212,17 @@ def stock_information(conn: sqlite3.Connection, symbol: str) -> dict[str, Any]:
         select *
         from sentiment_snapshots
         where symbol = ?
+          and method_version = ?
         order by generated_at desc, id desc
         limit 1
         """,
-        (symbol,),
+        (symbol, SENTIMENT_METHOD_VERSION),
     ).fetchone()
     return {
         "filings": filings + reports,
         "news": news,
         "discussions": discussions,
-        "sentiment": normalize_sentiment_snapshot(sentiment_row) if sentiment_row else None,
+        "sentiment": apply_current_community_snapshot(conn, normalize_sentiment_snapshot(sentiment_row)) if sentiment_row else None,
     }
 
 

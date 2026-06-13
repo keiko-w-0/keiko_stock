@@ -7,6 +7,7 @@ import re
 import sqlite3
 import time
 from datetime import datetime
+from html.parser import HTMLParser
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
@@ -60,6 +61,17 @@ def fetch_eastmoney_guba_posts(symbol: str, limit: int = 50, timeout: int = 15) 
     posts = parse_eastmoney_guba_list(body, code=code, limit=limit)
     fetched_at = now_iso()
     for post in posts:
+        detail_error = ""
+        try:
+            detail_body = fetch_text(post["url"], timeout=timeout)
+            content = parse_eastmoney_guba_detail_text(detail_body)
+            if content:
+                post["content"] = content
+                post.setdefault("raw", {})["detail_text_length"] = len(content)
+        except CommunityCrawlerError as exc:
+            detail_error = str(exc)
+        if detail_error:
+            post.setdefault("raw", {})["detail_error"] = detail_error
         post["symbol"] = symbol.upper()
         post["source"] = "eastmoney_guba"
         post["fetched_at"] = fetched_at
@@ -125,6 +137,60 @@ def parse_eastmoney_guba_list(body: str, code: str, limit: int = 50) -> list[dic
         if len(posts) >= clean_limit:
             break
     return posts
+
+
+class EastmoneyGubaDetailTextParser(HTMLParser):
+    VOID_TAGS = {"br", "hr", "img", "input", "meta", "link", "source"}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._content_depth = 0
+        self._skip_depth = 0
+        self._parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attr_map = {name: value or "" for name, value in attrs}
+        class_name = attr_map.get("class", "")
+        if self._content_depth:
+            if tag in {"br", "p", "div", "li"}:
+                self._append_separator()
+            if tag in self.VOID_TAGS:
+                return
+            self._content_depth += 1
+            if tag in {"script", "style", "video", "audio", "svg"}:
+                self._skip_depth += 1
+            return
+        if tag == "div" and "xeditor_content" in class_name.split():
+            self._content_depth = 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if self._content_depth:
+            if tag in {"p", "div", "li"}:
+                self._append_separator()
+            if self._skip_depth:
+                self._skip_depth -= 1
+            self._content_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if not self._content_depth or self._skip_depth:
+            return
+        text = normalize_html_text(data)
+        if text:
+            self._parts.append(text)
+
+    def _append_separator(self) -> None:
+        if self._parts and self._parts[-1] != "\n":
+            self._parts.append("\n")
+
+    def text(self) -> str:
+        content = " ".join(part for part in self._parts if part != "\n")
+        return re.sub(r"\s+", " ", content).strip()
+
+
+def parse_eastmoney_guba_detail_text(body: str) -> str:
+    parser = EastmoneyGubaDetailTextParser()
+    parser.feed(body or "")
+    return parser.text()
 
 
 def upsert_community_posts(conn: sqlite3.Connection, posts: list[dict[str, Any]]) -> int:
