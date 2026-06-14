@@ -19,6 +19,8 @@
     <string>3</string>
     <string>--market-days</string>
     <string>20</string>
+    <string>--account-id</string>
+    <string>acct-admin</string>
     <string>--json</string>
   </array>
 

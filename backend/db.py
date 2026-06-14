@@ -932,6 +932,11 @@ def seed_admin_account(conn: sqlite3.Connection) -> None:
         """,
         ("acct-admin", "user-admin", "Admin 管理账户", "CNY", created_at),
     )
+    favorite_count = conn.execute(
+        "select count(*) as count from account_favorites where account_id = 'acct-admin'"
+    ).fetchone()["count"]
+    if favorite_count:
+        return
     conn.executemany(
         """
         insert into account_favorites (account_id, symbol, created_at, note)

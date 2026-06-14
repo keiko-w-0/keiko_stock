@@ -22,9 +22,10 @@ from backend.history import (  # noqa: E402
     baostock_financial_backfill_plan,
     financial_storage_periods,
     latest_baostock_daily_trade_date,
-    quarter_end_date,
     quarter_period_key,
+    quarter_end_date,
     recent_quarter_periods,
+    scan_warehouse_duplicates,
 )
 
 
@@ -44,6 +45,7 @@ def main() -> None:
     subparsers.add_parser("coverage", help="Universe vs BaoStock K-line coverage and latest backfill status.")
     subparsers.add_parser("backfill-status", help="BaoStock daily target coverage and latest run progress.")
     subparsers.add_parser("duplicates", help="Duplicate daily_bars rows by symbol/date/provider.")
+    dedupe_scan = subparsers.add_parser("dedupe-scan", help="Scan warehouse duplicate patterns (filings/market_snapshots/daily_bars).")
     subparsers.add_parser("pe", help="PE/PB coverage and latest PE samples.")
     subparsers.add_parser("financials", help="Quarterly financial metrics coverage grouped by provider.")
 
@@ -86,6 +88,12 @@ def main() -> None:
             rows = coverage(conn)
         elif args.command == "duplicates":
             rows = duplicates(conn)
+        elif args.command == "dedupe-scan":
+            payload = scan_warehouse_duplicates(conn)
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+                return
+            rows = [{"metric": key, "value": value} for key, value in payload.items() if key != "notes"]
         elif args.command == "pe":
             rows = pe_coverage(conn)
         elif args.command == "financials":

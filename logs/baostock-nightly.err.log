@@ -57,3 +57,63 @@ Traceback (most recent call last):
   File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 3594, in finish_ingestion
     conn.execute(
 sqlite3.OperationalError: database is locked
+Traceback (most recent call last):
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 881, in run_baostock_backfill_job
+    days,
+^^^^^^^^^^
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 921, in apply_baostock_background_batch
+    if should_pause_baostock_backfill(counts, max_batches):
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 2129, in refresh_baostock_history_batch
+    days: int = 260,
+                   ^^
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 2873, in upsert_baostock_history
+    
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 3800, in upsert_daily_payloads
+    
+    
+sqlite3.OperationalError: database is locked
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/wangwenhui/Documents/keiko_stock/scripts/run_baostock_backfill.py", line 81, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/wangwenhui/Documents/keiko_stock/scripts/run_baostock_backfill.py", line 45, in main
+    run_baostock_backfill_job(
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 905, in run_baostock_backfill_job
+    apply_baostock_background_batch(
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 3905, in finish_ingestion
+    number_value(row, ["成交量", "volume"]) or 0,
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+Traceback (most recent call last):
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 940, in run_baostock_backfill_job
+    apply_baostock_background_batch(conn, run_id, candidates, start_date, end_date, counts, updated_symbols, errors, days=days)
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 980, in apply_baostock_background_batch
+    batch = refresh_baostock_history_batch(conn, batch_symbols, start_date, end_date)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 2252, in refresh_baostock_history_batch
+    inserted = upsert_baostock_history(conn, rows)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 2996, in upsert_baostock_history
+    upsert_daily_payloads(conn, payloads)
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 3923, in upsert_daily_payloads
+    conn.executemany(
+sqlite3.OperationalError: database is locked
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/wangwenhui/Documents/keiko_stock/scripts/run_baostock_backfill.py", line 81, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/wangwenhui/Documents/keiko_stock/scripts/run_baostock_backfill.py", line 45, in main
+    run_baostock_backfill_job(
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 964, in run_baostock_backfill_job
+    finish_ingestion(conn, run_id, "failed", updated_symbols, counts, errors)
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/history.py", line 4028, in finish_ingestion
+    conn.execute(
+sqlite3.OperationalError: database is locked

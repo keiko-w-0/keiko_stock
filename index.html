@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=20260613-community-card-v1" />
-    <script defer src="app.js?v=20260613-community-card-v1"></script>
+    <link rel="stylesheet" href="styles.css?v=20260614-source-reliability-v1" />
+    <script defer src="app.js?v=20260614-source-reliability-v1"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -26,7 +26,8 @@
         </div>
 
         <nav class="nav-list" aria-label="页面区域">
-          <a href="#filters" class="nav-item active">筛选股票</a>
+          <a href="#skillhub" class="nav-item active">技能中心</a>
+          <a href="#filters" class="nav-item">筛选股票</a>
           <a href="#health" class="nav-item">数据健康</a>
           <a href="#data-exploration" class="nav-item">数据探索</a>
           <a href="#daily" class="nav-item">今日观察</a>
@@ -65,10 +66,97 @@
             <span class="status-chip fresh">行情 fresh</span>
             <span class="status-chip verified">证据链 86%</span>
             <span class="status-chip warn">AI 需反思</span>
+            <button id="sourceNotificationButton" class="notification-button" type="button" aria-expanded="false" aria-controls="sourceNotificationPanel" title="数据源通知">
+              <span class="mailbox-icon" aria-hidden="true"></span>
+              <span id="sourceNotificationCount" class="notification-count" hidden>0</span>
+            </button>
+            <div id="sourceNotificationPanel" class="notification-panel" hidden>
+              <div class="notification-head">
+                <strong>数据源通知</strong>
+                <span id="sourceNotificationSummary">暂无异常</span>
+              </div>
+              <div id="sourceNotificationList" class="notification-list"></div>
+            </div>
           </div>
         </header>
 
-        <section id="filters" class="section-block active-panel">
+        <section id="skillhub" class="section-block active-panel skillhub-section">
+          <div class="skillhub-hero">
+            <div class="skillhub-title-block">
+              <p class="eyebrow">AI skill hub</p>
+              <h3>投研技能中心</h3>
+              <div class="skillhub-stats" aria-label="技能中心概览">
+                <span><strong>12</strong> 问法</span>
+                <span><strong>6</strong> 场景</span>
+                <span><strong>4</strong> 执行入口</span>
+              </div>
+            </div>
+            <form id="skillHubSearchForm" class="skillhub-search" role="search">
+              <label for="skillHubPrompt">问一句</label>
+              <div class="skillhub-search-row">
+                <input
+                  id="skillHubPrompt"
+                  type="search"
+                  placeholder="例如：成交额高、站上20日线、公告催化强的A股"
+                  autocomplete="off"
+                />
+                <button id="runSkillHubSearch" class="primary-action" type="submit">检索</button>
+              </div>
+              <div id="skillHubHotQueries" class="skillhub-hot" aria-label="热门问法"></div>
+            </form>
+          </div>
+
+          <div class="skillhub-body">
+            <aside class="skillhub-side">
+              <div id="skillHubCategoryTabs" class="skillhub-tabs" aria-label="技能分类"></div>
+              <section class="skillhub-shelf">
+                <div class="skillhub-shelf-head">
+                  <strong>收藏</strong>
+                  <span id="skillHubFavoriteCount">0</span>
+                </div>
+                <div id="skillHubFavorites" class="skillhub-mini-list" aria-live="polite"></div>
+              </section>
+              <section class="skillhub-shelf">
+                <div class="skillhub-shelf-head">
+                  <strong>最近</strong>
+                </div>
+                <div id="skillHubHistory" class="skillhub-mini-list" aria-live="polite"></div>
+              </section>
+            </aside>
+
+            <div class="skillhub-main">
+              <div class="skillhub-flow">
+                <div>
+                  <span>问法</span>
+                  <strong>自然语言</strong>
+                </div>
+                <div>
+                  <span>解析</span>
+                  <strong>因子/场景</strong>
+                </div>
+                <div>
+                  <span>执行</span>
+                  <strong>筛选/诊断/回测</strong>
+                </div>
+                <div>
+                  <span>复核</span>
+                  <strong>证据链</strong>
+                </div>
+              </div>
+              <div id="skillHubExecution" class="skillhub-execution" hidden aria-live="polite"></div>
+              <div class="section-title compact">
+                <div>
+                  <p class="eyebrow">Skill tabs</p>
+                  <h3>搜索新闻技能</h3>
+                </div>
+                <span id="skillHubResultCount" class="count-pill">0</span>
+              </div>
+              <div id="skillHubResults" class="skillhub-grid" aria-live="polite"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="filters" class="section-block">
           <div class="control-band" aria-label="筛选控制">
             <div class="segmented" role="tablist" aria-label="市场筛选">
               <button class="segment active" data-market="all" type="button">全部</button>
@@ -447,7 +535,8 @@
     </div>
 
     <nav class="mobile-tabbar" aria-label="iPhone 底部导航">
-      <a href="#filters" class="nav-item tabbar-item active"><span class="tab-icon filter-icon"></span><span>筛选</span></a>
+      <a href="#skillhub" class="nav-item tabbar-item active"><span class="tab-icon skill-icon"></span><span>技能</span></a>
+      <a href="#filters" class="nav-item tabbar-item"><span class="tab-icon filter-icon"></span><span>筛选</span></a>
       <a href="#health" class="nav-item tabbar-item"><span class="tab-icon health-icon"></span><span>健康</span></a>
       <a href="#data-exploration" class="nav-item tabbar-item"><span class="tab-icon source-test-icon"></span><span>探索</span></a>
       <a href="#daily" class="nav-item tabbar-item"><span class="tab-icon daily-icon"></span><span>观察</span></a>
@@ -463,15 +552,11 @@
       <section class="analysis-drawer" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
         <header class="drawer-head">
           <button class="icon-button drawer-close-button" data-close-drawer type="button" aria-label="关闭单股分析">×</button>
-          <div class="drawer-title-block">
-            <p class="eyebrow">Single stock</p>
-            <h3 id="detailTitle">个股分析</h3>
-          </div>
+          <h3 id="detailTitle" class="sr-only">个股分析</h3>
           <button id="detailFavorite" class="status-badge drawer-favorite-button" type="button" hidden>
             <span class="badge-icon bookmark-icon"></span>
             <span>关注</span>
           </button>
-          <span id="detailAction" class="action-pill drawer-action-pill">等待选择</span>
         </header>
         <div class="analysis-layout drawer-layout">
           <article class="analysis-main">

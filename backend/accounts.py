@@ -35,6 +35,19 @@ def favorites_for_account(conn: sqlite3.Connection, account_id: str) -> list[str
     ]
 
 
+def favorite_symbols_for_accounts(conn: sqlite3.Connection, account_id: str | None = None) -> list[str]:
+    if account_id:
+        return [str(symbol).upper() for symbol in favorites_for_account(conn, account_id)]
+    rows = conn.execute(
+        """
+        select distinct symbol
+        from account_favorites
+        order by symbol
+        """
+    ).fetchall()
+    return [str(row["symbol"]).upper() for row in rows]
+
+
 def trades_for_account(conn: sqlite3.Connection, account_id: str) -> list[dict[str, Any]]:
     return [
         normalize_trade(row)

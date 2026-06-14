@@ -262,6 +262,7 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 - `docs/official-filings-data.md`：真实公告数据源接入说明和 API/CLI 示例。
 - `docs/warehouse-schema.md`：SQLite 历史数据仓库字段字典和 provider 原始字段映射。
 - `docs/research-report.md`：数据源、资讯源、真实性判断、情绪面、AI 反思和落地路线报告。
+- `docs/sentiment.README.md`：社区情绪（股吧+雪球）、GLM prompt、雪球 quote/评论配置、半小时 agent、自选股刷新范围。
 - `docs/engineering-todo.md`：后端、数据库、API key、自动化、多账户和打包 TODO。
 - `docs/handoff.md`：换电脑或开启新 Codex 会话时的交接说明。
 

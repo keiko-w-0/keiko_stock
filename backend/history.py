@@ -379,13 +379,65 @@ def refresh_stock_detail_data(
 
 
 def refresh_stock_detail_market_step(symbol: str, days: int) -> dict[str, Any]:
+    from .live_quote import fetch_live_market_quote, persist_live_quote_snapshot
+    from .market_calendar import evaluate_market_quote_refresh, latest_db_trade_date
+
     with get_db() as conn:
+        db_latest = latest_db_trade_date(conn, symbol)
+        plan = evaluate_market_quote_refresh(db_latest)
+        if plan["action"] == "skip":
+            return {
+                "status": "skipped",
+                "reason": plan["reason"],
+                "quote_refresh": plan,
+                "counts": {"daily_bars": 0, "market_snapshots": 0},
+                "errors": [],
+            }
+
+        counts = {"daily_bars": 0, "market_snapshots": 0}
+        errors: list[dict[str, str]] = []
+        quote = None
+        if plan.get("needs_live_quote"):
+            quote = fetch_live_market_quote(symbol)
+            if quote:
+                counts["market_snapshots"] += persist_live_quote_snapshot(conn, symbol, quote)
+                conn.commit()
+            else:
+                errors.append({"symbol": symbol, "error": "live quote fetch failed (xueqiu/akshare)"})
+
+        if not plan.get("needs_history_refresh"):
+            return {
+                "status": "ok" if quote else "partial",
+                "reason": plan["reason"],
+                "quote_refresh": plan,
+                "counts": counts,
+                "errors": errors,
+            }
+
         refresh_days, reason = stock_detail_market_refresh_days(conn, symbol, days)
         if refresh_days <= 0:
-            return {"status": "skipped", "reason": reason, "counts": {"daily_bars": 0, "market_snapshots": 0}, "errors": []}
-        result = refresh_akshare_data(conn, [symbol], refresh_universe=False, days=refresh_days, allow_slow_fallback=False)
+            return {
+                "status": "ok" if quote else "partial",
+                "reason": reason,
+                "quote_refresh": plan,
+                "counts": counts,
+                "errors": errors,
+            }
+        result = refresh_akshare_data(
+            conn,
+            [symbol],
+            refresh_universe=False,
+            days=refresh_days,
+            allow_slow_fallback=True,
+        )
         result["requested_days"] = refresh_days
         result["reason"] = reason
+        result["quote_refresh"] = plan
+        market_counts = result.get("counts") or {}
+        counts["daily_bars"] += int(market_counts.get("daily_bars") or 0)
+        counts["market_snapshots"] += int(market_counts.get("market_snapshots") or 0)
+        result["counts"] = counts
+        result["errors"] = (result.get("errors") or []) + errors
         return result
 
 
@@ -475,6 +527,13 @@ def latest_sentiment_snapshot_freshness(
 
 
 def stock_detail_market_refresh_days(conn: sqlite3.Connection, symbol: str, requested_days: int) -> tuple[int, str]:
+    from .market_calendar import evaluate_market_quote_refresh, latest_db_trade_date
+
+    db_latest = latest_db_trade_date(conn, symbol)
+    plan = evaluate_market_quote_refresh(db_latest)
+    if not plan.get("needs_history_refresh"):
+        return 0, plan.get("reason") or "db covers expected trading day"
+
     row = conn.execute(
         """
         select max(trade_date) as latest_trade_date, max(fetched_at) as latest_fetch
@@ -485,9 +544,9 @@ def stock_detail_market_refresh_days(conn: sqlite3.Connection, symbol: str, requ
         (symbol,),
     ).fetchone()
     latest_trade_date = str(row["latest_trade_date"] or "") if row else ""
-    target_trade_date = latest_cn_trade_date()
+    target_trade_date = str(plan.get("expected_trade_date") or latest_baostock_daily_trade_date())
     if latest_trade_date and latest_trade_date >= target_trade_date:
-        return 0, f"daily_bars already covers latest trade date {target_trade_date}"
+        return 0, f"daily_bars already covers expected trade date {target_trade_date}"
     if latest_trade_date:
         try:
             overlap_start = datetime.fromisoformat(latest_trade_date).date() - timedelta(days=STOCK_DETAIL_MARKET_OVERLAP_DAYS)
@@ -1997,7 +2056,71 @@ def baostock_backfill_candidates(
 ) -> list[str]:
     symbols = baostock_daily_universe_symbols(conn)
     plan = baostock_daily_backfill_plan(conn, symbols, start_date=start_date, end_date=end_date, days=days)
-    return list(plan.keys())[:limit]
+    favorites = set(baostock_refresh_favorite_symbols(conn))
+    ranked = sorted(
+        (symbol for symbol in plan if not is_st_symbol(conn, symbol)),
+        key=lambda symbol: baostock_symbol_refresh_priority(conn, symbol, favorites),
+    )
+    return ranked[:limit]
+
+
+def baostock_refresh_favorite_symbols(conn: sqlite3.Connection) -> list[str]:
+    from .accounts import favorite_symbols_for_accounts
+    from .data_sources import DEFAULT_ACCOUNT_ID
+
+    return [str(symbol).upper() for symbol in favorite_symbols_for_accounts(conn, DEFAULT_ACCOUNT_ID)]
+
+
+def baostock_symbol_refresh_priority(conn: sqlite3.Connection, symbol: str, favorites: set[str]) -> tuple[int, str]:
+    if symbol in favorites:
+        tier = 0
+    elif is_index_like_symbol(conn, symbol):
+        tier = 2
+    else:
+        tier = 1
+    return tier, symbol
+
+
+def is_index_like_symbol(conn: sqlite3.Connection, symbol: str) -> bool:
+    row = conn.execute(
+        "select symbol, name, sector, industry from symbols where symbol = ?",
+        (symbol,),
+    ).fetchone()
+    if not row:
+        return False
+    name = str(row["name"] or "")
+    sector = str(row["sector"] or "")
+    industry = str(row["industry"] or "")
+    if "指数" in name or "指数" in sector or "指数" in industry:
+        return True
+    return str(row["symbol"] or "").upper() in {
+        "000001.SH",
+        "000002.SH",
+        "000003.SH",
+        "399001.SZ",
+        "399006.SZ",
+        "399300.SZ",
+    }
+
+
+def is_st_symbol(conn: sqlite3.Connection, symbol: str) -> bool:
+    row = conn.execute("select name from symbols where symbol = ?", (symbol,)).fetchone()
+    if row:
+        name = str(row["name"] or "").strip().upper()
+        if name.startswith("*ST") or name.startswith("ST"):
+            return True
+    st_row = conn.execute(
+        """
+        select is_st
+        from daily_bars
+        where symbol = ?
+          and provider = ?
+        order by trade_date desc
+        limit 1
+        """,
+        (symbol, BAOSTOCK_MARKET_PROVIDER),
+    ).fetchone()
+    return bool(st_row and int(st_row["is_st"] or 0) == 1)
 
 
 def baostock_backfill_missing_symbol_count(
@@ -3392,6 +3515,194 @@ def filing_source_priority(source: Any) -> int:
     if "mock" in text:
         return 0
     return 10
+
+
+def scan_warehouse_duplicates(conn: sqlite3.Connection) -> dict[str, Any]:
+    daily_bars_pk_dup = int(
+        scalar_value(
+            conn,
+            """
+            select count(*) from (
+              select 1 from daily_bars
+              group by symbol, trade_date, provider, adjust
+              having count(*) > 1
+            )
+            """,
+        )
+        or 0
+    )
+    daily_bars_shadowed_unadjust = int(
+        scalar_value(
+            conn,
+            """
+            select count(*) from daily_bars u
+            where coalesce(u.adjust, '') = ''
+              and exists (
+                select 1 from daily_bars q
+                where q.symbol = u.symbol
+                  and q.trade_date = u.trade_date
+                  and q.provider = u.provider
+                  and coalesce(q.adjust, '') = 'qfq'
+              )
+            """,
+        )
+        or 0
+    )
+    market_snapshot_dup_groups = int(
+        scalar_value(
+            conn,
+            """
+            select count(*) from (
+              select 1 from market_snapshots
+              group by symbol, provider, as_of
+              having count(*) > 1
+            )
+            """,
+        )
+        or 0
+    )
+    market_snapshot_extra_rows = int(
+        scalar_value(
+            conn,
+            """
+            select count(*) from market_snapshots m
+            where exists (
+              select 1 from market_snapshots m2
+              where m2.symbol = m.symbol
+                and m2.provider = m.provider
+                and m2.as_of = m.as_of
+                and (
+                  m2.fetched_at > m.fetched_at
+                  or (m2.fetched_at = m.fetched_at and m2.id > m.id)
+                )
+            )
+            """,
+        )
+        or 0
+    )
+    filing_title_dup_groups = int(
+        scalar_value(
+            conn,
+            """
+            select count(*) from (
+              select symbol, lower(trim(title)) as title_key
+              from filings_history
+              where trim(coalesce(title, '')) != ''
+              group by symbol, title_key
+              having count(*) > 1
+            )
+            """,
+        )
+        or 0
+    )
+    return {
+        "daily_bars_pk_duplicate_groups": daily_bars_pk_dup,
+        "daily_bars_shadowed_unadjust_rows": daily_bars_shadowed_unadjust,
+        "market_snapshot_duplicate_groups": market_snapshot_dup_groups,
+        "market_snapshot_extra_rows": market_snapshot_extra_rows,
+        "filing_title_duplicate_groups": filing_title_dup_groups,
+        "notes": {
+            "daily_bars_adjust_pairs": "同一 symbol+trade_date+provider 的 '' 与 qfq 两行是不同复权口径，不是 PK 重复；shadowed_unadjust 表示已有 qfq 时可删未复权行。",
+            "symbol_aliases": "同一 6 位代码映射 SH/SZ 双市场是别名歧义，不在本脚本自动删除。",
+        },
+    }
+
+
+def dedupe_market_snapshots(conn: sqlite3.Connection) -> dict[str, Any]:
+    before_groups = int(
+        scalar_value(
+            conn,
+            """
+            select count(*) from (
+              select 1 from market_snapshots
+              group by symbol, provider, as_of
+              having count(*) > 1
+            )
+            """,
+        )
+        or 0
+    )
+    deleted = conn.execute(
+        """
+        delete from market_snapshots
+        where exists (
+          select 1 from market_snapshots newer
+          where newer.symbol = market_snapshots.symbol
+            and newer.provider = market_snapshots.provider
+            and newer.as_of = market_snapshots.as_of
+            and (
+              newer.fetched_at > market_snapshots.fetched_at
+              or (
+                newer.fetched_at = market_snapshots.fetched_at
+                and newer.id > market_snapshots.id
+              )
+            )
+        )
+        """
+    ).rowcount
+    deleted = max(0, int(deleted or 0))
+    return {
+        "duplicate_groups_before": before_groups,
+        "rows_deleted": deleted,
+    }
+
+
+def dedupe_daily_bars_shadowed_unadjust(conn: sqlite3.Connection) -> dict[str, Any]:
+    before = int(
+        scalar_value(
+            conn,
+            """
+            select count(*) from daily_bars u
+            where coalesce(u.adjust, '') = ''
+              and exists (
+                select 1 from daily_bars q
+                where q.symbol = u.symbol
+                  and q.trade_date = u.trade_date
+                  and q.provider = u.provider
+                  and coalesce(q.adjust, '') = 'qfq'
+              )
+            """,
+        )
+        or 0
+    )
+    deleted = conn.execute(
+        """
+        delete from daily_bars
+        where coalesce(adjust, '') = ''
+          and exists (
+            select 1 from daily_bars q
+            where q.symbol = daily_bars.symbol
+              and q.trade_date = daily_bars.trade_date
+              and q.provider = daily_bars.provider
+              and coalesce(q.adjust, '') = 'qfq'
+          )
+        """
+    ).rowcount
+    deleted = max(0, int(deleted or 0))
+    return {
+        "shadowed_unadjust_rows_before": before,
+        "rows_deleted": deleted,
+    }
+
+
+def dedupe_warehouse(
+    conn: sqlite3.Connection,
+    *,
+    symbols: list[str] | None = None,
+    filings: bool = True,
+    market_snapshots: bool = True,
+    daily_bars: bool = True,
+) -> dict[str, Any]:
+    before = scan_warehouse_duplicates(conn)
+    result: dict[str, Any] = {"before": before, "steps": {}}
+    if filings:
+        result["steps"]["filings_by_title"] = dedupe_filing_history_by_title(conn, symbols)
+    if market_snapshots:
+        result["steps"]["market_snapshots"] = dedupe_market_snapshots(conn)
+    if daily_bars:
+        result["steps"]["daily_bars_shadowed_unadjust"] = dedupe_daily_bars_shadowed_unadjust(conn)
+    result["after"] = scan_warehouse_duplicates(conn)
+    return result
 
 
 def upsert_akshare_universe(conn: sqlite3.Connection, rows: list[dict[str, Any]]) -> int:

@@ -5431,3 +5431,4599 @@
     }
   ]
 }
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T16:33:27",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 150,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "running",
+        "started_at": "2026-06-13T16:18:22",
+        "finished_at": null,
+        "remaining_candidates": 3901,
+        "last_progress_at": "2026-06-13T16:32:26"
+      },
+      "running_runs": [
+        {
+          "id": 150,
+          "provider": "baostock",
+          "scope": "a-share-history-background",
+          "status": "running",
+          "started_at": "2026-06-13T16:18:22",
+          "finished_at": null,
+          "remaining_candidates": 3901,
+          "last_progress_at": "2026-06-13T16:32:26"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "start",
+      "reason": "latest-run-interrupted-remaining-1415",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 57754,
+        "script": "scripts/run_baostock_financial_backfill.py",
+        "args": [
+          "--quarters",
+          "4",
+          "--batch-size",
+          "3",
+          "--max-batches",
+          "4",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 147,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "interrupted",
+        "started_at": "2026-06-13T16:03:19",
+        "finished_at": "2026-06-13T16:09:53",
+        "remaining_candidates": 1415,
+        "last_progress_at": "2026-06-13T16:09:53"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 145,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T15:48:16",
+        "finished_at": "2026-06-13T15:48:32",
+        "remaining_candidates": 7406,
+        "last_progress_at": "2026-06-13T15:48:32"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T16:48:29",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 150,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "running",
+        "started_at": "2026-06-13T16:18:22",
+        "finished_at": null,
+        "remaining_candidates": 3901,
+        "last_progress_at": "2026-06-13T16:41:52"
+      },
+      "running_runs": [
+        {
+          "id": 150,
+          "provider": "baostock",
+          "scope": "a-share-history-background",
+          "status": "running",
+          "started_at": "2026-06-13T16:18:22",
+          "finished_at": null,
+          "remaining_candidates": 3901,
+          "last_progress_at": "2026-06-13T16:41:52"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 151,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "running",
+        "started_at": "2026-06-13T16:33:29",
+        "finished_at": null,
+        "remaining_candidates": 1412,
+        "last_progress_at": "2026-06-13T16:46:24"
+      },
+      "running_runs": [
+        {
+          "id": 151,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background",
+          "status": "running",
+          "started_at": "2026-06-13T16:33:29",
+          "finished_at": null,
+          "remaining_candidates": 1412,
+          "last_progress_at": "2026-06-13T16:46:24"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7406",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 61778,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 145,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T15:48:16",
+        "finished_at": "2026-06-13T15:48:32",
+        "remaining_candidates": 7406,
+        "last_progress_at": "2026-06-13T15:48:32"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T17:03:32",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3901",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 70479,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 150,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T16:18:22",
+        "finished_at": "2026-06-13T16:53:30",
+        "remaining_candidates": 3901,
+        "last_progress_at": "2026-06-13T16:53:30"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 151,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T16:33:29",
+        "finished_at": "2026-06-13T16:53:02",
+        "remaining_candidates": 1412,
+        "last_progress_at": "2026-06-13T16:53:02"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 160,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T16:48:31",
+        "finished_at": "2026-06-13T16:48:48",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T16:48:48"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T17:18:36",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 162,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "running",
+        "started_at": "2026-06-13T17:03:34",
+        "finished_at": null,
+        "remaining_candidates": 3901,
+        "last_progress_at": "2026-06-13T17:15:54"
+      },
+      "running_runs": [
+        {
+          "id": 162,
+          "provider": "baostock",
+          "scope": "a-share-history-background",
+          "status": "running",
+          "started_at": "2026-06-13T17:03:34",
+          "finished_at": null,
+          "remaining_candidates": 3901,
+          "last_progress_at": "2026-06-13T17:15:54"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-1412",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 82877,
+        "script": "scripts/run_baostock_financial_backfill.py",
+        "args": [
+          "--quarters",
+          "4",
+          "--batch-size",
+          "3",
+          "--max-batches",
+          "4",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 151,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T16:33:29",
+        "finished_at": "2026-06-13T16:53:02",
+        "remaining_candidates": 1412,
+        "last_progress_at": "2026-06-13T16:53:02"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 160,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T16:48:31",
+        "finished_at": "2026-06-13T16:48:48",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T16:48:48"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T17:33:39",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 162,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T17:03:34",
+        "finished_at": "2026-06-13T17:30:53",
+        "remaining_candidates": 3901,
+        "last_progress_at": "2026-06-13T17:30:53"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 163,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "running",
+        "started_at": "2026-06-13T17:18:39",
+        "finished_at": null,
+        "remaining_candidates": 1409,
+        "last_progress_at": "2026-06-13T17:31:15"
+      },
+      "running_runs": [
+        {
+          "id": 163,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background",
+          "status": "running",
+          "started_at": "2026-06-13T17:18:39",
+          "finished_at": null,
+          "remaining_candidates": 1409,
+          "last_progress_at": "2026-06-13T17:31:15"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7403",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 92795,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 160,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T16:48:31",
+        "finished_at": "2026-06-13T16:48:48",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T16:48:48"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T17:48:45",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3901",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 6786,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 162,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T17:03:34",
+        "finished_at": "2026-06-13T17:30:53",
+        "remaining_candidates": 3901,
+        "last_progress_at": "2026-06-13T17:30:53"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 163,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T17:18:39",
+        "finished_at": "2026-06-13T17:42:01",
+        "remaining_candidates": 1403,
+        "last_progress_at": "2026-06-13T17:42:01"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 164,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T17:33:41",
+        "finished_at": "2026-06-13T17:33:58",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T17:33:58"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T18:03:48",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 169,
+        "provider": "baostock",
+        "scope": "a-share-history-background:universe",
+        "status": "running",
+        "started_at": "2026-06-13T18:00:07",
+        "finished_at": null,
+        "remaining_candidates": 3891,
+        "last_progress_at": "2026-06-13T18:03:35"
+      },
+      "running_runs": [
+        {
+          "id": 169,
+          "provider": "baostock",
+          "scope": "a-share-history-background:universe",
+          "status": "running",
+          "started_at": "2026-06-13T18:00:07",
+          "finished_at": null,
+          "remaining_candidates": 3891,
+          "last_progress_at": "2026-06-13T18:03:35"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-1403",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 20496,
+        "script": "scripts/run_baostock_financial_backfill.py",
+        "args": [
+          "--quarters",
+          "4",
+          "--batch-size",
+          "3",
+          "--max-batches",
+          "4",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 163,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T17:18:39",
+        "finished_at": "2026-06-13T17:42:01",
+        "remaining_candidates": 1403,
+        "last_progress_at": "2026-06-13T17:42:01"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 164,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T17:33:41",
+        "finished_at": "2026-06-13T17:33:58",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T17:33:58"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T18:18:50",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 169,
+        "provider": "baostock",
+        "scope": "a-share-history-background:universe",
+        "status": "running",
+        "started_at": "2026-06-13T18:00:07",
+        "finished_at": null,
+        "remaining_candidates": 3776,
+        "last_progress_at": "2026-06-13T18:16:43"
+      },
+      "running_runs": [
+        {
+          "id": 169,
+          "provider": "baostock",
+          "scope": "a-share-history-background:universe",
+          "status": "running",
+          "started_at": "2026-06-13T18:00:07",
+          "finished_at": null,
+          "remaining_candidates": 3776,
+          "last_progress_at": "2026-06-13T18:16:43"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 170,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "running",
+        "started_at": "2026-06-13T18:03:50",
+        "finished_at": null,
+        "remaining_candidates": 1400,
+        "last_progress_at": "2026-06-13T18:17:20"
+      },
+      "running_runs": [
+        {
+          "id": 170,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background",
+          "status": "running",
+          "started_at": "2026-06-13T18:03:50",
+          "finished_at": null,
+          "remaining_candidates": 1400,
+          "last_progress_at": "2026-06-13T18:17:20"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7403",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 36647,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 164,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T17:33:41",
+        "finished_at": "2026-06-13T17:33:58",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T17:33:58"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T18:33:52",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 169,
+        "provider": "baostock",
+        "scope": "a-share-history-background:universe",
+        "status": "running",
+        "started_at": "2026-06-13T18:00:07",
+        "finished_at": null,
+        "remaining_candidates": 3638,
+        "last_progress_at": "2026-06-13T18:32:01"
+      },
+      "running_runs": [
+        {
+          "id": 169,
+          "provider": "baostock",
+          "scope": "a-share-history-background:universe",
+          "status": "running",
+          "started_at": "2026-06-13T18:00:07",
+          "finished_at": null,
+          "remaining_candidates": 3638,
+          "last_progress_at": "2026-06-13T18:32:01"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 170,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T18:03:50",
+        "finished_at": "2026-06-13T18:29:07",
+        "remaining_candidates": 1394,
+        "last_progress_at": "2026-06-13T18:29:07"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7403",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 50255,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 171,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T18:18:52",
+        "finished_at": "2026-06-13T18:19:21",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T18:19:21"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T19:04:48",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 169,
+        "provider": "baostock",
+        "scope": "a-share-history-background:universe",
+        "status": "running",
+        "started_at": "2026-06-13T18:00:07",
+        "finished_at": null,
+        "remaining_candidates": 3523,
+        "last_progress_at": "2026-06-13T18:43:40"
+      },
+      "running_runs": [
+        {
+          "id": 169,
+          "provider": "baostock",
+          "scope": "a-share-history-background:universe",
+          "status": "running",
+          "started_at": "2026-06-13T18:00:07",
+          "finished_at": null,
+          "remaining_candidates": 3523,
+          "last_progress_at": "2026-06-13T18:43:40"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-1394",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 73132,
+        "script": "scripts/run_baostock_financial_backfill.py",
+        "args": [
+          "--quarters",
+          "4",
+          "--batch-size",
+          "3",
+          "--max-batches",
+          "4",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 170,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T18:03:50",
+        "finished_at": "2026-06-13T18:29:07",
+        "remaining_candidates": 1394,
+        "last_progress_at": "2026-06-13T18:29:07"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 172,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T18:33:54",
+        "finished_at": "2026-06-13T18:34:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T18:34:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T19:19:51",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 169,
+        "provider": "baostock",
+        "scope": "a-share-history-background:universe",
+        "status": "running",
+        "started_at": "2026-06-13T18:00:07",
+        "finished_at": null,
+        "remaining_candidates": 3523,
+        "last_progress_at": "2026-06-13T18:43:40"
+      },
+      "running_runs": [
+        {
+          "id": 169,
+          "provider": "baostock",
+          "scope": "a-share-history-background:universe",
+          "status": "running",
+          "started_at": "2026-06-13T18:00:07",
+          "finished_at": null,
+          "remaining_candidates": 3523,
+          "last_progress_at": "2026-06-13T18:43:40"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 182,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "running",
+        "started_at": "2026-06-13T19:04:50",
+        "finished_at": null,
+        "remaining_candidates": 1388,
+        "last_progress_at": "2026-06-13T19:16:25"
+      },
+      "running_runs": [
+        {
+          "id": 182,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background",
+          "status": "running",
+          "started_at": "2026-06-13T19:04:50",
+          "finished_at": null,
+          "remaining_candidates": 1388,
+          "last_progress_at": "2026-06-13T19:16:25"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7403",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 81500,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 172,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T18:33:54",
+        "finished_at": "2026-06-13T18:34:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T18:34:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T19:34:54",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [
+        169
+      ],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 169,
+        "provider": "baostock",
+        "scope": "a-share-history-background:universe",
+        "status": "interrupted",
+        "started_at": "2026-06-13T18:00:07",
+        "finished_at": "2026-06-13T19:34:54",
+        "remaining_candidates": 3523,
+        "last_progress_at": "2026-06-13T19:34:54"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 182,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T19:04:50",
+        "finished_at": "2026-06-13T19:28:51",
+        "remaining_candidates": 1385,
+        "last_progress_at": "2026-06-13T19:28:51"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7403",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 90219,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 183,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T19:19:53",
+        "finished_at": "2026-06-13T19:20:14",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T19:20:14"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T19:50:43",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-interrupted-remaining-3523",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 5733,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 169,
+        "provider": "baostock",
+        "scope": "a-share-history-background:universe",
+        "status": "interrupted",
+        "started_at": "2026-06-13T18:00:07",
+        "finished_at": "2026-06-13T19:34:54",
+        "remaining_candidates": 3523,
+        "last_progress_at": "2026-06-13T19:34:54"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 182,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T19:04:50",
+        "finished_at": "2026-06-13T19:28:51",
+        "remaining_candidates": 1385,
+        "last_progress_at": "2026-06-13T19:28:51"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 184,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T19:34:57",
+        "finished_at": "2026-06-13T19:35:13",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T19:35:13"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T20:05:49",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 195,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "running",
+        "started_at": "2026-06-13T19:50:45",
+        "finished_at": null,
+        "remaining_candidates": 3523,
+        "last_progress_at": "2026-06-13T19:50:45"
+      },
+      "running_runs": [
+        {
+          "id": 195,
+          "provider": "baostock",
+          "scope": "a-share-history-background",
+          "status": "running",
+          "started_at": "2026-06-13T19:50:45",
+          "finished_at": null,
+          "remaining_candidates": 3523,
+          "last_progress_at": "2026-06-13T19:50:45"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-1385",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 18876,
+        "script": "scripts/run_baostock_financial_backfill.py",
+        "args": [
+          "--quarters",
+          "4",
+          "--batch-size",
+          "3",
+          "--max-batches",
+          "4",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 182,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T19:04:50",
+        "finished_at": "2026-06-13T19:28:51",
+        "remaining_candidates": 1385,
+        "last_progress_at": "2026-06-13T19:28:51"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 184,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T19:34:57",
+        "finished_at": "2026-06-13T19:35:13",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T19:35:13"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T20:20:53",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 195,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "running",
+        "started_at": "2026-06-13T19:50:45",
+        "finished_at": null,
+        "remaining_candidates": 3523,
+        "last_progress_at": "2026-06-13T19:50:45"
+      },
+      "running_runs": [
+        {
+          "id": 195,
+          "provider": "baostock",
+          "scope": "a-share-history-background",
+          "status": "running",
+          "started_at": "2026-06-13T19:50:45",
+          "finished_at": null,
+          "remaining_candidates": 3523,
+          "last_progress_at": "2026-06-13T19:50:45"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 196,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "running",
+        "started_at": "2026-06-13T20:05:52",
+        "finished_at": null,
+        "remaining_candidates": 1379,
+        "last_progress_at": "2026-06-13T20:15:14"
+      },
+      "running_runs": [
+        {
+          "id": 196,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background",
+          "status": "running",
+          "started_at": "2026-06-13T20:05:52",
+          "finished_at": null,
+          "remaining_candidates": 1379,
+          "last_progress_at": "2026-06-13T20:15:14"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7403",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 27479,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 184,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-13T19:34:57",
+        "finished_at": "2026-06-13T19:35:13",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T19:35:13"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T20:35:59",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [
+        195
+      ],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 195,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "interrupted",
+        "started_at": "2026-06-13T19:50:45",
+        "finished_at": "2026-06-13T20:35:59",
+        "remaining_candidates": 3523,
+        "last_progress_at": "2026-06-13T20:35:59"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 196,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T20:05:52",
+        "finished_at": "2026-06-13T20:25:16",
+        "remaining_candidates": 1373,
+        "last_progress_at": "2026-06-13T20:25:16"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T20:51:02",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-interrupted-remaining-3523",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 65220,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 195,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "interrupted",
+        "started_at": "2026-06-13T19:50:45",
+        "finished_at": "2026-06-13T20:35:59",
+        "remaining_candidates": 3523,
+        "last_progress_at": "2026-06-13T20:35:59"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 196,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T20:05:52",
+        "finished_at": "2026-06-13T20:25:16",
+        "remaining_candidates": 1373,
+        "last_progress_at": "2026-06-13T20:25:16"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T21:06:09",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 225,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "failed",
+        "started_at": "2026-06-13T20:51:05",
+        "finished_at": "2026-06-13T20:56:47",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T20:56:47"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-1373",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 78806,
+        "script": "scripts/run_baostock_financial_backfill.py",
+        "args": [
+          "--quarters",
+          "4",
+          "--batch-size",
+          "3",
+          "--max-batches",
+          "4",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-financial-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 196,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T20:05:52",
+        "finished_at": "2026-06-13T20:25:16",
+        "remaining_candidates": 1373,
+        "last_progress_at": "2026-06-13T20:25:16"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T21:21:14",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-failed-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 87762,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 225,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "failed",
+        "started_at": "2026-06-13T20:51:05",
+        "finished_at": "2026-06-13T20:56:47",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T20:56:47"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T21:36:18",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 97733,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 227,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:21:20",
+        "finished_at": "2026-06-13T21:23:07",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T21:23:07"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T21:51:21",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 6961,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 241,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:36:20",
+        "finished_at": "2026-06-13T21:38:58",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T21:38:58"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T22:06:24",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 15698,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 242,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:51:23",
+        "finished_at": "2026-06-13T21:53:45",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T21:53:45"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T22:21:28",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 28297,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 256,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T22:06:26",
+        "finished_at": "2026-06-13T22:09:13",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T22:09:13"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T22:36:36",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-failed-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 46361,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 257,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "failed",
+        "started_at": "2026-06-13T22:21:29",
+        "finished_at": "2026-06-13T22:25:07",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T22:25:07"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T22:51:42",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-failed-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 56067,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 272,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "failed",
+        "started_at": "2026-06-13T22:36:41",
+        "finished_at": "2026-06-13T22:39:53",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T22:39:53"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T23:06:48",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 64995,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 273,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T22:51:49",
+        "finished_at": "2026-06-13T22:56:13",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T22:56:13"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T23:21:54",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-failed-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 74704,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 274,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "failed",
+        "started_at": "2026-06-13T23:06:53",
+        "finished_at": "2026-06-13T23:10:54",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T23:10:54"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T23:37:00",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 93001,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 289,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T23:21:57",
+        "finished_at": "2026-06-13T23:26:49",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T23:26:49"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-13T23:52:11",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 11047,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 290,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T23:37:05",
+        "finished_at": "2026-06-13T23:41:41",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T23:41:41"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T00:07:16",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 37485,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 320,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-13T23:52:18",
+        "finished_at": "2026-06-13T23:57:12",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-13T23:57:12"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T00:22:20",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 49841,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 321,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T00:07:21",
+        "finished_at": "2026-06-14T00:12:03",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T00:12:03"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T00:37:26",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 64931,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 323,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T00:22:23",
+        "finished_at": "2026-06-14T00:26:48",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T00:26:48"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T00:52:29",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 83764,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 324,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T00:37:33",
+        "finished_at": "2026-06-14T00:41:37",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T00:41:37"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T01:07:36",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 2982,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 326,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T00:52:31",
+        "finished_at": "2026-06-14T00:55:06",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T00:55:06"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 226,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background",
+        "status": "partial",
+        "started_at": "2026-06-13T21:06:15",
+        "finished_at": "2026-06-13T21:13:17",
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-13T21:13:17"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T03:00:15",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 13320,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 327,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T01:07:44",
+        "finished_at": "2026-06-14T01:12:40",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T01:12:40"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1361,
+        "last_progress_at": "2026-06-14T02:41:01"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1361,
+          "last_progress_at": "2026-06-14T02:41:01"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T07:09:00",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 21962,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 330,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T03:00:17",
+        "finished_at": "2026-06-14T05:27:03",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T05:27:03"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1349,
+        "last_progress_at": "2026-06-14T06:51:35"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1349,
+          "last_progress_at": "2026-06-14T06:51:35"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T10:30:49",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 30930,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 331,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T07:09:06",
+        "finished_at": "2026-06-14T08:51:12",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T08:51:12"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1337,
+        "last_progress_at": "2026-06-14T10:02:01"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1337,
+          "last_progress_at": "2026-06-14T10:02:01"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T11:52:47",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 40088,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 346,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T10:30:54",
+        "finished_at": "2026-06-14T11:15:07",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T11:15:07"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1328,
+        "last_progress_at": "2026-06-14T11:34:27"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1328,
+          "last_progress_at": "2026-06-14T11:34:27"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T12:30:15",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 50233,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 347,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T11:52:49",
+        "finished_at": "2026-06-14T12:15:32",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T12:15:32"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1313,
+        "last_progress_at": "2026-06-14T12:29:58"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1313,
+          "last_progress_at": "2026-06-14T12:29:58"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T12:46:18",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 348,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T12:30:19",
+        "finished_at": "2026-06-14T12:38:46",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T12:38:46"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1304,
+        "last_progress_at": "2026-06-14T12:44:00"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1304,
+          "last_progress_at": "2026-06-14T12:44:00"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7403",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 60609,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 211,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all:universe",
+        "status": "partial",
+        "started_at": "2026-06-13T20:30:11",
+        "finished_at": "2026-06-13T20:30:54",
+        "remaining_candidates": 7403,
+        "last_progress_at": "2026-06-13T20:30:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T13:01:22",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 69431,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 348,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T12:30:19",
+        "finished_at": "2026-06-14T12:38:46",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T12:38:46"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1289,
+        "last_progress_at": "2026-06-14T13:00:15"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1289,
+          "last_progress_at": "2026-06-14T13:00:15"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 363,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T12:46:20",
+        "finished_at": "2026-06-14T12:47:23",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T12:47:23"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T13:16:25",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 364,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T13:01:24",
+        "finished_at": "2026-06-14T13:08:37",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T13:08:37"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1277,
+        "last_progress_at": "2026-06-14T13:15:31"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1277,
+          "last_progress_at": "2026-06-14T13:15:31"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7371",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 78730,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 363,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T12:46:20",
+        "finished_at": "2026-06-14T12:47:23",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T12:47:23"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T13:31:28",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 88242,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 364,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T13:01:24",
+        "finished_at": "2026-06-14T13:08:37",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T13:08:37"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1262,
+        "last_progress_at": "2026-06-14T13:30:01"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1262,
+          "last_progress_at": "2026-06-14T13:30:01"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 379,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T13:16:33",
+        "finished_at": "2026-06-14T13:17:00",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T13:17:00"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T13:46:31",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 380,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T13:31:30",
+        "finished_at": "2026-06-14T13:37:37",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T13:37:37"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1247,
+        "last_progress_at": "2026-06-14T13:45:19"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1247,
+          "last_progress_at": "2026-06-14T13:45:19"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7371",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 96780,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 379,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T13:16:33",
+        "finished_at": "2026-06-14T13:17:00",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T13:17:00"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T14:01:34",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 6093,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 380,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T13:31:30",
+        "finished_at": "2026-06-14T13:37:37",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T13:37:37"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1232,
+        "last_progress_at": "2026-06-14T13:58:19"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1232,
+          "last_progress_at": "2026-06-14T13:58:19"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 381,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T13:46:33",
+        "finished_at": "2026-06-14T13:46:48",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T13:46:48"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T14:16:36",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 396,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T14:01:35",
+        "finished_at": "2026-06-14T14:08:56",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T14:08:56"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1217,
+        "last_progress_at": "2026-06-14T14:16:02"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1217,
+          "last_progress_at": "2026-06-14T14:16:02"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7371",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 14691,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 381,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T13:46:33",
+        "finished_at": "2026-06-14T13:46:48",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T13:46:48"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T14:31:39",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 23844,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 396,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T14:01:35",
+        "finished_at": "2026-06-14T14:08:56",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T14:08:56"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1205,
+        "last_progress_at": "2026-06-14T14:31:08"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1205,
+          "last_progress_at": "2026-06-14T14:31:08"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 397,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T14:16:38",
+        "finished_at": "2026-06-14T14:16:54",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T14:16:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T14:46:41",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 412,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T14:31:41",
+        "finished_at": "2026-06-14T14:36:56",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T14:36:56"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "db-run-still-running",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "running",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": null,
+        "remaining_candidates": 1196,
+        "last_progress_at": "2026-06-14T14:42:54"
+      },
+      "running_runs": [
+        {
+          "id": 328,
+          "provider": "baostock",
+          "scope": "a-share-quarterly-financials-background:universe",
+          "status": "running",
+          "started_at": "2026-06-14T02:40:46",
+          "finished_at": null,
+          "remaining_candidates": 1196,
+          "last_progress_at": "2026-06-14T14:42:54"
+        }
+      ],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-7371",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 32201,
+        "script": "scripts/run_a_share_filings_backfill.py",
+        "args": [
+          "--source",
+          "all",
+          "--days",
+          "180",
+          "--batch-size",
+          "10",
+          "--max-batches",
+          "6",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/a-share-filings-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 397,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T14:16:38",
+        "finished_at": "2026-06-14T14:16:54",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T14:16:54"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T15:02:22",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 48081,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 412,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T14:31:41",
+        "finished_at": "2026-06-14T14:36:56",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T14:36:56"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "none",
+      "reason": "restart-cooldown",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "failed",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": "2026-06-14T15:02:06",
+        "remaining_candidates": 1184,
+        "last_progress_at": "2026-06-14T15:02:06"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 413,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T14:46:43",
+        "finished_at": "2026-06-14T14:46:59",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T14:46:59"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T15:17:29",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-partial-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 70763,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 428,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "partial",
+        "started_at": "2026-06-14T15:02:24",
+        "finished_at": "2026-06-14T15:05:57",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T15:05:57"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "failed",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": "2026-06-14T15:02:06",
+        "remaining_candidates": 1184,
+        "last_progress_at": "2026-06-14T15:02:06"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 413,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T14:46:43",
+        "finished_at": "2026-06-14T14:46:59",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T14:46:59"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T15:32:45",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-failed-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 94367,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 429,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "failed",
+        "started_at": "2026-06-14T15:17:34",
+        "finished_at": "2026-06-14T15:18:44",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T15:18:44"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "failed",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": "2026-06-14T15:02:06",
+        "remaining_candidates": 1184,
+        "last_progress_at": "2026-06-14T15:02:06"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 413,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T14:46:43",
+        "finished_at": "2026-06-14T14:46:59",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T14:46:59"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}
+{
+  "mode": "ingestion-watchdog",
+  "dry_run": false,
+  "checked_at": "2026-06-14T15:47:52",
+  "jobs": [
+    {
+      "name": "baostock-daily",
+      "action": "start",
+      "reason": "latest-run-failed-remaining-3519",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": {
+        "pid": 6831,
+        "script": "scripts/run_baostock_backfill.py",
+        "args": [
+          "--days",
+          "260",
+          "--batch-size",
+          "30",
+          "--max-batches",
+          "8",
+          "--no-universe-refresh",
+          "--json"
+        ],
+        "stdout_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.log",
+        "stderr_path": "/Users/wangwenhui/Documents/keiko_stock/logs/baostock-nightly.err.log"
+      },
+      "latest_run": {
+        "id": 448,
+        "provider": "baostock",
+        "scope": "a-share-history-background",
+        "status": "failed",
+        "started_at": "2026-06-14T15:32:51",
+        "finished_at": "2026-06-14T15:34:13",
+        "remaining_candidates": 3519,
+        "last_progress_at": "2026-06-14T15:34:13"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "baostock-financial",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 328,
+        "provider": "baostock",
+        "scope": "a-share-quarterly-financials-background:universe",
+        "status": "failed",
+        "started_at": "2026-06-14T02:40:46",
+        "finished_at": "2026-06-14T15:02:06",
+        "remaining_candidates": 1184,
+        "last_progress_at": "2026-06-14T15:02:06"
+      },
+      "running_runs": [],
+      "processes": []
+    },
+    {
+      "name": "a-share-filings",
+      "action": "defer",
+      "reason": "watchdog-started-another-job-this-run",
+      "stale_run_ids": [],
+      "killed_processes": [],
+      "started": null,
+      "latest_run": {
+        "id": 413,
+        "provider": "cninfo_sse_szse",
+        "scope": "a-share-filings-background:all",
+        "status": "partial",
+        "started_at": "2026-06-14T14:46:43",
+        "finished_at": "2026-06-14T14:46:59",
+        "remaining_candidates": 7371,
+        "last_progress_at": "2026-06-14T14:46:59"
+      },
+      "running_runs": [],
+      "processes": []
+    }
+  ]
+}

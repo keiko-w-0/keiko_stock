@@ -2998,3 +2998,2816 @@ logout success!
     "latest_daily_bar": "2026-06-12"
   }
 }
+{
+  "id": 160,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-13T16:48:31",
+  "finished_at": "2026-06-13T16:48:48",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-15",
+    "target_end": "2026-06-13",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 10948,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7403,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-13T16:48:48",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002468.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002469.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002470.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002471.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002472.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002474.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002475.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002476.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002478.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002479.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002480.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002481.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002482.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002483.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002484.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002485.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002486.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002487.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002488.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002489.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002490.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002491.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002492.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002493.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002494.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002495.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002496.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002497.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002498.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002500.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1127297,
+    "financial_metrics": 23535,
+    "filings": 10948,
+    "company_reports": 274,
+    "community_posts": 692,
+    "sentiment_evidence": 1137,
+    "sentiment_snapshots": 29,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 164,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-13T17:33:41",
+  "finished_at": "2026-06-13T17:33:58",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-15",
+    "target_end": "2026-06-13",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 10948,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7403,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-13T17:33:58",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002501.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002506.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002507.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002508.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002510.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002511.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002512.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002513.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002514.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002515.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002516.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002517.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002518.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002519.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002520.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002521.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002522.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002523.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002524.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002526.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002527.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002528.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002529.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002530.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002531.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002532.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002533.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002534.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002535.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002536.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1128447,
+    "financial_metrics": 23547,
+    "filings": 10948,
+    "company_reports": 274,
+    "community_posts": 724,
+    "sentiment_evidence": 1175,
+    "sentiment_snapshots": 31,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 171,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-13T18:18:52",
+  "finished_at": "2026-06-13T18:19:21",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-15",
+    "target_end": "2026-06-13",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 10948,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7403,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-13T18:19:21",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002537.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002538.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002539.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002540.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002541.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002542.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002543.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002544.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002545.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002546.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002547.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002548.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002549.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002550.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002551.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002552.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002553.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002554.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002555.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002556.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002557.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002558.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002559.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002560.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002561.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002562.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002563.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002564.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002565.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002566.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1129378,
+    "financial_metrics": 23583,
+    "filings": 10948,
+    "company_reports": 275,
+    "community_posts": 1266,
+    "sentiment_evidence": 1271,
+    "sentiment_snapshots": 34,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 172,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-13T18:33:54",
+  "finished_at": "2026-06-13T18:34:54",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-15",
+    "target_end": "2026-06-13",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 10948,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7403,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-13T18:34:54",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002567.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002568.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002569.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002570.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002571.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002572.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002573.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002574.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002575.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002576.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002577.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002578.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002579.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002580.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002581.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002582.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002583.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002584.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002585.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002586.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002587.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002588.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002589.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002590.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002591.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002592.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002593.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002594.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002595.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002596.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130320,
+    "financial_metrics": 23607,
+    "filings": 10948,
+    "company_reports": 275,
+    "community_posts": 1269,
+    "sentiment_evidence": 1323,
+    "sentiment_snapshots": 36,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 183,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-13T19:19:53",
+  "finished_at": "2026-06-13T19:20:14",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-15",
+    "target_end": "2026-06-13",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 10948,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7403,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-13T19:20:14",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002597.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002598.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002599.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002600.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002601.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002602.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002603.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002605.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002606.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002607.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002608.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002609.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002611.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002612.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002613.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002614.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002615.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002616.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002617.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002620.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002622.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002623.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002624.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002625.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002626.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002627.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002628.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002629.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002630.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002631.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130895,
+    "financial_metrics": 23631,
+    "filings": 10948,
+    "company_reports": 276,
+    "community_posts": 1712,
+    "sentiment_evidence": 1819,
+    "sentiment_snapshots": 44,
+    "community_sentiment_daily": 10,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 184,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-13T19:34:57",
+  "finished_at": "2026-06-13T19:35:13",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-15",
+    "target_end": "2026-06-13",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 10948,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7403,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-13T19:35:13",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002632.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002633.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002634.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002635.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002636.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002637.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002638.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002639.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002640.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002641.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002642.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002643.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002644.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002645.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002646.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002647.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002648.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002649.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002650.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002651.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002652.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002653.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002654.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002655.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002656.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002657.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002658.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002659.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002660.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002661.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130895,
+    "financial_metrics": 23643,
+    "filings": 10948,
+    "company_reports": 276,
+    "community_posts": 1712,
+    "sentiment_evidence": 1819,
+    "sentiment_snapshots": 44,
+    "community_sentiment_daily": 10,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 210,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-13T20:20:55",
+  "finished_at": "2026-06-13T20:21:10",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-15",
+    "target_end": "2026-06-13",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 10992,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7403,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-13T20:21:10",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002662.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002663.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002664.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002666.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002667.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002668.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002669.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002670.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002671.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002672.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002673.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002674.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002675.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002676.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002677.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002678.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002679.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002681.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002682.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002683.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002685.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002686.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002687.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002688.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002689.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002690.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002691.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002692.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002693.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002694.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130895,
+    "financial_metrics": 23679,
+    "filings": 10992,
+    "company_reports": 276,
+    "community_posts": 2440,
+    "sentiment_evidence": 2091,
+    "sentiment_snapshots": 51,
+    "community_sentiment_daily": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+{
+  "id": 211,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all:universe",
+  "status": "partial",
+  "started_at": "2026-06-13T20:30:11",
+  "finished_at": "2026-06-13T20:30:54",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 7273,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 60,
+    "batches": 3,
+    "batch_size": 20,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-15",
+    "target_end": "2026-06-13",
+    "requested_symbol_count": 0,
+    "remaining_candidates": 7403,
+    "last_progress_at": "2026-06-13T20:30:54",
+    "filing_dedupe_checked_rows": 10992,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 20,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002695.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002696.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002697.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002698.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002700.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002701.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002702.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002703.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002705.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002706.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002707.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002708.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002709.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002712.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002713.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002714.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002715.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002716.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002717.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002718.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002719.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002721.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002722.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002723.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002724.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002725.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002726.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002727.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002728.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002729.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002730.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002731.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002732.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002733.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002734.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002735.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002736.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002737.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002738.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002739.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002741.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002742.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002743.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002745.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002746.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002747.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002748.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002749.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002752.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002753.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002755.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002756.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002757.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002758.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002759.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002760.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002761.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002762.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002763.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002765.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130895,
+    "financial_metrics": 23691,
+    "filings": 10992,
+    "company_reports": 276,
+    "community_posts": 2440,
+    "sentiment_evidence": 2091,
+    "sentiment_snapshots": 51,
+    "community_sentiment_daily": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 363,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-14T12:46:20",
+  "finished_at": "2026-06-14T12:47:23",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 29,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "002766.SZ",
+    "002767.SZ",
+    "002768.SZ",
+    "002769.SZ",
+    "002771.SZ",
+    "002772.SZ",
+    "002773.SZ",
+    "002774.SZ",
+    "002775.SZ",
+    "002777.SZ",
+    "002778.SZ",
+    "002779.SZ",
+    "002780.SZ",
+    "002782.SZ",
+    "002783.SZ",
+    "002785.SZ",
+    "002786.SZ",
+    "002787.SZ",
+    "002788.SZ",
+    "002789.SZ",
+    "002790.SZ",
+    "002791.SZ",
+    "002792.SZ",
+    "002793.SZ",
+    "002795.SZ",
+    "002796.SZ",
+    "002797.SZ",
+    "002798.SZ",
+    "002799.SZ"
+  ],
+  "counts": {
+    "symbols": 0,
+    "filings": 1740,
+    "symbols_refreshed": 29,
+    "no_data_symbols": 0,
+    "failed_symbols": 31,
+    "batches": 6,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-16",
+    "target_end": "2026-06-14",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 14483,
+    "filing_duplicate_groups": 24,
+    "duplicate_filings_deleted": 35,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7371,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-14T12:47:23",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002800.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002801.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002802.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002803.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002805.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002806.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002807.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002808.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002809.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002810.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002811.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002812.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002813.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002815.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002816.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002817.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002818.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002819.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002820.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002821.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002822.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002823.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002824.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002825.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002826.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002827.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002828.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002829.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002830.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002831.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002832.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130907,
+    "financial_metrics": 23967,
+    "filings": 12743,
+    "company_reports": 280,
+    "community_posts": 2941,
+    "sentiment_evidence": 2551,
+    "sentiment_snapshots": 70,
+    "community_sentiment_daily": 26,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 379,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-14T13:16:33",
+  "finished_at": "2026-06-14T13:17:00",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-16",
+    "target_end": "2026-06-14",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 12743,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7371,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-14T13:17:00",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002833.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002835.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002836.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002837.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002838.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002839.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002840.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002841.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002842.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002843.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002845.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002846.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002847.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002848.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002849.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002850.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002851.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002852.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002853.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002855.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002856.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002857.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002858.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002859.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002860.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002861.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002862.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002863.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002864.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002865.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130907,
+    "financial_metrics": 24075,
+    "filings": 12743,
+    "company_reports": 281,
+    "community_posts": 2946,
+    "sentiment_evidence": 2551,
+    "sentiment_snapshots": 70,
+    "community_sentiment_daily": 26,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 381,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-14T13:46:33",
+  "finished_at": "2026-06-14T13:46:48",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-16",
+    "target_end": "2026-06-14",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 12743,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7371,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-14T13:46:48",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002866.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002867.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002868.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002869.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002870.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002871.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002872.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002873.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002875.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002876.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002877.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002878.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002879.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002880.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002881.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002882.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002883.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002884.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002885.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002886.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002887.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002888.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002889.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002890.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002891.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002892.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002893.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002895.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002896.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002897.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130907,
+    "financial_metrics": 24195,
+    "filings": 12743,
+    "company_reports": 281,
+    "community_posts": 2964,
+    "sentiment_evidence": 2572,
+    "sentiment_snapshots": 70,
+    "community_sentiment_daily": 26,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 397,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-14T14:16:38",
+  "finished_at": "2026-06-14T14:16:54",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-16",
+    "target_end": "2026-06-14",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 12743,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7371,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-14T14:16:54",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002898.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002899.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002900.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002901.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002902.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002903.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002905.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002906.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002907.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002908.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002909.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002910.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002911.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002912.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002913.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002915.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002916.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002917.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002918.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002919.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002920.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002921.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002922.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002923.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002925.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002926.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002927.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002928.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002929.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002930.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130907,
+    "financial_metrics": 24315,
+    "filings": 12743,
+    "company_reports": 282,
+    "community_posts": 2986,
+    "sentiment_evidence": 2594,
+    "sentiment_snapshots": 70,
+    "community_sentiment_daily": 26,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+{
+  "id": 413,
+  "provider": "cninfo_sse_szse",
+  "scope": "a-share-filings-background:all",
+  "status": "partial",
+  "started_at": "2026-06-14T14:46:43",
+  "finished_at": "2026-06-14T14:46:59",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "filings": 0,
+    "symbols_refreshed": 0,
+    "no_data_symbols": 0,
+    "failed_symbols": 30,
+    "batches": 3,
+    "batch_size": 10,
+    "batch_sleep_seconds": 0.8,
+    "source": "all",
+    "days": 180,
+    "target_start": "2025-12-16",
+    "target_end": "2026-06-14",
+    "requested_symbol_count": 0,
+    "filing_dedupe_checked_rows": 12743,
+    "filing_duplicate_groups": 0,
+    "duplicate_filings_deleted": 0,
+    "duplicate_filing_evidence_deleted": 0,
+    "last_batch_symbol_count": 10,
+    "remaining_candidates": 7371,
+    "consecutive_error_batches": 3,
+    "consecutive_no_progress_batches": 3,
+    "last_progress_at": "2026-06-14T14:46:59",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "symbol": "002931.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002932.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002933.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002935.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002936.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002937.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002938.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002939.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002940.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002941.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002942.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002943.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002945.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002946.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002947.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002948.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002949.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002950.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002951.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002952.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002953.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002955.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002956.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002957.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002958.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002959.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002960.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002961.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002962.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "symbol": "002963.SZ",
+      "source": "all",
+      "error": "Remote end closed connection without response"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130907,
+    "financial_metrics": 24399,
+    "filings": 12743,
+    "company_reports": 282,
+    "community_posts": 3000,
+    "sentiment_evidence": 2607,
+    "sentiment_snapshots": 70,
+    "community_sentiment_daily": 26,
+    "latest_daily_bar": "2026-06-12"
+  }
+}

@@ -1,10 +1,10 @@
 # 聚宝盆工程 TODO
 
-更新时间：2026-06-07
+更新时间：2026-06-13
 
-目标：把当前本地网页版打磨成数据库驱动的股票研究软件，支持多账户、真实/缓存数据源配置、历史数据仓库、共享分析记忆、独立持仓/关注；macOS 和 iPhoneOS 打包暂缓。
+目标：把当前本地网页版打磨成数据库驱动的股票研究软件，支持多账户、真实/缓存数据源配置、历史数据仓库、共享分析记忆、独立持仓/关注、**社区情绪（股吧+雪球+GLM）**；macOS 和 iPhoneOS 打包暂缓。
 
-换电脑或开启新 Codex 会话时，先读 `docs/handoff.md`，再按本 TODO 继续推进。
+换电脑或开启新 Codex 会话时，先读 `docs/handoff.md` 和 **`docs/sentiment.README.md`**，再按本 TODO 继续推进。
 
 ## 0. 当前 Demo 已验证
 
@@ -40,6 +40,7 @@
 - Phase 1G Web：筛选股票已改为数据库查询；自然语言 `PE<10` 等作为独立 SQL 条件，不再自动勾选复选框。
 - Phase 1G Web：回测平台优先使用 `daily_bars`，数据不足时才退回研究 mock。
 - Phase 1G Debug：已新增 `scripts/debug_warehouse.py` 和 `scripts/debug_warehouse.README.md`，用于 SQL 差数、provider 覆盖、PE/PB、缺口和任务状态。
+- Phase 1H Sentiment（2026-06-13）：社区情绪面已接入 GLM/DeepSeek；股吧 + 雪球双源爬虫；雪球 quote 补实时价；DrissionPage 过 WAF 抓雪球评论；自选股优先刷新；详情页「刷新」与 A 股红涨绿跌 UI。详见 `docs/sentiment.README.md`。
 
 ## 1. 技术架构 TODO
 
@@ -60,13 +61,13 @@
 
 - [x] 使用 FastAPI 做本地 API 服务。
 - [ ] 建立模块：
-  - `providers/`：行情、财务、公告、新闻、情绪供应商适配器。当前已有 mock、Tushare、AKShare、Alpha Vantage、Finnhub、BaoStock 起点。
+  - `providers/`：行情、财务、公告、新闻、情绪供应商适配器。当前已有 mock、Tushare、AKShare、Alpha Vantage、Finnhub、BaoStock、**community（股吧）、xueqiu（雪球 quote/评论）**。
   - `ingestion/`：拉取、去重、标准化、缓存。当前 BaoStock 仍在 `backend/history.py` 内，后续应拆出独立 worker/queue。
   - `data_quality/`：新鲜度、字段完整性、异常值、跨源一致性。当前已有 mock 模块。
   - `claims/`：claim 抽取、证据绑定、真实性评分。
   - `strategy/`：过滤、因子评分、候选生成、持仓复核。
   - `memory/`：结构化分析记忆读写和版本管理。
-  - `llm/`：RAG、反思 rubrics、最多 3 轮反思。
+  - `llm/`：RAG、反思 rubrics、最多 3 轮反思。**社区/公告情绪分类当前在 `backend/sentiment.py` 内直连 GLM/DeepSeek。**
   - `accounts/`：多账户、权限、账户级持仓/关注。当前已有 mock 模块。
   - `portfolio/`：账户级持仓、收益率、盈利金额、币种汇总。当前已有 mock 模块。
   - `audit/`：每次分析输入、输出、数据快照、版本号。
@@ -135,6 +136,14 @@
   - `id`, `account_id`, `symbol`, `side`, `trade_date`, `quantity`, `price`, `fee`, `currency`, `broker`, `note`
 - [x] `account_positions_cache`
   - `account_id`, `symbol`, `quantity`, `avg_cost`, `realized_pnl`, `unrealized_pnl`, `return_rate`, `computed_at`
+- [x] `community_posts`
+  - `source`, `symbol`, `source_post_id`, `title`, `content`, `author`, `url`, `published_at`, `metrics_json`, `raw_json`, `fetched_at`；唯一键 `(source, symbol, source_post_id)`
+- [x] `sentiment_evidence`
+  - `sentiment_type`, `source_table`, `source_id`, `method_version`, `symbol`, `event_date`, `sentiment_score`, `sentiment_label`, `confidence`, `keywords_json`, `evidence_json`, `analyzed_at`
+- [x] `sentiment_snapshots`
+  - 窗口内 composite 分、分项分、各源计数、标签、confidence
+- [x] `community_sentiment_daily`
+  - 按日汇总社区情绪（计数、分数、关键词、LLM 总评；不含评论原文）
 
 ### 记忆复用规则
 
@@ -194,7 +203,8 @@
 
 ### AI 和检索
 
-- [ ] OpenAI API key：自然语言分析、claim 抽取、反思、异动解释。
+- [x] GLM / DeepSeek API key：社区评论、公告/新闻/财报情绪分类（`backend/sentiment.py`）；读 `.env` 中 `GLM_API_KEY` / `DEEPSEEK_API_KEY`。
+- [ ] OpenAI API key：自然语言分析、claim 抽取、反思、异动解释（与情绪面并行，尚未统一进 `llm/` 模块）。
 - [ ] Embedding / rerank 服务：可先用 OpenAI embedding，后续再评估本地 embedding。
 - [ ] 可选：新闻供应商 API key，例如财联社、同花顺、Wind、Bloomberg、Refinitiv，视预算决定。
 
@@ -315,6 +325,21 @@
 - [ ] 把 BaoStock 季频 `financial_metrics_history` 接入单股分析的财务快照优先级，替代只读 `financial_snapshots` 的旧路径。
 - [ ] 为 `company_reports_history` 增加前端检索/展示入口，和公告原文链接分开展示。
 
+### Phase 1H：社区情绪（进行中）
+
+- [x] 东方财富股吧爬虫 + `community_posts` 入库。
+- [x] 雪球讨论区爬虫（DrissionPage 浏览器内 fetch 过 WAF）。
+- [x] 雪球 quote 补 GLM prompt 实时价/涨跌幅（`KEIKO_XUEQIU_COOKIE`）。
+- [x] 社区 GLM 五档分类 + 关键词；A 股黑话 prompt 规则（guba-v6）。
+- [x] 三类 evidence 聚合为 `sentiment_snapshots`；回测页 `sentiment_panels`。
+- [x] 半小时 agent + plist；空参数刷新 `acct-admin` 自选股。
+- [x] 文档：`docs/sentiment.README.md`。
+- [ ] 本机默认 load `com.keiko.community-sentiment-agent.plist`（当前需手动配置路径）。
+- [ ] 雪球评论：浏览器会话复用/池化，降低多股连续刷新时的 Chrome 启动开销。
+- [ ] 社区爬虫单元测试（mock HTML / mock browser JSON），避免回归 WAF 解析逻辑。
+- [ ] `sentiment_status` / 设置页展示 xueqiu 配置状态、最近抓取成功率。
+- [ ] 评估 Playwright 替代 DrissionPage（CI 友好性、依赖体积）。
+
 ### Phase 2：账户系统和持仓
 
 - [ ] 多账户模型。
@@ -349,6 +374,8 @@
 
 ## 8. 参考资料
 
+- 情绪面说明：`docs/sentiment.README.md`
+- 雪球 WAF 参考：[ForgeRSS xueqiu](https://github.com/tmwgsicp/ForgeRSS)、[xueqiu_crawler](https://github.com/stock2money/xueqiu_crawler)
 - Tushare Pro 文档：https://tushare.pro/document/2
 - BaoStock 文档：https://www.baostock.com/mainContent?file=home.md
 - Alpha Vantage API 文档：https://www.alphavantage.co/documentation/

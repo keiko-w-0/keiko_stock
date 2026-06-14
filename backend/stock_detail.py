@@ -11,6 +11,8 @@ from typing import Any
 from fastapi import HTTPException
 
 from .db import row_to_dict
+from .live_quote import apply_live_quote_to_summary, fetch_live_market_quote
+from .market_calendar import evaluate_market_quote_refresh, latest_db_trade_date
 from .symbol_resolver import resolve_symbol
 
 
@@ -74,15 +76,20 @@ def stock_detail_payload(
             },
         )
     )
+    summary = detail_summary(symbol_row, latest_bar, previous_bar, daily_bars, latest_financial)
+    quote_plan = maybe_refresh_live_quote(conn, normalized, symbol_row, summary)
+    if quote_plan.get("quote"):
+        summary = apply_live_quote_to_summary(summary, quote_plan["quote"])
     return {
         "mode": "warehouse-stock-detail",
         "symbol": public_symbol(symbol_row),
-        "summary": detail_summary(symbol_row, latest_bar, previous_bar, daily_bars, latest_financial),
+        "summary": summary,
         "market_data": {
             "source": "daily_bars",
             "preferred_adjust": latest_bar.get("adjust") if latest_bar else None,
-            "latest_provider": latest_bar.get("provider") if latest_bar else None,
-            "latest_trade_date": latest_bar.get("date") if latest_bar else None,
+            "latest_provider": quote_plan.get("quote_provider") or (latest_bar.get("provider") if latest_bar else None),
+            "latest_trade_date": summary.get("latest_trade_date") or (latest_bar.get("date") if latest_bar else None),
+            "quote_refresh": quote_plan,
             "periods": periods,
         },
         "financials": {
@@ -119,8 +126,42 @@ def detail_elapsed_ms(started: float) -> int:
     return int(round((time.monotonic() - started) * 1000))
 
 
+def maybe_refresh_live_quote(
+    conn: sqlite3.Connection,
+    symbol: str,
+    symbol_row: dict[str, Any],
+    summary: dict[str, Any],
+) -> dict[str, Any]:
+    if not is_a_share_symbol(symbol):
+        return {"action": "skip", "reason": "live quote only applies to A-share detail", "quote": None, "quote_provider": None}
+
+    db_latest = latest_db_trade_date(conn, symbol) or summary.get("latest_trade_date")
+    plan = evaluate_market_quote_refresh(str(db_latest or "") or None)
+    if plan["action"] == "skip":
+        return {
+            **plan,
+            "quote": None,
+            "quote_provider": None,
+        }
+
+    quote = fetch_live_market_quote(symbol)
+    if quote and not quote.get("name"):
+        quote["name"] = str(symbol_row.get("name") or "")
+    return {
+        **plan,
+        "quote": quote,
+        "quote_provider": (quote or {}).get("price_source"),
+        "quote_error": None if quote else "live quote fetch failed",
+    }
+
+
+def is_a_share_symbol(symbol: str) -> bool:
+    text = str(symbol or "").upper()
+    return text.endswith((".SH", ".SZ", ".BJ"))
+
+
 def stock_information(conn: sqlite3.Connection, symbol: str) -> dict[str, Any]:
-    from .sentiment import SENTIMENT_METHOD_VERSION, apply_current_community_snapshot
+    from .sentiment import apply_current_community_snapshot, resolve_sentiment_snapshot_row
 
     filings = [
         {
@@ -207,17 +248,7 @@ def stock_information(conn: sqlite3.Connection, symbol: str) -> dict[str, Any]:
             (symbol,),
         ).fetchall()
     ]
-    sentiment_row = conn.execute(
-        """
-        select *
-        from sentiment_snapshots
-        where symbol = ?
-          and method_version = ?
-        order by generated_at desc, id desc
-        limit 1
-        """,
-        (symbol, SENTIMENT_METHOD_VERSION),
-    ).fetchone()
+    sentiment_row = resolve_sentiment_snapshot_row(conn, symbol)
     return {
         "filings": filings + reports,
         "news": news,

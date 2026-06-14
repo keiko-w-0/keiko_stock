@@ -9,3 +9,14 @@ Traceback (most recent call last):
   File "/Users/wangwenhui/Documents/keiko_stock/backend/db.py", line 647, in sync_seed_symbols
     conn.executemany(
 sqlite3.OperationalError: database is locked
+Traceback (most recent call last):
+  File "/Users/wangwenhui/Documents/keiko_stock/scripts/run_ingestion_watchdog.py", line 258, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/wangwenhui/Documents/keiko_stock/scripts/run_ingestion_watchdog.py", line 96, in main
+    init_db()
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/db.py", line 552, in init_db
+    sync_seed_symbols(conn)
+  File "/Users/wangwenhui/Documents/keiko_stock/backend/db.py", line 673, in sync_seed_symbols
+    conn.executemany(
+sqlite3.OperationalError: database is locked

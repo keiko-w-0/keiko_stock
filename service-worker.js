@@ -1,4 +1,4 @@
-const CACHE_NAME = "jubao-pen-community-card-v1";
+const CACHE_NAME = "jubao-pen-source-reliability-v2";
 const APP_SHELL = [
   "/",
   "/index.html",

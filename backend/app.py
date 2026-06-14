@@ -193,8 +193,10 @@ def api_refresh_sentiment(payload: SentimentRefreshInput | None = Body(default=N
             days=payload.days,
             use_llm=payload.use_llm,
             crawl_community=payload.crawl_community,
+            analyze_filing_news=payload.analyze_filing_news,
             community_limit=payload.community_limit,
             evidence_limit=payload.evidence_limit,
+            account_id=payload.account_id or None,
         )
 
 
@@ -213,6 +215,9 @@ def api_community_sentiment_cycle(payload: CommunitySentimentCycleInput | None =
             refresh_market=payload.refresh_market,
             refresh_filings=payload.refresh_filings,
             market_days=payload.market_days,
+            account_id=payload.account_id or None,
+            favorites_only=payload.favorites_only,
+            cycle_timeout_seconds=payload.cycle_timeout_seconds,
         )
 
 
@@ -769,6 +774,7 @@ def portfolio(account_id: str) -> dict[str, Any]:
 def set_favorite(account_id: str, symbol: str, payload: FavoriteToggle) -> dict[str, Any]:
     with get_db() as conn:
         favorites = set_account_favorite(conn, account_id, symbol.upper(), payload.favorite, payload.note)
+        conn.commit()
     return {"account_id": account_id, "favorites": favorites}
 
 

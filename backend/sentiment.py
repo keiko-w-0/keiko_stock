@@ -16,15 +16,22 @@ from urllib.request import Request, urlopen
 
 from fastapi import HTTPException
 
+from .accounts import favorite_symbols_for_accounts
 from .db import ROOT_DIR, now_iso, row_to_dict
-from .providers.community import crawl_community_posts, upsert_community_posts
+from .providers.community import crawl_community_posts, normalize_community_source, upsert_community_posts, xueqiu_configured
+from .providers.xueqiu import fetch_xueqiu_quote
 from .stock_detail import preferred_daily_bars
 from .symbol_resolver import infer_symbol, resolve_symbol
 
 
-SENTIMENT_PROMPT_VERSION = "prompt-20260613-guba-v4"
+SENTIMENT_PROMPT_VERSION = "prompt-20260613-guba-v9"
+DEFAULT_SENTIMENT_ACCOUNT_ID = "acct-admin"
 SENTIMENT_METHOD_VERSION = f"sentiment-v4-{SENTIMENT_PROMPT_VERSION}"
 LOCAL_MODEL_NAME = "fallback-v1"
+COMMUNITY_SCORE_MIN = -100.0
+COMMUNITY_SCORE_MAX = 100.0
+COMMUNITY_SCORE_LEGACY_MULTIPLIER = 50.0
+COMMUNITY_SENTIMENT_CLASSES = ("正面", "偏正面", "中性", "偏负面", "负面")
 DEEPSEEK_ENDPOINT = "https://api.deepseek.com/chat/completions"
 DEEPSEEK_ENV_NAMES = ("DEEPSEEK_API_KEY", "KEIKO_DEEPSEEK_API_KEY")
 GLM_ENDPOINT = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
@@ -37,10 +44,11 @@ LLM_CACHE_TTL_MINUTES = 30
 LLM_BATCH_SIZE = 24
 LLM_COMMUNITY_BATCH_SIZE = 10
 LLM_COMMUNITY_RETRY_BATCH_SIZE = 5
-LLM_COMMUNITY_TEXT_LIMIT = 800
+LLM_COMMUNITY_TEXT_LIMIT = 100
 LLM_MAX_CONCURRENCY = 2
 LLM_BATCH_TIMEOUT_SECONDS = 25
 LLM_COMMUNITY_TIMEOUT_SECONDS = 40
+SENTIMENT_CYCLE_TIMEOUT_SECONDS = 1200.0
 
 
 def refresh_sentiment(
@@ -51,18 +59,28 @@ def refresh_sentiment(
     crawl_community: bool = False,
     community_limit: int = DEFAULT_COMMUNITY_LIMIT,
     evidence_limit: int = DEFAULT_SENTIMENT_EVIDENCE_LIMIT,
+    account_id: str | None = None,
+    favorites_only: bool = False,
+    analyze_filing_news: bool = False,
+    cycle_deadline: float | None = None,
 ) -> dict[str, Any]:
     total_started = time.monotonic()
     performance = new_sentiment_performance()
-    target_symbols = normalize_symbols(conn, symbols or [])
-    if not target_symbols:
-        target_symbols = sentiment_candidate_symbols(conn, limit=80, days=days)
+    target_symbols, symbol_source = resolve_sentiment_target_symbols(
+        conn,
+        symbols or [],
+        days=days,
+        account_id=account_id,
+        favorites_only=favorites_only,
+    )
 
     counts = {
         "symbols": 0,
         "filing_news_evidence": 0,
         "community_evidence": 0,
+        "community_posts_today": 0,
         "market_evidence": 0,
+        "community_posts_crawled": 0,
         "community_posts": 0,
         "snapshots": 0,
     }
@@ -70,6 +88,9 @@ def refresh_sentiment(
     refreshed: list[str] = []
 
     for symbol in target_symbols:
+        if cycle_deadline_exceeded(cycle_deadline):
+            errors.append(cycle_timeout_error(cycle_deadline, "sentiment-refresh", pending_symbols=target_symbols[len(refreshed):]))
+            break
         try:
             if crawl_community:
                 crawl_started = time.monotonic()
@@ -80,7 +101,9 @@ def refresh_sentiment(
                     crawl_started,
                     {"symbol": symbol, "posts": int(crawl["counts"].get("posts", 0))},
                 )
-                counts["community_posts"] += int(crawl["counts"].get("posts", 0))
+                crawled = int(crawl["counts"].get("posts", 0))
+                counts["community_posts_crawled"] += crawled
+                counts["community_posts"] += crawled
                 errors.extend(crawl.get("errors") or [])
             result = refresh_symbol_sentiment(
                 conn,
@@ -88,10 +111,12 @@ def refresh_sentiment(
                 days=days,
                 use_llm=use_llm,
                 evidence_limit=evidence_limit,
+                analyze_filing_news=analyze_filing_news,
             )
             merge_sentiment_performance(performance, result.get("performance") or {}, symbol=symbol)
             for key in ("filing_news_evidence", "community_evidence", "market_evidence", "snapshots"):
                 counts[key] += int(result["counts"].get(key, 0))
+            counts["community_posts_today"] += int(result["counts"].get("community_evidence", 0))
             counts["symbols"] += 1
             refreshed.append(symbol)
         except Exception as exc:
@@ -99,18 +124,23 @@ def refresh_sentiment(
 
     conn.commit()
     performance["total_ms"] = elapsed_ms(total_started)
+    llm_stats = performance.get("llm") or {}
     return {
         "mode": "sentiment-refresh",
         "method_version": SENTIMENT_METHOD_VERSION,
         "prompt_version": SENTIMENT_PROMPT_VERSION,
         "days": clean_days(days),
         "use_llm": bool(use_llm),
+        "analyze_filing_news": bool(analyze_filing_news),
         "llm_configured": bool(preferred_llm_config()["configured"]),
         "llm_provider": preferred_llm_config()["provider"],
+        "symbol_source": symbol_source,
+        "account_id": sentiment_account_id(account_id),
         "symbols": refreshed,
         "counts": counts,
         "errors": errors,
         "performance": performance,
+        "usage": summarize_llm_usage(llm_stats),
         "refreshed_at": now_iso(),
     }
 
@@ -121,6 +151,7 @@ def refresh_symbol_sentiment(
     days: int = 30,
     use_llm: bool = True,
     evidence_limit: int = DEFAULT_SENTIMENT_EVIDENCE_LIMIT,
+    analyze_filing_news: bool = False,
 ) -> dict[str, Any]:
     total_started = time.monotonic()
     performance = new_sentiment_performance()
@@ -128,16 +159,18 @@ def refresh_symbol_sentiment(
     if not normalized:
         raise HTTPException(status_code=404, detail="symbol not found")
 
-    started = time.monotonic()
-    filing_news_count = analyze_filing_news_sentiment(
-        conn,
-        normalized,
-        days=days,
-        use_llm=use_llm,
-        limit=evidence_limit,
-        stats=performance["llm"],
-    )
-    record_sentiment_step(performance, "filing_news-analysis", started, {"rows": filing_news_count})
+    filing_news_count = 0
+    if analyze_filing_news:
+        started = time.monotonic()
+        filing_news_count = analyze_filing_news_sentiment(
+            conn,
+            normalized,
+            days=days,
+            use_llm=use_llm,
+            limit=evidence_limit,
+            stats=performance["llm"],
+        )
+        record_sentiment_step(performance, "filing_news-analysis", started, {"rows": filing_news_count})
 
     started = time.monotonic()
     community_count = analyze_community_sentiment(
@@ -176,16 +209,7 @@ def sentiment_payload(conn: sqlite3.Connection, symbol: str, days: int = 30, evi
     if not normalized:
         raise HTTPException(status_code=404, detail="symbol not found")
     symbol_row = conn.execute("select * from symbols where symbol = ?", (normalized,)).fetchone()
-    snapshot_row = conn.execute(
-        """
-        select *
-        from sentiment_snapshots
-        where symbol = ? and window_days = ? and method_version = ?
-        order by generated_at desc, id desc
-        limit 1
-        """,
-        (normalized, clean_days(days), SENTIMENT_METHOD_VERSION),
-    ).fetchone()
+    snapshot_row = resolve_sentiment_snapshot_row(conn, normalized, window_days=days)
     evidence = sentiment_evidence_payload(conn, normalized, days=days, limit=evidence_limit)
     snapshot = apply_current_community_snapshot(conn, decode_snapshot(snapshot_row)) if snapshot_row else None
     return {
@@ -217,6 +241,10 @@ def sentiment_status(conn: sqlite3.Connection) -> dict[str, Any]:
         "method_version": SENTIMENT_METHOD_VERSION,
         "prompt_version": SENTIMENT_PROMPT_VERSION,
         "llm": llm_config_status(mask=True),
+        "community_sources": {
+            "default": "all",
+            "xueqiu_configured": xueqiu_configured(),
+        },
         "counts": {
             "community_posts": scalar_count(conn, "community_posts"),
             "sentiment_evidence": scalar_count(conn, "sentiment_evidence"),
@@ -224,6 +252,7 @@ def sentiment_status(conn: sqlite3.Connection) -> dict[str, Any]:
             "community_sentiment_daily": scalar_count(conn, "community_sentiment_daily"),
         },
         "latest_snapshots": [row_to_dict(row) for row in latest_snapshots],
+        "recent_agent_runs": recent_sentiment_agent_runs(conn, limit=10),
     }
 
 
@@ -244,6 +273,8 @@ def refresh_community_daily_summaries(
     symbols: list[str] | None = None,
     day: str | None = None,
     use_llm: bool = True,
+    llm_stats: dict[str, Any] | None = None,
+    cycle_deadline: float | None = None,
 ) -> dict[str, Any]:
     trade_date = normalize_day(day) or date.today().isoformat()
     target_symbols = normalize_symbols(conn, symbols or [])
@@ -253,8 +284,11 @@ def refresh_community_daily_summaries(
     summaries: list[dict[str, Any]] = []
     errors: list[dict[str, str]] = []
     for symbol in target_symbols:
+        if cycle_deadline_exceeded(cycle_deadline):
+            errors.append(cycle_timeout_error(cycle_deadline, "community-daily", pending_symbols=target_symbols[len(summaries):]))
+            break
         try:
-            summary = upsert_community_daily_summary(conn, symbol, trade_date, use_llm=use_llm)
+            summary = upsert_community_daily_summary(conn, symbol, trade_date, use_llm=use_llm, llm_stats=llm_stats)
             if summary:
                 summaries.append(summary)
         except Exception as exc:
@@ -273,6 +307,57 @@ def refresh_community_daily_summaries(
     }
 
 
+def _empty_sentiment_refresh_result() -> dict[str, Any]:
+    return {
+        "mode": "sentiment-refresh",
+        "symbols": [],
+        "counts": {},
+        "errors": [],
+        "performance": new_sentiment_performance(),
+    }
+
+
+def _finish_skipped_community_sentiment_cycle(
+    conn: sqlite3.Connection,
+    run_id: int,
+    *,
+    symbol_source: str,
+    account_id: str | None,
+    reason: str,
+    retention_days: int,
+) -> dict[str, Any]:
+    from .history import finish_ingestion
+
+    cleanup = cleanup_expired_community_sentiment(conn, retention_days=retention_days)
+    result = {
+        "mode": "community-sentiment-cycle",
+        "method_version": SENTIMENT_METHOD_VERSION,
+        "prompt_version": SENTIMENT_PROMPT_VERSION,
+        "symbol_source": symbol_source,
+        "account_id": sentiment_account_id(account_id),
+        "symbols": [],
+        "skipped": True,
+        "reason": reason,
+        "live_refresh": {"symbols": [], "counts": {}, "errors": []},
+        "sentiment": {
+            "mode": "sentiment-refresh",
+            "symbols": [],
+            "counts": {},
+            "errors": [],
+            "performance": new_sentiment_performance(),
+        },
+        "daily": {"counts": {"symbols": 0}, "errors": []},
+        "cleanup": cleanup,
+        "refreshed_at": now_iso(),
+    }
+    usage = build_agent_usage(result)
+    finish_ingestion(conn, run_id, "skipped", [], usage, [])
+    conn.commit()
+    result["run_id"] = run_id
+    result["usage"] = usage
+    return result
+
+
 def run_community_sentiment_cycle(
     conn: sqlite3.Connection,
     symbols: list[str] | None = None,
@@ -284,71 +369,182 @@ def run_community_sentiment_cycle(
     refresh_market: bool = True,
     refresh_filings: bool = True,
     market_days: int = 20,
+    account_id: str | None = None,
+    favorites_only: bool = True,
+    respect_watchlist_schedule: bool = False,
+    cycle_timeout_seconds: float | None = None,
 ) -> dict[str, Any]:
-    target_symbols = normalize_symbols(conn, symbols or [])
-    if not target_symbols:
-        target_symbols = sentiment_candidate_symbols(conn, limit=80, days=analysis_days)
+    from .history import finish_ingestion, start_ingestion
+    from .market_calendar import cn_now, is_sentiment_watchlist_refresh_window
 
-    live_refresh = refresh_live_inputs_for_community_cycle(
+    explicit_symbols = bool(symbols)
+    if (
+        respect_watchlist_schedule
+        and favorites_only
+        and not explicit_symbols
+        and not is_sentiment_watchlist_refresh_window()
+    ):
+        current = cn_now()
+        run_id = start_ingestion(
+            conn,
+            "community-sentiment-agent",
+            "account_favorites",
+            [],
+            refresh_universe=False,
+        )
+        return _finish_skipped_community_sentiment_cycle(
+            conn,
+            run_id,
+            symbol_source="account_favorites",
+            account_id=account_id,
+            reason=f"outside watchlist refresh window (08:00-24:00 Asia/Shanghai, now {current.strftime('%H:%M')})",
+            retention_days=retention_days,
+        )
+
+    target_symbols, symbol_source = resolve_sentiment_target_symbols(
         conn,
-        target_symbols,
-        refresh_market=refresh_market,
-        refresh_filings=refresh_filings,
-        market_days=market_days,
-    )
-    sentiment = refresh_sentiment(
-        conn,
-        target_symbols,
+        symbols or [],
         days=analysis_days,
-        use_llm=use_llm,
-        crawl_community=True,
-        community_limit=community_limit,
-        evidence_limit=evidence_limit,
+        account_id=account_id,
+        favorites_only=favorites_only,
     )
-    daily = refresh_community_daily_summaries(conn, sentiment.get("symbols") or target_symbols, use_llm=use_llm)
-    cleanup = cleanup_expired_community_sentiment(conn, retention_days=retention_days)
-    return {
-        "mode": "community-sentiment-cycle",
-        "method_version": SENTIMENT_METHOD_VERSION,
-        "prompt_version": SENTIMENT_PROMPT_VERSION,
-        "symbols": sentiment.get("symbols") or target_symbols,
-        "live_refresh": live_refresh,
-        "sentiment": sentiment,
-        "daily": daily,
-        "cleanup": cleanup,
-        "refreshed_at": now_iso(),
-    }
+    run_id = start_ingestion(
+        conn,
+        "community-sentiment-agent",
+        symbol_source,
+        target_symbols,
+        refresh_universe=False,
+    )
+    try:
+        if not target_symbols:
+            return _finish_skipped_community_sentiment_cycle(
+                conn,
+                run_id,
+                symbol_source=symbol_source,
+                account_id=account_id,
+                reason="no favorite symbols in account watchlist",
+                retention_days=retention_days,
+            )
+
+        cycle_deadline, resolved_cycle_timeout_seconds = cycle_deadline_from_timeout(cycle_timeout_seconds)
+
+        live_refresh = refresh_live_inputs_for_community_cycle(
+            conn,
+            target_symbols,
+            refresh_market=refresh_market,
+            refresh_filings=refresh_filings,
+            market_days=market_days,
+            cycle_deadline=cycle_deadline,
+        )
+        if cycle_deadline_exceeded(cycle_deadline):
+            sentiment = _empty_sentiment_refresh_result()
+            daily = {"counts": {"symbols": 0}, "errors": []}
+        else:
+            sentiment = refresh_sentiment(
+                conn,
+                target_symbols,
+                days=analysis_days,
+                use_llm=use_llm,
+                crawl_community=True,
+                community_limit=community_limit,
+                evidence_limit=evidence_limit,
+                account_id=account_id,
+                favorites_only=favorites_only,
+                analyze_filing_news=False,
+                cycle_deadline=cycle_deadline,
+            )
+            if cycle_deadline_exceeded(cycle_deadline):
+                daily = {"counts": {"symbols": 0}, "errors": []}
+            else:
+                daily = refresh_community_daily_summaries(
+                    conn,
+                    sentiment.get("symbols") or target_symbols,
+                    use_llm=use_llm,
+                    llm_stats=(sentiment.get("performance") or {}).get("llm"),
+                    cycle_deadline=cycle_deadline,
+                )
+        timed_out = cycle_deadline_exceeded(cycle_deadline)
+        cleanup = cleanup_expired_community_sentiment(conn, retention_days=retention_days)
+        result = {
+            "mode": "community-sentiment-cycle",
+            "method_version": SENTIMENT_METHOD_VERSION,
+            "prompt_version": SENTIMENT_PROMPT_VERSION,
+            "symbol_source": symbol_source,
+            "account_id": sentiment_account_id(account_id),
+            "symbols": sentiment.get("symbols") or [],
+            "timed_out": timed_out,
+            "cycle_timeout_seconds": resolved_cycle_timeout_seconds,
+            "live_refresh": live_refresh,
+            "sentiment": sentiment,
+            "daily": daily,
+            "cleanup": cleanup,
+            "refreshed_at": now_iso(),
+        }
+        errors = collect_cycle_errors(result)
+        usage = build_agent_usage(result)
+        status = "ok" if not errors else "partial"
+        finish_ingestion(conn, run_id, status, result["symbols"], usage, errors)
+        conn.commit()
+        result["run_id"] = run_id
+        result["usage"] = usage
+        return result
+    except Exception as exc:
+        finish_ingestion(
+            conn,
+            run_id,
+            "failed",
+            target_symbols,
+            {"error": str(exc)},
+            [{"scope": "community-sentiment-cycle", "error": str(exc)}],
+        )
+        conn.commit()
+        raise
 
 
 def crawl_community_for_symbols(
     conn: sqlite3.Connection,
     symbols: list[str],
-    source: str = "eastmoney_guba",
+    source: str = "all",
     limit: int = DEFAULT_COMMUNITY_LIMIT,
     timeout: int = 15,
     sleep_seconds: float = 0.8,
 ) -> dict[str, Any]:
     target_symbols = normalize_symbols(conn, symbols)
-    counts = {"symbols": 0, "posts": 0}
+    normalized_source = normalize_community_source(source)
+    from .history import finish_ingestion, start_ingestion
+
+    run_id = start_ingestion(conn, normalized_source, "community-crawl", target_symbols, False)
+    counts = {"symbols": 0, "posts": 0, "fetched_posts": 0}
     errors: list[dict[str, str]] = []
+    updated_symbols: list[str] = []
     for symbol in target_symbols:
         try:
             payload = crawl_community_posts(
                 symbol,
-                source=source,
+                source=normalized_source,
                 limit=limit,
                 timeout=timeout,
                 sleep_seconds=sleep_seconds,
             )
-            inserted = upsert_community_posts(conn, payload.get("posts") or [])
+            posts = payload.get("posts") or []
+            inserted = upsert_community_posts(conn, posts)
+            counts["fetched_posts"] += len(posts)
             counts["posts"] += inserted
             counts["symbols"] += 1
+            if posts:
+                updated_symbols.append(symbol)
+            for item in payload.get("errors") or []:
+                errors.append({"symbol": symbol, "source": normalized_source, "error": str(item)})
         except Exception as exc:
-            errors.append({"symbol": symbol, "source": source, "error": str(exc)})
+            errors.append({"symbol": symbol, "source": normalized_source, "error": str(exc)})
+    status = "ok" if counts["fetched_posts"] and not errors else ("partial" if counts["fetched_posts"] else "failed")
+    finish_ingestion(conn, run_id, status, updated_symbols, counts, errors)
     conn.commit()
     return {
         "mode": "community-crawl",
-        "source": source,
+        "source": normalized_source,
+        "run_id": run_id,
+        "status": status,
         "symbols": target_symbols,
         "counts": counts,
         "errors": errors,
@@ -362,6 +558,7 @@ def refresh_live_inputs_for_community_cycle(
     refresh_market: bool = True,
     refresh_filings: bool = True,
     market_days: int = 20,
+    cycle_deadline: float | None = None,
 ) -> dict[str, Any]:
     if not symbols:
         return {
@@ -376,7 +573,12 @@ def refresh_live_inputs_for_community_cycle(
     counts = {"market_symbols": 0, "daily_bars": 0, "market_snapshots": 0, "filing_symbols": 0, "filings": 0}
     errors: list[dict[str, str]] = []
     market_days = max(3, min(int(market_days or 20), 80))
+    processed = 0
     for symbol in symbols:
+        if cycle_deadline_exceeded(cycle_deadline):
+            errors.append(cycle_timeout_error(cycle_deadline, "live-refresh", pending_symbols=symbols[processed:]))
+            break
+        processed += 1
         if refresh_market:
             try:
                 result = refresh_akshare_data(
@@ -420,7 +622,7 @@ def analyze_filing_news_sentiment(
 ) -> int:
     rows = filing_news_candidates(conn, symbol, days=days, limit=limit)
     cached = cached_llm_sentiment_evidence(conn, rows) if use_llm else {}
-    record_llm_cache_hits(stats, len(cached))
+    record_llm_inventory(stats, "filing_news", total=len(rows), cache_hits=len(cached))
     uncached_items = [item for item in rows if sentiment_item_key(item) not in cached]
     fresh_results = analyze_text_items(uncached_items, use_llm=use_llm, stats=stats)
     results_by_key = {sentiment_item_key(item): item for item in cached.values()}
@@ -453,6 +655,7 @@ def analyze_community_sentiment(
         """,
         (symbol, analysis_day, clean_limit(limit, 200)),
     ).fetchall()
+    stock_context = community_stock_context(conn, symbol)
     items: list[dict[str, Any]] = []
     for row in rows:
         text = community_post_text(row["title"], row["content"])
@@ -469,12 +672,15 @@ def analyze_community_sentiment(
                 "category": "community_discussion",
                 "text": text,
                 "source_tier": "C",
-                "extra": {"metrics": parse_json(row["metrics_json"], {})},
+                "extra": {
+                    "metrics": parse_json(row["metrics_json"], {}),
+                    "stock_context": stock_context,
+                },
             }
         )
     analyzed = 0
     cached = cached_llm_sentiment_evidence(conn, items, max_age_minutes=None) if use_llm else {}
-    record_llm_cache_hits(stats, len(cached))
+    record_llm_inventory(stats, "community", total=len(items), cache_hits=len(cached))
     uncached_items = [item for item in items if sentiment_item_key(item) not in cached]
     fresh_results = analyze_text_items(uncached_items, use_llm=use_llm, community=True, stats=stats)
     results_by_key = {sentiment_item_key(item): item for item in cached.values()}
@@ -492,6 +698,119 @@ def community_post_text(title: Any, content: Any) -> str:
     if content_text:
         return content_text
     return title_text
+
+
+def community_stock_context(conn: sqlite3.Connection, symbol: str) -> dict[str, Any]:
+    normalized = str(symbol or "").upper()
+    row = conn.execute(
+        "select symbol, name, market, currency from symbols where symbol = ?",
+        (normalized,),
+    ).fetchone()
+    symbol_row = row_to_dict(row) if row else {}
+    context: dict[str, Any] = {
+        "symbol": normalized,
+        "name": str(symbol_row.get("name") or normalized),
+    }
+    if symbol_row:
+        context["market"] = str(symbol_row.get("market") or "")
+        context["currency"] = str(symbol_row.get("currency") or "")
+
+    bar_quote = latest_community_daily_quote(conn, normalized)
+    snapshot = conn.execute(
+        """
+        select provider, price, as_of
+        from market_snapshots
+        where symbol = ?
+        order by fetched_at desc, id desc
+        limit 1
+        """,
+        (normalized,),
+    ).fetchone()
+    snapshot_row = row_to_dict(snapshot) if snapshot else {}
+    if snapshot_row.get("price") is not None:
+        context["current_price"] = round(float(snapshot_row["price"]), 4)
+        context["price_as_of"] = str(snapshot_row.get("as_of") or "")
+        context["price_source"] = str(snapshot_row.get("provider") or "")
+    elif bar_quote.get("current_price") is not None:
+        context["current_price"] = bar_quote["current_price"]
+        context["price_as_of"] = bar_quote.get("price_as_of") or ""
+        context["price_source"] = bar_quote.get("price_source") or ""
+
+    if bar_quote.get("change_pct") is not None:
+        context["change_pct"] = bar_quote["change_pct"]
+
+    xueqiu_quote = fetch_xueqiu_quote(normalized)
+    if xueqiu_quote:
+        if xueqiu_quote.get("name"):
+            context["name"] = xueqiu_quote["name"]
+        if xueqiu_quote.get("current_price") is not None:
+            context["current_price"] = xueqiu_quote["current_price"]
+        if xueqiu_quote.get("change_pct") is not None:
+            context["change_pct"] = xueqiu_quote["change_pct"]
+        context["price_source"] = xueqiu_quote.get("price_source") or "xueqiu"
+        if xueqiu_quote.get("price_as_of"):
+            context["price_as_of"] = xueqiu_quote["price_as_of"]
+        if xueqiu_quote.get("market_status"):
+            context["market_status"] = xueqiu_quote["market_status"]
+        if xueqiu_quote.get("currency"):
+            context["currency"] = xueqiu_quote["currency"]
+    return context
+
+
+def latest_community_daily_quote(conn: sqlite3.Connection, symbol: str) -> dict[str, Any]:
+    bar_rows = [
+        row_to_dict(item)
+        for item in conn.execute(
+            """
+            select close, change_pct, trade_date, provider, adjust
+            from daily_bars
+            where symbol = ?
+            order by trade_date desc, provider desc, adjust desc
+            limit 20
+            """,
+            (symbol,),
+        ).fetchall()
+    ]
+    if not bar_rows:
+        return {}
+
+    latest_date = bar_rows[0]["trade_date"]
+    same_day = [item for item in bar_rows if item["trade_date"] == latest_date]
+    bar = max(same_day, key=lambda item: (str(item.get("provider") or ""), str(item.get("adjust") or "")))
+    quote: dict[str, Any] = {}
+    if bar.get("close") is not None:
+        quote["current_price"] = round(float(bar["close"]), 4)
+        quote["price_as_of"] = str(bar.get("trade_date") or "")
+        quote["price_source"] = str(bar.get("provider") or "")
+    if bar.get("change_pct") is not None:
+        quote["change_pct"] = round(float(bar["change_pct"]), 4)
+    return quote
+
+
+def community_llm_stock_context(item: dict[str, Any]) -> dict[str, Any]:
+    context = dict((item.get("extra") or {}).get("stock_context") or {})
+    if not context:
+        symbol = str(item.get("symbol") or "").upper()
+        if symbol:
+            context = {"symbol": symbol, "name": symbol}
+        else:
+            return {}
+    payload: dict[str, Any] = {}
+    name = str(context.get("name") or context.get("symbol") or "").strip()
+    if name:
+        payload["stock_name"] = name
+    symbol = str(context.get("symbol") or item.get("symbol") or "").strip()
+    if symbol:
+        payload["symbol"] = symbol.upper()
+    if context.get("current_price") is not None:
+        payload["current_price"] = context["current_price"]
+    if context.get("currency"):
+        payload["currency"] = context["currency"]
+    if context.get("change_pct") is not None:
+        payload["change_pct"] = context["change_pct"]
+    if context.get("price_as_of"):
+        payload["price_as_of"] = context["price_as_of"]
+    return payload
 
 
 def analyze_market_sentiment(conn: sqlite3.Connection, symbol: str, days: int = 30) -> int:
@@ -871,61 +1190,107 @@ def llm_item_id(item: dict[str, Any]) -> str:
     return f"{sentiment_type}:{source_table}:{source_id}"
 
 
-COMMUNITY_SENTIMENT_CLASS_SCORES: dict[str, float] = {
-    "正面": 2.0,
-    "偏正面": 1.0,
+COMMUNITY_SENTIMENT_CLASS_FALLBACK_SCORES: dict[str, float] = {
+    "正面": 80.0,
+    "偏正面": 40.0,
     "中性": 0.0,
-    "偏负面": -1.0,
-    "负面": -2.0,
-    "积极": 2.0,
-    "偏积极": 1.0,
-    "消极": -2.0,
-    "偏消极": -1.0,
-    "positive": 2.0,
-    "mild_positive": 1.0,
+    "偏负面": -40.0,
+    "负面": -80.0,
+    "积极": 80.0,
+    "偏积极": 40.0,
+    "消极": -80.0,
+    "偏消极": -40.0,
+    "positive": 80.0,
+    "mild_positive": 40.0,
     "neutral": 0.0,
-    "mild_negative": -1.0,
-    "negative": -2.0,
+    "mild_negative": -40.0,
+    "negative": -80.0,
 }
+
+
+def normalize_community_score(value: Any) -> float:
+    score = clamp_float(value, COMMUNITY_SCORE_MIN, COMMUNITY_SCORE_MAX)
+    if abs(score) <= 2.000001:
+        return clamp_float(
+            score * COMMUNITY_SCORE_LEGACY_MULTIPLIER,
+            COMMUNITY_SCORE_MIN,
+            COMMUNITY_SCORE_MAX,
+        )
+    return score
+
+
+def resolve_community_llm_score(llm_result: dict[str, Any]) -> float:
+    raw_score = llm_result.get("sentiment_score")
+    if raw_score not in (None, ""):
+        return normalize_community_score(raw_score)
+    _, fallback_score = community_sentiment_class_score(
+        llm_result.get("sentiment_class")
+        or llm_result.get("sentiment_label")
+        or llm_result.get("class")
+        or llm_result.get("category")
+    )
+    return fallback_score
+
+
+def normalize_community_sentiment_class(value: Any, score: float | None = None) -> str:
+    text = str(value or "").strip()
+    if text in COMMUNITY_SENTIMENT_CLASSES:
+        return text
+    normalized, _ = community_sentiment_class_score(text)
+    if normalized in COMMUNITY_SENTIMENT_CLASSES:
+        return normalized
+    if score is not None:
+        return community_class_from_score(score)
+    return "中性"
+
+
+def resolve_community_llm_class(llm_result: dict[str, Any], score: float) -> str:
+    return normalize_community_sentiment_class(
+        llm_result.get("sentiment_class")
+        or llm_result.get("class")
+        or llm_result.get("category"),
+        score=score,
+    )
 
 
 def community_sentiment_class_score(value: Any) -> tuple[str, float]:
     text = str(value or "").strip().lower().replace(" ", "_")
-    if text in COMMUNITY_SENTIMENT_CLASS_SCORES:
-        score = COMMUNITY_SENTIMENT_CLASS_SCORES[text]
+    if text in COMMUNITY_SENTIMENT_CLASS_FALLBACK_SCORES:
+        score = COMMUNITY_SENTIMENT_CLASS_FALLBACK_SCORES[text]
         return community_class_from_score(score), score
     if "偏正" in text or "偏积极" in text or "mild_positive" in text:
-        return "偏正面", 1.0
+        return "偏正面", 40.0
     if "偏负" in text or "偏消极" in text or "mild_negative" in text:
-        return "偏负面", -1.0
+        return "偏负面", -40.0
     if "正面" in text or "积极" in text or text == "positive":
-        return "正面", 2.0
+        return "正面", 80.0
     if "负面" in text or "消极" in text or text == "negative":
-        return "负面", -2.0
+        return "负面", -80.0
     return "中性", 0.0
 
 
 def community_class_from_score(score: float) -> str:
-    if score >= 1.5:
+    value = normalize_community_score(score)
+    if value >= 75:
         return "正面"
-    if score >= 0.5:
+    if value >= 25:
         return "偏正面"
-    if score <= -1.5:
+    if value <= -75:
         return "负面"
-    if score <= -0.5:
+    if value <= -25:
         return "偏负面"
     return "中性"
 
 
 def community_sentiment_label(score: Any) -> str:
-    value = clamp_float(score, -2.0, 2.0)
-    if value >= 1.5:
+    value = normalize_community_score(score)
+    if value >= 75:
         return "positive"
-    if value >= 0.5:
+    if value >= 25:
         return "mild_positive"
-    if value <= -1.5:
+    if value <= -75:
         return "negative"
-    if value <= -0.5:
+    if value <= -25:
         return "mild_negative"
     return "neutral"
 
@@ -949,6 +1314,8 @@ def fallback_text_sentiment(item: dict[str, Any], community: bool = False) -> di
         confidence = 0.58
         evidence["structured_financial_score"] = score
         evidence["financial_details"] = extra.get("financial_details") or {}
+    elif community and extra.get("stock_context"):
+        evidence["stock_context"] = dict(extra["stock_context"])
 
     result = {
         **item,
@@ -978,12 +1345,11 @@ def merge_llm_sentiment_result(result: dict[str, Any], llm_result: dict[str, Any
     if reason:
         evidence["llm_reason"] = reason
     if str(result.get("sentiment_type") or "") == "community":
-        sentiment_class, score = community_sentiment_class_score(
-            llm_result.get("sentiment_class")
-            or llm_result.get("sentiment_label")
-            or llm_result.get("class")
-            or llm_result.get("category")
-        )
+        stock_context = dict((result.get("extra") or {}).get("stock_context") or {})
+        if stock_context:
+            evidence["stock_context"] = stock_context
+        score = resolve_community_llm_score(llm_result)
+        sentiment_class = resolve_community_llm_class(llm_result, score)
         evidence["sentiment_class"] = sentiment_class
         result.update(
             {
@@ -1230,6 +1596,7 @@ def upsert_community_daily_summary(
     trade_date: str,
     use_llm: bool = True,
     source: str = "eastmoney_guba",
+    llm_stats: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     normalized_day = normalize_day(trade_date)
     if not normalized_day:
@@ -1259,6 +1626,7 @@ def upsert_community_daily_summary(
             "top_keywords": keyword_counts[:12],
         },
         use_llm=use_llm,
+        llm_stats=llm_stats,
     )
     generated_at = now_iso()
     raw = {
@@ -1371,7 +1739,7 @@ def community_daily_evidence_rows(
 def community_daily_score(rows: list[dict[str, Any]]) -> dict[str, float]:
     if not rows:
         return {"score": 0.0, "confidence": 0.0}
-    scores = [clamp_float(row.get("sentiment_score"), -2.0, 2.0) for row in rows]
+    scores = [normalize_community_score(row.get("sentiment_score")) for row in rows]
     confidences = [clamp_float(row.get("confidence"), 0.0, 1.0) for row in rows]
     class_counts = community_class_counts(rows)
     return {
@@ -1396,11 +1764,12 @@ def community_daily_conclusion(
     trade_date: str,
     stats: dict[str, Any],
     use_llm: bool = True,
+    llm_stats: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     llm = preferred_llm_config()
     if use_llm and llm["configured"]:
         try:
-            conclusion = llm_community_daily_conclusion(symbol, trade_date, stats, llm)
+            conclusion = llm_community_daily_conclusion(symbol, trade_date, stats, llm, llm_stats=llm_stats)
             if conclusion:
                 return {"conclusion": conclusion, "model_provider": llm["provider"], "model_name": llm["model"]}
         except Exception:
@@ -1417,7 +1786,9 @@ def llm_community_daily_conclusion(
     trade_date: str,
     stats: dict[str, Any],
     llm: dict[str, Any],
+    llm_stats: dict[str, Any] | None = None,
 ) -> str:
+    started = time.monotonic()
     payload = {
         "model": llm["model"],
         "messages": [
@@ -1453,6 +1824,7 @@ def llm_community_daily_conclusion(
     )
     with urlopen(request, timeout=llm_timeout_seconds(community=True)) as response:
         body = response.read().decode("utf-8", errors="ignore")
+    record_daily_conclusion_request(llm_stats, elapsed_ms(started))
     response_payload = json.loads(body)
     content = str(response_payload.get("choices", [{}])[0].get("message", {}).get("content") or "{}")
     parsed = parse_json_object(content)
@@ -1513,6 +1885,8 @@ def decode_community_daily(row: sqlite3.Row) -> dict[str, Any]:
     item["label_counts"] = parse_json(item.pop("label_counts_json"), {})
     item["keyword_counts"] = parse_json(item.pop("keyword_counts_json"), [])
     item["raw"] = parse_json(item.pop("raw_json"), {})
+    if item.get("sentiment_score") is not None:
+        item["sentiment_score"] = normalize_community_score(item["sentiment_score"])
     return item
 
 
@@ -1598,6 +1972,67 @@ def community_analysis_day() -> str:
     return date.today().isoformat()
 
 
+def resolve_sentiment_snapshot_row(
+    conn: sqlite3.Connection,
+    symbol: str,
+    window_days: int | None = None,
+) -> sqlite3.Row | None:
+    params: list[Any] = [symbol, SENTIMENT_METHOD_VERSION]
+    window_sql = ""
+    if window_days is not None:
+        window_sql = "and window_days = ?"
+        params.append(clean_days(window_days))
+    row = conn.execute(
+        f"""
+        select *
+        from sentiment_snapshots
+        where symbol = ?
+          and method_version = ?
+          {window_sql}
+        order by generated_at desc, id desc
+        limit 1
+        """,
+        tuple(params),
+    ).fetchone()
+    if row:
+        return row
+    fallback_params: list[Any] = [symbol]
+    if window_days is not None:
+        fallback_params.append(clean_days(window_days))
+    return conn.execute(
+        f"""
+        select *
+        from sentiment_snapshots
+        where symbol = ?
+          {window_sql}
+        order by generated_at desc, id desc
+        limit 1
+        """,
+        tuple(fallback_params),
+    ).fetchone()
+
+
+def community_evidence_method_versions(conn: sqlite3.Connection, symbol: str, trade_day: str) -> list[str]:
+    rows = conn.execute(
+        """
+        select method_version, max(analyzed_at) as latest_analyzed_at
+        from sentiment_evidence
+        where symbol = ?
+          and sentiment_type = 'community'
+          and source_table = 'community_posts'
+          and lower(source) not like '%mock%'
+          and coalesce(nullif(substr(event_date, 1, 10), ''), substr(analyzed_at, 1, 10)) = ?
+        group by method_version
+        order by latest_analyzed_at desc
+        """,
+        (symbol, trade_day),
+    ).fetchall()
+    versions = [str(row["method_version"]) for row in rows if row["method_version"]]
+    if SENTIMENT_METHOD_VERSION in versions:
+        return [SENTIMENT_METHOD_VERSION] + [version for version in versions if version != SENTIMENT_METHOD_VERSION]
+    return versions
+
+
 def sentiment_evidence_day(item: dict[str, Any]) -> str:
     event_date = str(item.get("event_date") or "").strip()
     if event_date:
@@ -1624,7 +2059,7 @@ def sentiment_group_score(sentiment_type: str, items: list[dict[str, Any]], wind
 def community_average_score(items: list[dict[str, Any]]) -> dict[str, float]:
     if not items:
         return {"score": 0.0, "confidence": 0.0}
-    scores = [clamp_float(item.get("sentiment_score"), -2.0, 2.0) for item in items]
+    scores = [normalize_community_score(item.get("sentiment_score")) for item in items]
     confidences = [clamp_float(item.get("confidence"), 0.0, 1.0) for item in items]
     class_counts = community_class_counts(items)
     return {
@@ -1645,7 +2080,7 @@ def community_class_counts(items: list[dict[str, Any]]) -> dict[str, int]:
         evidence = parse_json(item.get("evidence_json"), {}) if "evidence_json" in item else dict(item.get("evidence") or {})
         sentiment_class = evidence.get("sentiment_class")
         if not sentiment_class:
-            sentiment_class = community_class_from_score(clamp_float(item.get("sentiment_score"), -2.0, 2.0))
+            sentiment_class = community_class_from_score(item.get("sentiment_score"))
         normalized, _ = community_sentiment_class_score(sentiment_class)
         counts[normalized] = counts.get(normalized, 0) + 1
     return counts
@@ -1716,14 +2151,54 @@ def current_community_evidence_rows(
     limit: int | None = None,
     parse_payload: bool = False,
 ) -> list[dict[str, Any]]:
-    params: list[Any] = [symbol, SENTIMENT_METHOD_VERSION, community_analysis_day()]
+    trade_day = latest_community_evidence_day(conn, symbol, community_analysis_day()) or community_analysis_day()
+    for method_version in community_evidence_method_versions(conn, symbol, trade_day):
+        rows = _fetch_community_evidence_rows(
+            conn,
+            symbol,
+            trade_day,
+            method_version,
+            limit=limit,
+        )
+        if rows:
+            return _parse_community_evidence_rows(rows, parse_payload=parse_payload)
+    return []
+
+
+def latest_community_evidence_day(conn: sqlite3.Connection, symbol: str, preferred_day: str) -> str:
+    row = conn.execute(
+        """
+        select coalesce(nullif(substr(event_date, 1, 10), ''), substr(analyzed_at, 1, 10)) as evidence_day
+        from sentiment_evidence
+        where symbol = ?
+          and sentiment_type = 'community'
+          and source_table = 'community_posts'
+          and lower(source) not like '%mock%'
+          and coalesce(nullif(substr(event_date, 1, 10), ''), substr(analyzed_at, 1, 10)) <= ?
+        group by evidence_day
+        order by evidence_day desc
+        limit 1
+        """,
+        (symbol, preferred_day),
+    ).fetchone()
+    return str(row["evidence_day"] or "") if row else ""
+
+
+def _fetch_community_evidence_rows(
+    conn: sqlite3.Connection,
+    symbol: str,
+    trade_day: str,
+    method_version: str,
+    limit: int | None = None,
+) -> list[sqlite3.Row]:
+    params: list[Any] = [symbol, method_version, trade_day]
     limit_sql = ""
     if limit:
         limit_sql = "limit ?"
         params.append(clean_limit(limit, 200))
-    rows = conn.execute(
+    return conn.execute(
         f"""
-        select se.*, cp.title as source_title, cp.content as source_content
+        select se.*, cp.title as source_title, cp.content as source_content, cp.raw_json as source_raw_json
         from sentiment_evidence se
         left join community_posts cp
           on se.source_table = 'community_posts'
@@ -1739,13 +2214,25 @@ def current_community_evidence_rows(
         """,
         tuple(params),
     ).fetchall()
+
+
+def _parse_community_evidence_rows(
+    rows: list[sqlite3.Row],
+    parse_payload: bool = False,
+) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     seen_source_ids: set[str] = set()
     for row in rows:
         item = row_to_dict(row)
         source_title = item.pop("source_title", "")
         source_content = item.pop("source_content", "")
+        source_raw = parse_json(item.pop("source_raw_json", "{}"), {})
+        has_source_content = bool(str(source_content or "").strip())
         item["source_text"] = community_post_text(source_title or item.get("title"), source_content)
+        item["source_text_kind"] = "detail_text" if has_source_content else "list_title"
+        item["source_content_available"] = has_source_content
+        item["source_detail_error"] = str(source_raw.get("detail_error") or "")
+        item["source_original_verified"] = has_source_content
         source_id = str(item.get("source_id") or "")
         if source_id and source_id in seen_source_ids:
             continue
@@ -1756,6 +2243,7 @@ def current_community_evidence_rows(
         if parse_payload:
             item["keywords"] = parse_json(item.pop("keywords_json"), [])
             item["evidence"] = parse_json(item.pop("evidence_json"), {})
+        item["sentiment_score"] = normalize_community_score(item.get("sentiment_score"))
         items.append(item)
     return items
 
@@ -1785,7 +2273,7 @@ def apply_current_community_snapshot(conn: sqlite3.Connection, snapshot: dict[st
         "day": community_analysis_day(),
         "prompt_version": SENTIMENT_PROMPT_VERSION,
         "method_version": SENTIMENT_METHOD_VERSION,
-        "score_method": "today community class average, 正面/偏正面/中性/偏负面/负面 => +2/+1/0/-1/-2",
+        "score_method": "today community LLM sentiment_score (-100 to 100) average with sentiment_class counts",
     }
     snapshot["source_counts"] = source_counts
     snapshot["raw"] = raw
@@ -1995,19 +2483,35 @@ def chat_completion_analyze_text(
 
 
 def sentiment_llm_prompt(community: bool = False, batch: bool = True) -> str:
-    if community and batch:
+    if community:
+        output_shape = (
+            "请只返回JSON对象，格式为"
+            "{\"items\":[{\"id\":\"\",\"index\":0,\"sentiment_score\":0,\"sentiment_class\":\"中性\","
+            "\"confidence\":0.5,\"keywords\":[]}]}。"
+            if batch
+            else "请只返回JSON对象，字段包括 sentiment_score, sentiment_class, confidence, keywords, reason。"
+        )
         return (
-            "你是A股股吧短帖情绪分类器。判断文本对股票/后续股价的情绪，不判断发帖人心情。"
-            "只返回JSON对象："
-            "{\"items\":[{\"id\":\"\",\"index\":0,\"sentiment_class\":\"中性\",\"confidence\":0.5,"
-            "\"keywords\":[]}]}。"
-            "不要返回sentiment_score。保留输入id和顺序，不漏项不新增。"
-            "sentiment_class只能是：正面、偏正面、中性、偏负面、负面。"
+            "你是A股股吧短帖情绪分类器。核心任务：判断文本对“这只股票/股价后续表现”的情绪，"
+            "不要把发帖人的个人心情直接当作股票情绪。股吧短帖常有反话、黑话和省略语，必须按投资语义解释。"
+            "输入会提供stock_name/current_price/change_pct等上下文，表示评论所在股吧对应标的；"
+            "change_pct是最近交易日涨跌幅(%)，必须结合名称、现价与涨跌幅判断，不要把评论里提到的其他股票名误当成目标股。"
+            f"{output_shape}"
+            "批量输入时，每个输出项必须保留输入项的id，并按输入顺序返回；不要漏项、不要新增项。"
+            "sentiment_score范围-100到100，由你直接给出，正数偏利好股价、负数偏利空、0为中性，"
+            "分数应反映强弱程度（例如明显利好可给60到90，轻微偏正约10到30）。"
+            "sentiment_class只能是：正面、偏正面、中性、偏负面、负面，必须与sentiment_score方向一致。"
             "confidence范围0到1，keywords提取1到5个原文情绪词或短语。"
-            "股吧语义：卖飞/卖早/踏空/后悔卖了/没拿住=股票强势偏正；"
-            "可以了/满意/舒服/起飞/飞/突破/指标线没跟上/指标滞后=偏正；"
-            "甩下车/洗盘/震仓/散户下车/拿不住=中性偏正；"
-            "出货/诱多/见顶/高位别追/崩/跌停/割肉/套牢/亏麻/利空/处罚/退市/暴雷=负。"
+            "社区语义规则："
+            "1. “卖飞、卖早了、踏空、后悔卖了、没拿住”表示股票涨得比卖出者预期强，通常是偏正面或正面；"
+            "不要因为“遗憾、后悔”给股票负分。"
+            "2. “可以了、可以可以、舒服、满意、起飞、飞、突破、指标线还没跟上、指标滞后”通常表达上涨强势或满意，"
+            "应偏正面；只有同时明确出现“别追、见顶、危险、诱多、出货”等才降为中性或负面。"
+            "3. “甩下车、洗盘、震仓、散户下车、拿不住”在股吧语境常表示强势上涨/主力洗盘叙事，通常中性偏正面；"
+            "不要自动归为风险提示。"
+            "4. 只有明确出现“出货、诱多、见顶、高位别追、崩、跌停、割肉、套牢、亏麻、利空、处罚、退市、暴雷”等，"
+            "才给明显负分，sentiment_class应为偏负面或负面。"
+            "5. 短文本或语义不完整时降低confidence；不要为了一个孤立词给极端分。"
         )
     output_shape = (
         "请只返回JSON对象，格式为"
@@ -2023,24 +2527,6 @@ def sentiment_llm_prompt(community: bool = False, batch: bool = True) -> str:
         "keywords提取1到8个情绪面关键词或短语，优先使用原文中的词；不要只返回股票名、公司名或宽泛行业名。"
         "reason用一句中文说明判定依据，不要给买卖建议。"
     )
-    if community:
-        return (
-            "你是A股股吧短帖情绪分类器。核心任务：判断文本对“这只股票/股价后续表现”的情绪，"
-            "不要把发帖人的个人心情直接当作股票情绪。股吧短帖常有反话、黑话和省略语，必须按投资语义解释。"
-            f"{common}"
-            "社区语义规则："
-            "1. “卖飞、卖早了、踏空、后悔卖了、没拿住”表示股票涨得比卖出者预期强，通常是偏正面或正面；"
-            "不要因为“遗憾、后悔”给股票负分。"
-            "2. “可以了、可以可以、舒服、满意、起飞、飞、突破、指标线还没跟上、指标滞后”通常表达上涨强势或满意，"
-            "应偏正面；只有同时明确出现“别追、见顶、危险、诱多、出货”等才降为中性或负面。"
-            "3. “甩下车、洗盘、震仓、散户下车、拿不住”在股吧语境常表示强势上涨/主力洗盘叙事，通常中性偏正面；"
-            "不要自动归为风险提示。"
-            "4. 只有明确出现“出货、诱多、见顶、高位别追、崩、跌停、割肉、套牢、亏麻、利空、处罚、退市、暴雷”等，"
-            "才给明显负分或category=risk/bearish。"
-            "5. 短文本或语义不完整时降低confidence；不要为了一个孤立词给极端分。"
-            "6. category尽量用 community_bullish, community_bearish, community_satisfied, community_regret_bullish, "
-            "community_momentum, community_washout, rumor, neutral。"
-        )
     return (
         "你是A股公告、新闻和财报文本情绪分类器。核心任务：判断文本事实对上市公司/股票投资情绪的影响，"
         "不要只按单个情绪词打分，要看事件本身。"
@@ -2064,13 +2550,15 @@ def chat_completion_analyze_text_batch(
         compact_text = re.sub(r"\s+", " ", str(item.get("text") or item.get("title") or "")).strip()
         compact_text = compact_text[:llm_text_limit(community=community)]
         if community:
-            compact_items.append(
-                {
-                    "id": llm_item_id(item),
-                    "index": index,
-                    "text": compact_text,
-                }
-            )
+            compact_item = {
+                "id": llm_item_id(item),
+                "index": index,
+                "text": compact_text,
+            }
+            stock_context = community_llm_stock_context(item)
+            if stock_context:
+                compact_item.update(stock_context)
+            compact_items.append(compact_item)
         else:
             compact_items.append(
                 {
@@ -2257,6 +2745,34 @@ def normalize_symbol(conn: sqlite3.Connection, raw: str) -> str:
     return (infer_symbol(text.upper()) or text.upper()).strip()
 
 
+def sentiment_account_id(account_id: str | None = None) -> str:
+    explicit = str(account_id or os.environ.get("KEIKO_SENTIMENT_ACCOUNT_ID", "")).strip()
+    return explicit or DEFAULT_SENTIMENT_ACCOUNT_ID
+
+
+def resolve_sentiment_target_symbols(
+    conn: sqlite3.Connection,
+    symbols: list[str],
+    *,
+    days: int = 30,
+    limit: int = 80,
+    account_id: str | None = None,
+    favorites_only: bool = False,
+) -> tuple[list[str], str]:
+    target_symbols = normalize_symbols(conn, symbols)
+    if target_symbols:
+        return target_symbols, "requested"
+    favorite_symbols = normalize_symbols(
+        conn,
+        favorite_symbols_for_accounts(conn, sentiment_account_id(account_id)),
+    )
+    if favorite_symbols:
+        return favorite_symbols, "account_favorites"
+    if favorites_only:
+        return [], "account_favorites_empty"
+    return sentiment_candidate_symbols(conn, limit=limit, days=days), "recent_activity"
+
+
 def sentiment_candidate_symbols(conn: sqlite3.Connection, limit: int = 80, days: int = 30) -> list[str]:
     cutoff = cutoff_date(days)
     rows = conn.execute(
@@ -2282,6 +2798,13 @@ def scalar_count(conn: sqlite3.Connection, table: str) -> int:
     return int(conn.execute(f"select count(*) as count from {table}").fetchone()["count"])
 
 
+def new_llm_inventory() -> dict[str, dict[str, int]]:
+    return {
+        "community": {"total": 0, "cache_hits": 0, "uncached": 0},
+        "filing_news": {"total": 0, "cache_hits": 0, "uncached": 0},
+    }
+
+
 def new_sentiment_performance() -> dict[str, Any]:
     llm = preferred_llm_config()
     return {
@@ -2303,6 +2826,8 @@ def new_sentiment_performance() -> dict[str, Any]:
             "duration_ms": 0,
             "errors": 0,
             "fallback_items": 0,
+            "daily_conclusion_requests": 0,
+            "inventory": new_llm_inventory(),
         },
     }
 
@@ -2329,8 +2854,15 @@ def merge_sentiment_performance(target: dict[str, Any], source: dict[str, Any], 
 
 
 def merge_llm_stats(target: dict[str, Any], source: dict[str, Any]) -> None:
-    for key in ("requests", "items", "cache_hits", "duration_ms", "errors", "fallback_items"):
+    for key in ("requests", "items", "cache_hits", "duration_ms", "errors", "fallback_items", "daily_conclusion_requests"):
         target[key] = int(target.get(key) or 0) + int(source.get(key) or 0)
+    source_inventory = source.get("inventory") or {}
+    if source_inventory:
+        target_inventory = target.setdefault("inventory", new_llm_inventory())
+        for channel, values in source_inventory.items():
+            bucket = target_inventory.setdefault(channel, {"total": 0, "cache_hits": 0, "uncached": 0})
+            for field in ("total", "cache_hits", "uncached"):
+                bucket[field] = int(bucket.get(field) or 0) + int((values or {}).get(field) or 0)
     for key in (
         "provider",
         "model",
@@ -2350,6 +2882,133 @@ def record_llm_cache_hits(stats: dict[str, Any] | None, count: int) -> None:
     if not stats or count <= 0:
         return
     stats["cache_hits"] = int(stats.get("cache_hits") or 0) + int(count)
+
+
+def record_llm_inventory(stats: dict[str, Any] | None, channel: str, total: int, cache_hits: int) -> None:
+    if not stats:
+        return
+    total = max(0, int(total or 0))
+    cache_hits = max(0, min(int(cache_hits or 0), total))
+    uncached = max(0, total - cache_hits)
+    inventory = stats.setdefault("inventory", new_llm_inventory())
+    bucket = inventory.setdefault(channel, {"total": 0, "cache_hits": 0, "uncached": 0})
+    bucket["total"] = int(bucket.get("total") or 0) + total
+    bucket["cache_hits"] = int(bucket.get("cache_hits") or 0) + cache_hits
+    bucket["uncached"] = int(bucket.get("uncached") or 0) + uncached
+    record_llm_cache_hits(stats, cache_hits)
+
+
+def record_daily_conclusion_request(stats: dict[str, Any] | None, duration_ms: int = 0) -> None:
+    if not stats:
+        return
+    stats["daily_conclusion_requests"] = int(stats.get("daily_conclusion_requests") or 0) + 1
+    stats["requests"] = int(stats.get("requests") or 0) + 1
+    stats["items"] = int(stats.get("items") or 0) + 1
+    stats["duration_ms"] = int(stats.get("duration_ms") or 0) + int(duration_ms or 0)
+
+
+def summarize_llm_usage(llm_stats: dict[str, Any] | None) -> dict[str, Any]:
+    stats = dict(llm_stats or {})
+    inventory = stats.get("inventory") or new_llm_inventory()
+    total_items = sum(int((bucket or {}).get("total") or 0) for bucket in inventory.values())
+    inventory_cache_hits = sum(int((bucket or {}).get("cache_hits") or 0) for bucket in inventory.values())
+    inventory_uncached = sum(int((bucket or {}).get("uncached") or 0) for bucket in inventory.values())
+    cache_hits = int(stats.get("cache_hits") or 0)
+    llm_requests = int(stats.get("requests") or 0)
+    llm_request_items = int(stats.get("items") or 0)
+    daily_conclusion_requests = int(stats.get("daily_conclusion_requests") or 0)
+    comment_llm_requests = max(0, llm_requests - daily_conclusion_requests)
+    comment_llm_items = max(0, llm_request_items - daily_conclusion_requests)
+    return {
+        "provider": stats.get("provider"),
+        "model": stats.get("model"),
+        "configured": bool(stats.get("configured")),
+        "inventory": inventory,
+        "cache_hits": cache_hits,
+        "llm_requests": llm_requests,
+        "llm_request_items": llm_request_items,
+        "comment_llm_requests": comment_llm_requests,
+        "comment_llm_items": comment_llm_items,
+        "daily_conclusion_requests": daily_conclusion_requests,
+        "fallback_items": int(stats.get("fallback_items") or 0),
+        "errors": int(stats.get("errors") or 0),
+        "duration_ms": int(stats.get("duration_ms") or 0),
+        "totals": {
+            "items": total_items,
+            "cache_hits": inventory_cache_hits,
+            "uncached": inventory_uncached,
+        },
+        "accounting": {
+            "cache_hits_match_inventory": cache_hits == inventory_cache_hits,
+            "inventory_balanced": inventory_cache_hits + inventory_uncached == total_items,
+            "uncached_covers_llm_items": comment_llm_items <= inventory_uncached,
+        },
+    }
+
+
+def build_agent_usage(result: dict[str, Any]) -> dict[str, Any]:
+    sentiment = result.get("sentiment") or {}
+    performance = sentiment.get("performance") or {}
+    llm_usage = summarize_llm_usage(performance.get("llm") or {})
+    sentiment_counts = sentiment.get("counts") or {}
+    daily = result.get("daily") or {}
+    live = result.get("live_refresh") or {}
+    cleanup = result.get("cleanup") or {}
+    llm_usage["cycle"] = {
+        "symbol_source": result.get("symbol_source"),
+        "account_id": result.get("account_id"),
+        "symbols": len(result.get("symbols") or []),
+        "skipped": bool(result.get("skipped")),
+        "timed_out": bool(result.get("timed_out")),
+        "cycle_timeout_seconds": result.get("cycle_timeout_seconds"),
+        "community_posts_crawled": int(sentiment_counts.get("community_posts_crawled") or sentiment_counts.get("community_posts") or 0),
+        "community_posts_today": int(sentiment_counts.get("community_posts_today") or sentiment_counts.get("community_evidence") or 0),
+        "community_evidence": int(sentiment_counts.get("community_evidence") or 0),
+        "filing_news_evidence": int(sentiment_counts.get("filing_news_evidence") or 0),
+        "market_evidence": int(sentiment_counts.get("market_evidence") or 0),
+        "snapshots": int(sentiment_counts.get("snapshots") or 0),
+        "daily_summaries": int((daily.get("counts") or {}).get("symbols") or 0),
+        "duration_ms": int(performance.get("total_ms") or 0),
+    }
+    llm_usage["live_refresh"] = live.get("counts") or {}
+    llm_usage["cleanup"] = cleanup.get("deleted") or {}
+    llm_usage["method_version"] = result.get("method_version")
+    llm_usage["prompt_version"] = result.get("prompt_version")
+    return llm_usage
+
+
+def collect_cycle_errors(result: dict[str, Any]) -> list[dict[str, str]]:
+    errors: list[dict[str, str]] = []
+    for key in ("live_refresh", "sentiment", "daily"):
+        payload = result.get(key) or {}
+        for item in payload.get("errors") or []:
+            if isinstance(item, dict):
+                errors.append({str(k): str(v) for k, v in item.items()})
+    return errors
+
+
+def recent_sentiment_agent_runs(conn: sqlite3.Connection, limit: int = 10) -> list[dict[str, Any]]:
+    rows = conn.execute(
+        """
+        select id, provider, scope, status, started_at, finished_at, requested_symbols,
+               updated_symbols, counts_json, errors_json
+        from ingestion_runs
+        where provider = 'community-sentiment-agent'
+        order by id desc
+        limit ?
+        """,
+        (clean_limit(limit, 50),),
+    ).fetchall()
+    items: list[dict[str, Any]] = []
+    for row in rows:
+        item = row_to_dict(row)
+        item["requested_symbols"] = parse_json(item.pop("requested_symbols", "[]"), [])
+        item["updated_symbols"] = parse_json(item.pop("updated_symbols", "[]"), [])
+        item["counts"] = parse_json(item.pop("counts_json", "{}"), {})
+        item["errors"] = parse_json(item.pop("errors_json", "[]"), [])
+        item["usage"] = item["counts"] if isinstance(item["counts"], dict) else {}
+        items.append(item)
+    return items
 
 
 def record_llm_fallbacks(stats: dict[str, Any] | None, count: int) -> None:
@@ -2431,6 +3090,56 @@ def llm_timeout_seconds(community: bool = False) -> int:
     except ValueError:
         parsed = default
     return max(5, min(parsed, 120))
+
+
+def sentiment_cycle_timeout_seconds() -> float:
+    value = os.environ.get("KEIKO_SENTIMENT_CYCLE_TIMEOUT_SECONDS", "").strip()
+    try:
+        parsed = float(value)
+    except ValueError:
+        parsed = SENTIMENT_CYCLE_TIMEOUT_SECONDS
+    return max(60.0, min(parsed, 7200.0))
+
+
+def resolve_cycle_timeout_seconds(cycle_timeout_seconds: float | None) -> float | None:
+    if cycle_timeout_seconds is not None:
+        if cycle_timeout_seconds <= 0:
+            return None
+        return max(60.0, min(float(cycle_timeout_seconds), 7200.0))
+    return sentiment_cycle_timeout_seconds()
+
+
+def cycle_deadline_from_timeout(cycle_timeout_seconds: float | None) -> tuple[float | None, float | None]:
+    resolved = resolve_cycle_timeout_seconds(cycle_timeout_seconds)
+    if resolved is None:
+        return None, None
+    return time.monotonic() + resolved, resolved
+
+
+def cycle_deadline_exceeded(cycle_deadline: float | None) -> bool:
+    return cycle_deadline is not None and time.monotonic() >= cycle_deadline
+
+
+def cycle_timeout_error(
+    cycle_deadline: float | None,
+    scope: str,
+    *,
+    pending_symbols: list[str] | None = None,
+    configured_timeout_seconds: float | None = None,
+) -> dict[str, str]:
+    configured = configured_timeout_seconds or resolve_cycle_timeout_seconds(None) or SENTIMENT_CYCLE_TIMEOUT_SECONDS
+    pending = [str(symbol) for symbol in (pending_symbols or []) if str(symbol).strip()]
+    message = f"{scope} stopped after {configured:.0f}s cycle timeout"
+    if pending:
+        preview = ", ".join(pending[:8])
+        suffix = f" (+{len(pending) - 8} more)" if len(pending) > 8 else ""
+        message = f"{message}; pending={preview}{suffix}"
+    return {
+        "scope": scope,
+        "error": message,
+        "pending_symbols": ",".join(pending),
+        "timeout_seconds": str(int(configured)),
+    }
 
 
 def llm_concurrency() -> int:

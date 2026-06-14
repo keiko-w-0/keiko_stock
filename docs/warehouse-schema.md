@@ -216,3 +216,40 @@ python3 scripts/debug_warehouse.py --raw sql "select raw_json from daily_bars wh
 ```bash
 python3 scripts/debug_warehouse.py sql "select symbol, trade_date, provider, adjust, json_valid(raw_json) raw_valid from daily_bars where symbol = '600489.SH' order by trade_date desc limit 3"
 ```
+
+
+去重
+```bash
+# 只扫描，不删
+python3 scripts/dedupe_warehouse.py --scan-only
+
+# 全量去重（公告标题 + 快照 + daily_bars 冗余未复权）
+python3 scripts/dedupe_warehouse.py
+
+# 分项控制
+python3 scripts/dedupe_warehouse.py --no-filings
+python3 scripts/dedupe_warehouse.py --no-daily-bars
+
+# debug 工具
+python3 scripts/debug_warehouse.py dedupe-scan
+```
+
+
+
+# agent写入明细查询
+每轮 30 分钟 agent 写入 ingestion_runs（provider=community-sentiment-agent），完整用量在 counts_json。
+
+Agent 日志示例：
+
+community-cycle run_id=42 ... llm_requests=3 llm_items=24 cache_hits=18 uncached=6 accounting_ok=
+
+```bash
+python3 scripts/debug_warehouse.py sql "
+select id, status, started_at,
+       json_extract(counts_json,'$.cache_hits') cache_hits,
+       json_extract(counts_json,'$.llm_requests') llm_requests,
+       json_extract(counts_json,'$.llm_request_items') llm_items
+from ingestion_runs
+where provider='community-sentiment-agent'
+order by id desc limit 10"
+```

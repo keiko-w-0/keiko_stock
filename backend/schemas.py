@@ -76,16 +76,18 @@ class SearchHistoryInput(BaseModel):
 
 class SentimentRefreshInput(BaseModel):
     symbols: list[str] = Field(default_factory=list)
+    account_id: str = ""
     days: int = Field(default=30, ge=1, le=365)
     use_llm: bool = True
     crawl_community: bool = False
+    analyze_filing_news: bool = False
     community_limit: int = Field(default=120, ge=1, le=200)
     evidence_limit: int = Field(default=120, ge=1, le=200)
 
 
 class CommunityCrawlInput(BaseModel):
     symbols: list[str] = Field(default_factory=list)
-    source: str = "eastmoney_guba"
+    source: str = "all"
     limit: int = Field(default=120, ge=1, le=200)
     timeout: int = Field(default=15, ge=3, le=60)
     sleep_seconds: float = Field(default=0.8, ge=0, le=10)
@@ -93,6 +95,7 @@ class CommunityCrawlInput(BaseModel):
 
 class CommunitySentimentCycleInput(BaseModel):
     symbols: list[str] = Field(default_factory=list)
+    account_id: str = ""
     use_llm: bool = True
     community_limit: int = Field(default=120, ge=1, le=200)
     evidence_limit: int = Field(default=120, ge=1, le=200)
@@ -101,3 +104,5 @@ class CommunitySentimentCycleInput(BaseModel):
     refresh_market: bool = True
     refresh_filings: bool = True
     market_days: int = Field(default=20, ge=3, le=80)
+    favorites_only: bool = True
+    cycle_timeout_seconds: float | None = None

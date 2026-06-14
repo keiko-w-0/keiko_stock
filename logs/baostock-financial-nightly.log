@@ -2434,3 +2434,1183 @@ logout success!
     "latest_daily_bar": "2026-06-12"
   }
 }
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 151,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T16:33:29",
+  "finished_at": "2026-06-13T16:53:02",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 0,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 0,
+    "company_reports": 0,
+    "batches": 3,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1412,
+    "consecutive_error_batches": 3,
+    "last_progress_at": "2026-06-13T16:53:02",
+    "paused_after_error_batches": true
+  },
+  "errors": [
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1127412,
+    "financial_metrics": 23535,
+    "filings": 10948,
+    "company_reports": 274,
+    "community_posts": 716,
+    "sentiment_evidence": 1153,
+    "sentiment_snapshots": 29,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 163,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T17:18:39",
+  "finished_at": "2026-06-13T17:42:01",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 9,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601918.SH",
+    "601919.SH",
+    "601921.SH",
+    "601928.SH",
+    "601929.SH",
+    "601933.SH",
+    "601939.SH",
+    "601949.SH",
+    "601952.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 36,
+    "company_reports": 1,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1403,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T17:42:01",
+    "paused_after_max_batches": true
+  },
+  "errors": [
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1128447,
+    "financial_metrics": 23571,
+    "filings": 10948,
+    "company_reports": 275,
+    "community_posts": 724,
+    "sentiment_evidence": 1175,
+    "sentiment_snapshots": 31,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+{
+  "id": 170,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T18:03:50",
+  "finished_at": "2026-06-13T18:29:07",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 9,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601956.SH",
+    "601958.SH",
+    "601963.SH",
+    "601965.SH",
+    "601966.SH",
+    "601968.SH",
+    "601969.SH",
+    "601975.SH",
+    "601985.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 36,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1394,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T18:29:07",
+    "paused_after_max_batches": true
+  },
+  "errors": [
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    },
+    {
+      "scope": "baostock-company-reports-batch",
+      "error": "BaoStock company reports timed out after 60s"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1129837,
+    "financial_metrics": 23607,
+    "filings": 10948,
+    "company_reports": 275,
+    "community_posts": 1269,
+    "sentiment_evidence": 1290,
+    "sentiment_snapshots": 35,
+    "community_sentiment_daily": 2,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 182,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T19:04:50",
+  "finished_at": "2026-06-13T19:28:51",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 9,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "601988.SH",
+    "601990.SH",
+    "601991.SH",
+    "601992.SH",
+    "601995.SH",
+    "601996.SH",
+    "601997.SH",
+    "601998.SH",
+    "601999.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 36,
+    "company_reports": 1,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1385,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T19:28:51",
+    "paused_after_max_batches": true
+  },
+  "errors": [
+    {
+      "scope": "baostock-quarterly-financials-batch",
+      "error": "BaoStock quarterly financials timed out after 360s"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130895,
+    "financial_metrics": 23643,
+    "filings": 10948,
+    "company_reports": 276,
+    "community_posts": 1712,
+    "sentiment_evidence": 1819,
+    "sentiment_snapshots": 44,
+    "community_sentiment_daily": 10,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 196,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T20:05:52",
+  "finished_at": "2026-06-13T20:25:16",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "603000.SH",
+    "603001.SH",
+    "603002.SH",
+    "603004.SH",
+    "603005.SH",
+    "603006.SH",
+    "603007.SH",
+    "603008.SH",
+    "603009.SH",
+    "603010.SH",
+    "603011.SH",
+    "603012.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 0,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1373,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T20:25:16",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130895,
+    "financial_metrics": 23691,
+    "filings": 10992,
+    "company_reports": 276,
+    "community_posts": 2440,
+    "sentiment_evidence": 2091,
+    "sentiment_snapshots": 51,
+    "community_sentiment_daily": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+服务器连接失败，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 226,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background",
+  "status": "partial",
+  "started_at": "2026-06-13T21:06:15",
+  "finished_at": "2026-06-13T21:13:17",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 12,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "603013.SH",
+    "603014.SH",
+    "603015.SH",
+    "603016.SH",
+    "603017.SH",
+    "603018.SH",
+    "603019.SH",
+    "603020.SH",
+    "603021.SH",
+    "603022.SH",
+    "603023.SH",
+    "603025.SH"
+  ],
+  "counts": {
+    "symbols": 0,
+    "financial_metrics": 48,
+    "company_reports": 1,
+    "batches": 4,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "last_batch_symbol_count": 3,
+    "remaining_candidates": 1361,
+    "consecutive_error_batches": 0,
+    "last_progress_at": "2026-06-13T21:13:17",
+    "paused_after_max_batches": true
+  },
+  "errors": [],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130907,
+    "financial_metrics": 23739,
+    "filings": 10992,
+    "company_reports": 277,
+    "community_posts": 2471,
+    "sentiment_evidence": 2119,
+    "sentiment_snapshots": 51,
+    "community_sentiment_daily": 14,
+    "latest_daily_bar": "2026-06-12"
+  }
+}
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+[Errno 32] Broken pipe
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout failed!
+login success!
+logout success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+timed out
+接收数据异常，请稍后再试。
+[Errno 54] Connection reset by peer
+接收数据异常，请稍后再试。
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout failed!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+login success!
+logout success!
+{
+  "id": 328,
+  "provider": "baostock",
+  "scope": "a-share-quarterly-financials-background:universe",
+  "status": "failed",
+  "started_at": "2026-06-14T02:40:46",
+  "finished_at": "2026-06-14T15:02:06",
+  "requested_symbol_count": 0,
+  "updated_symbol_count": 177,
+  "requested_symbols_sample": [],
+  "updated_symbols_sample": [
+    "603182.SH",
+    "603183.SH",
+    "603185.SH",
+    "603186.SH",
+    "603187.SH",
+    "603188.SH",
+    "603189.SH",
+    "603190.SH",
+    "603191.SH",
+    "603192.SH",
+    "603193.SH",
+    "603194.SH",
+    "603195.SH",
+    "603196.SH",
+    "603197.SH",
+    "603198.SH",
+    "603199.SH",
+    "603200.SH",
+    "603201.SH",
+    "603202.SH",
+    "603203.SH",
+    "603205.SH",
+    "603206.SH",
+    "603207.SH",
+    "603208.SH",
+    "603209.SH",
+    "603210.SH",
+    "603211.SH",
+    "603212.SH",
+    "603213.SH",
+    "603214.SH",
+    "603215.SH",
+    "603216.SH",
+    "603217.SH",
+    "603218.SH",
+    "603219.SH",
+    "603220.SH",
+    "603221.SH",
+    "603222.SH",
+    "603223.SH",
+    "603225.SH",
+    "603226.SH",
+    "603227.SH",
+    "603228.SH",
+    "603229.SH",
+    "603230.SH",
+    "603231.SH",
+    "603232.SH",
+    "603233.SH",
+    "603235.SH"
+  ],
+  "counts": {
+    "symbols": 7273,
+    "financial_metrics": 708,
+    "company_reports": 5,
+    "batches": 59,
+    "batch_size": 3,
+    "quarters": 4,
+    "periods": [
+      "2026Q1",
+      "2025Q4",
+      "2025Q3",
+      "2025Q2"
+    ],
+    "report_periods": [
+      "2026-03-31",
+      "2025-12-31",
+      "2025-09-30",
+      "2025-06-30"
+    ],
+    "requested_symbol_count": 0,
+    "remaining_candidates": 1184,
+    "last_progress_at": "2026-06-14T15:02:06",
+    "last_batch_symbol_count": 3,
+    "consecutive_error_batches": 0
+  },
+  "errors": [
+    {
+      "scope": "baostock-company-reports-batch",
+      "error": "BaoStock company reports timed out after 60s"
+    },
+    {
+      "scope": "baostock-company-reports-batch",
+      "error": "BaoStock company reports timed out after 60s"
+    },
+    {
+      "scope": "baostock-company-reports-batch",
+      "error": "BaoStock company reports timed out after 60s"
+    },
+    {
+      "symbol": "603112.SH",
+      "period": "2025Q3",
+      "section": "operation",
+      "error": "BaoStock query_operation_data:603112.SH:2025Q3 failed after 4 attempts: BaoStock query_operation_data failed: 用户未登录"
+    },
+    {
+      "scope": "baostock-company-reports-batch",
+      "error": "BaoStock company reports timed out after 60s"
+    },
+    {
+      "scope": "baostock-quarterly-financials-job",
+      "error": "database is locked"
+    }
+  ],
+  "warehouse": {
+    "symbols": 7596,
+    "aliases": 37782,
+    "daily_bars": 1130907,
+    "financial_metrics": 24447,
+    "filings": 12743,
+    "company_reports": 282,
+    "community_posts": 3015,
+    "sentiment_evidence": 2621,
+    "sentiment_snapshots": 70,
+    "community_sentiment_daily": 26,
+    "latest_daily_bar": "2026-06-12"
+  }
+}

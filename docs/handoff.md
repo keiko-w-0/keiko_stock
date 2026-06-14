@@ -1,19 +1,20 @@
 # 聚宝盆 Handoff
 
-更新时间：2026-06-07
+更新时间：2026-06-13
 
 这份文档用于换电脑或开启新 Codex 会话时快速接手。新会话优先阅读：
 
 1. `README.md`
 2. `scripts/debug_warehouse.README.md`
 3. `docs/warehouse-schema.md`
-4. `docs/engineering-todo.md`
-5. `docs/research-report.md`
-6. 本文件
+4. `docs/sentiment.README.md`（社区情绪：股吧+雪球、GLM prompt、半小时 agent）
+5. `docs/engineering-todo.md`
+6. `docs/research-report.md`
+7. 本文件
 
 ## 当前产品状态
 
-当前已从纯 mock 进入“本地 SQLite 历史数据仓库 + 真实/缓存数据源”阶段；仍不调用真实 LLM，不直接给交易建议。已接入账户级数据源配置、Finnhub 美股、Tushare A 股、AKShare 探索、BaoStock 历史日线/代码宇宙回刷、BaoStock 季频财务/公司报告回刷、官方公告测试入口、数据库筛选和数据库回测。当前优先开发网页版；macOS 和 iPhoneOS 打包暂缓。
+当前已从纯 mock 进入“本地 SQLite 历史数据仓库 + 真实/缓存数据源 + GLM/DeepSeek 情绪分析”阶段；仍不直接给交易建议。已接入账户级数据源配置、Finnhub 美股、Tushare A 股、AKShare 探索、BaoStock 历史日线/代码宇宙回刷、BaoStock 季频财务/公司报告回刷、官方公告测试入口、数据库筛选和数据库回测、**社区情绪（东方财富股吧 + 雪球）**。当前优先开发网页版；macOS 和 iPhoneOS 打包暂缓。
 
 已完成：
 
@@ -48,6 +49,14 @@
 - 异动分析：左侧入口，可从今日观察 + 关注列表 + 持仓列表选股，也支持自然语言问大盘/板块异动。
 - iPhone/PWA mock：manifest、service worker、mobile meta、底部导航、安全区适配。
 - Mac mock 包：已做 Universal binary，最低 macOS 12.0。
+- **社区情绪面（2026-06-13）**：
+  - `backend/sentiment.py`：公告/新闻/财报 + 社区评论 + 交易型情绪三类 evidence，聚合为 `sentiment_snapshots`；prompt 版本 `prompt-20260613-guba-v6`。
+  - 社区爬虫 `backend/providers/community.py`：默认 `source=all`，合并 **东方财富股吧** + **雪球讨论区**；`community_posts` 唯一键 `(source, symbol, source_post_id)`。
+  - 雪球 `backend/providers/xueqiu.py`：**实时 quote**（`stock.xueqiu.com/v5/stock/quote.json`，需 `KEIKO_XUEQIU_COOKIE`）补全 GLM prompt 里的名称/现价/涨跌幅；评论 API 被 WAF 拦截时用 **DrissionPage** headless 打开个股页，在浏览器内 `fetch(status.json)` 拿 JSON（参考 [ForgeRSS](https://github.com/tmwgsicp/ForgeRSS)）。
+  - 刷新范围：显式 symbols → **`acct-admin` 自选股**（`KEIKO_SENTIMENT_ACCOUNT_ID`）→ 近 30 日活跃股；不会无参扫全市场。
+  - 详情页按钮已改为 **「刷新」**；情绪 UI 遵循 A 股红涨绿跌（`cn-up` / `cn-down`）。
+  - 关注列表 agent：`scripts/run_community_sentiment_agent.py` + `scripts/com.keiko.community-sentiment-agent.plist`（`StartInterval=1800`，每天 08:00–24:00 期间每 30 分钟刷新）；日志 `logs/community-sentiment-agent.*.log`。
+  - 完整说明见 **`docs/sentiment.README.md`**。
 
 ## 本地启动
 
@@ -56,6 +65,8 @@
 ```bash
 python3 -m pip install -r requirements.txt
 ```
+
+情绪面额外依赖（已在 `requirements.txt`）：`curl_cffi`（雪球 quote）、`DrissionPage`（雪球评论 WAF fallback）。雪球行情还需在 `.env` 配置 `KEIKO_XUEQIU_COOKIE`，详见 `docs/sentiment.README.md`。
 
 Mac 本机预览：
 
@@ -96,6 +107,12 @@ http://<Mac 局域网 IP>:8101
 - `backend/analysis.py`：共享单股分析、共享异动分析和缓存统计。
 - `backend/data_quality.py`：mock 数据健康检查与刷新。
 - `backend/history.py`：历史数据仓库、BaoStock/AKShare/Tushare fallback、BaoStock 后台回刷、数据库筛选、回测日线读取。
+- `backend/sentiment.py`：情绪刷新编排、GLM/DeepSeek 批量分类、快照聚合、社区评论上下文。
+- `backend/providers/community.py`：股吧 + 雪球社区帖抓取与入库。
+- `backend/providers/xueqiu.py`：雪球实时 quote、HTTP/浏览器评论 API。
+- `scripts/run_community_sentiment_agent.py`：半小时社区情绪 agent（空参数 = 自选股）。
+- `scripts/com.keiko.community-sentiment-agent.plist`：macOS LaunchAgent 源配置，每 30 分钟 `--once`；关注列表刷新仅在 08:00–24:00 执行。
+- `docs/sentiment.README.md`：情绪面配置、验证命令、去重/缓存/保留口径。
 - `backend/providers/baostock_provider.py`：BaoStock 适配器。
 - `scripts/run_baostock_backfill.py`：BaoStock 后台/定时回刷脚本入口，复用 `ingestion_runs` 状态。
 - `scripts/run_baostock_financial_backfill.py`：BaoStock 季频财务指标和公司报告后台回刷脚本入口。
@@ -220,3 +237,6 @@ iPhone 上架需要：
 - BaoStock 季频任务现在按 `symbol + report_period` 做缺口计划，只请求本地缺失或超过 7 天的 `no_data` 季度；已有 `ok` 季度不会重复请求。单股检查用 `python3 scripts/debug_warehouse.py financial-symbol 600519.SH --quarters 12`。
 - `daily_bars` 主键包含 `adjust`；同一股票同一天出现未复权和 `qfq` 两行不是重复脏数据。查询时要显式考虑复权口径。
 - 调试数据仓库优先用 `python3 scripts/debug_warehouse.py coverage/providers/runs`，不要直接猜测写库结果。
+- **雪球 Cookie**：行情与 HTTP 评论需 `.env` 中 `KEIKO_XUEQIU_COOKIE`；改 `.env` 后必须重启 uvicorn。评论 WAF 失败时依赖已安装的 `DrissionPage`（`KEIKO_XUEQIU_BROWSER=auto` 默认）；单股首次约 12–15 秒。
+- **社区 agent LaunchAgent**：项目内 plist 为 `scripts/com.keiko.community-sentiment-agent.plist`，需手动 `launchctl load` 并改 `WorkingDirectory` 为本机路径；未加载时只有手动跑 agent。
+- **情绪 prompt 变更**：`SENTIMENT_PROMPT_VERSION` 一变，旧 LLM 缓存不再命中，整批评论会重跑 GLM。
