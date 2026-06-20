@@ -17,9 +17,9 @@ from .symbol_resolver import resolve_symbol
 
 
 MARKET_PROVIDER_PRIORITY = {
-    "tushare-market": 5,
+    "tushare-market": 6,
+    "baostock-market": 5,
     "akshare-market": 4,
-    "baostock-market": 3,
     "finnhub-market": 2,
     "mock-market": 1,
 }
@@ -278,6 +278,129 @@ def select_preferred_daily_bars(
     include_mock: bool,
     is_index: bool,
 ) -> list[sqlite3.Row]:
+    preferred_adjust = preferred_daily_adjust(conn, symbol, limit, include_mock, is_index)
+    if preferred_adjust is None:
+        return []
+    provider_filter = "" if include_mock else "and provider != 'mock-market'"
+    return conn.execute(
+        f"""
+        with source_rows as (
+          select *
+          from daily_bars
+          where symbol = ?
+            and coalesce(adjust, '') = ?
+            {provider_filter}
+        ),
+        ranked_daily as (
+          select
+            *,
+            row_number() over (
+              partition by trade_date
+              order by
+                case provider
+                  when 'tushare-market' then 6
+                  when 'baostock-market' then 5
+                  when 'akshare-market' then 4
+                  when 'finnhub-market' then 2
+                  else 1
+                end desc,
+                fetched_at desc
+            ) as rn
+          from source_rows
+        ),
+        valuation_fallback as (
+          select
+            trade_date,
+            max(case when pre_close is not null and pre_close > 0 then pre_close end) as pre_close,
+            max(case when turnover_rate is not null and turnover_rate > 0 then turnover_rate end) as turnover_rate,
+            max(case when pe_ttm is not null and pe_ttm > 0 then pe_ttm end) as pe_ttm,
+            max(case when pb is not null and pb > 0 then pb end) as pb,
+            max(case when ps_ttm is not null and ps_ttm > 0 then ps_ttm end) as ps_ttm,
+            max(case when pcf_ncf_ttm is not null and pcf_ncf_ttm > 0 then pcf_ncf_ttm end) as pcf_ncf_ttm,
+            max(case when provider = 'baostock-market' and volume > 0 then volume end) as baostock_volume,
+            max(case when provider = 'baostock-market' and amount > 0 then amount end) as baostock_amount,
+            max(case when provider = 'baostock-market' and open > 0 then open end) as baostock_open,
+            max(case when provider = 'baostock-market' and high > 0 then high end) as baostock_high,
+            max(case when provider = 'baostock-market' and low > 0 then low end) as baostock_low,
+            max(case when provider = 'baostock-market' and close > 0 then close end) as baostock_close
+          from source_rows
+          group by trade_date
+        )
+        select
+          r.symbol,
+          r.trade_date,
+          r.provider,
+          r.adjust,
+          case
+            when v.baostock_volume is not null
+             and r.volume is not null
+             and r.volume < v.baostock_volume * 0.8
+              then coalesce(v.baostock_open, r.open)
+            else r.open
+          end as open,
+          case
+            when v.baostock_volume is not null
+             and r.volume is not null
+             and r.volume < v.baostock_volume * 0.8
+              then coalesce(v.baostock_high, r.high)
+            else r.high
+          end as high,
+          case
+            when v.baostock_volume is not null
+             and r.volume is not null
+             and r.volume < v.baostock_volume * 0.8
+              then coalesce(v.baostock_low, r.low)
+            else r.low
+          end as low,
+          case
+            when v.baostock_volume is not null
+             and r.volume is not null
+             and r.volume < v.baostock_volume * 0.8
+              then coalesce(v.baostock_close, r.close)
+            else r.close
+          end as close,
+          coalesce(r.pre_close, v.pre_close) as pre_close,
+          r.change_pct,
+          case
+            when v.baostock_volume is not null
+             and r.volume is not null
+             and r.volume < v.baostock_volume * 0.8
+              then v.baostock_volume
+            else r.volume
+          end as volume,
+          case
+            when v.baostock_amount is not null
+             and r.amount is not null
+             and r.amount < v.baostock_amount * 0.8
+              then v.baostock_amount
+            else r.amount
+          end as amount,
+          coalesce(r.turnover_rate, v.turnover_rate) as turnover_rate,
+          coalesce(r.pe_ttm, v.pe_ttm) as pe_ttm,
+          coalesce(r.pb, v.pb) as pb,
+          coalesce(r.ps_ttm, v.ps_ttm) as ps_ttm,
+          coalesce(r.pcf_ncf_ttm, v.pcf_ncf_ttm) as pcf_ncf_ttm,
+          r.is_st,
+          r.trade_status,
+          r.raw_json,
+          r.fetched_at
+        from ranked_daily r
+        join valuation_fallback v on v.trade_date = r.trade_date
+        where r.rn = 1
+        order by r.trade_date desc
+        limit ?
+        """,
+        (symbol, preferred_adjust, limit),
+    ).fetchall()
+
+
+def preferred_daily_adjust(
+    conn: sqlite3.Connection,
+    symbol: str,
+    limit: int,
+    include_mock: bool,
+    is_index: bool,
+) -> str | None:
     provider_filter = "" if include_mock else "and provider != 'mock-market'"
     series_rows = conn.execute(
         f"""
@@ -299,21 +422,9 @@ def select_preferred_daily_bars(
         (symbol,),
     ).fetchall()
     if not series_rows:
-        return []
-
+        return None
     preferred = max(series_rows, key=lambda row: daily_bar_series_rank(row, is_index, limit))
-    return conn.execute(
-        """
-        select *
-        from daily_bars
-        where symbol = ?
-          and provider = ?
-          and coalesce(adjust, '') = ?
-        order by trade_date desc
-        limit ?
-        """,
-        (symbol, preferred["provider"], preferred["adjust"], limit),
-    ).fetchall()
+    return str(preferred["adjust"] or "")
 
 
 def daily_bar_series_rank(row: sqlite3.Row, is_index: bool, limit: int) -> tuple[Any, ...]:

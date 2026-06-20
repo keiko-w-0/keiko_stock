@@ -159,17 +159,6 @@ DATA_SOURCE_CONFIGS = [
         "configured": False,
     },
     {
-        "id": "cn-eastmoney-guba-community",
-        "market": "A",
-        "label": "东方财富股吧评论",
-        "provider": "eastmoney_guba",
-        "source_kind": "news",
-        "requires_key": False,
-        "credential_label": "无需 key",
-        "enabled": True,
-        "configured": True,
-    },
-    {
         "id": "cn-xueqiu-community",
         "market": "A",
         "label": "雪球评论",

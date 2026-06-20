@@ -206,7 +206,6 @@ def data_source_reliability_map(conn: sqlite3.Connection) -> dict[str, dict[str,
     }
     for source_id, providers in ingestion_groups.items():
         items[source_id] = ingestion_reliability(conn, source_id, providers)
-    items["cn-eastmoney-guba-community"] = community_reliability(conn, "cn-eastmoney-guba-community", "eastmoney_guba")
     items["cn-xueqiu-community"] = community_reliability(conn, "cn-xueqiu-community", "xueqiu")
     return items
 

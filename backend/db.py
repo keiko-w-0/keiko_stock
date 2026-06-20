@@ -21,10 +21,17 @@ def now_iso() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
-def get_db() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH, timeout=30)
-    conn.row_factory = sqlite3.Row
+def configure_sqlite_connection(conn: sqlite3.Connection) -> None:
+    conn.execute("pragma journal_mode = wal")
+    conn.execute("pragma synchronous = normal")
     conn.execute("pragma busy_timeout = 30000")
+    conn.execute("pragma foreign_keys = on")
+
+
+def get_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(DB_PATH, timeout=30, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    configure_sqlite_connection(conn)
     return conn
 
 
@@ -348,7 +355,7 @@ def init_db() -> None:
             create table if not exists community_sentiment_daily (
               id integer primary key autoincrement,
               symbol text not null references symbols(symbol),
-              source text not null default 'eastmoney_guba',
+              source text not null default 'xueqiu',
               trade_date text not null,
               analyzed_count integer not null default 0,
               positive_count integer not null default 0,

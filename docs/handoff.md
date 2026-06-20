@@ -1,20 +1,20 @@
 # 聚宝盆 Handoff
 
-更新时间：2026-06-13
+更新时间：2026-06-15
 
 这份文档用于换电脑或开启新 Codex 会话时快速接手。新会话优先阅读：
 
 1. `README.md`
 2. `scripts/debug_warehouse.README.md`
 3. `docs/warehouse-schema.md`
-4. `docs/sentiment.README.md`（社区情绪：股吧+雪球、GLM prompt、半小时 agent）
+4. `docs/sentiment.README.md`（社区情绪：雪球、GLM prompt、半小时 agent）
 5. `docs/engineering-todo.md`
 6. `docs/research-report.md`
 7. 本文件
 
 ## 当前产品状态
 
-当前已从纯 mock 进入“本地 SQLite 历史数据仓库 + 真实/缓存数据源 + GLM/DeepSeek 情绪分析”阶段；仍不直接给交易建议。已接入账户级数据源配置、Finnhub 美股、Tushare A 股、AKShare 探索、BaoStock 历史日线/代码宇宙回刷、BaoStock 季频财务/公司报告回刷、官方公告测试入口、数据库筛选和数据库回测、**社区情绪（东方财富股吧 + 雪球）**。当前优先开发网页版；macOS 和 iPhoneOS 打包暂缓。
+当前已从纯 mock 进入“本地 SQLite 历史数据仓库 + 真实/缓存数据源 + GLM/DeepSeek 情绪分析”阶段；仍不直接给交易建议。已接入账户级数据源配置、Finnhub 美股、Tushare A 股、AKShare 探索、BaoStock 历史日线/代码宇宙回刷、BaoStock 季频财务/公司报告回刷、官方公告测试入口、数据库筛选和数据库回测、**社区情绪（雪球）**。当前优先开发网页版；macOS 和 iPhoneOS 打包暂缓。
 
 已完成：
 
@@ -51,7 +51,7 @@
 - Mac mock 包：已做 Universal binary，最低 macOS 12.0。
 - **社区情绪面（2026-06-13）**：
   - `backend/sentiment.py`：公告/新闻/财报 + 社区评论 + 交易型情绪三类 evidence，聚合为 `sentiment_snapshots`；prompt 版本 `prompt-20260613-guba-v6`。
-  - 社区爬虫 `backend/providers/community.py`：默认 `source=all`，合并 **东方财富股吧** + **雪球讨论区**；`community_posts` 唯一键 `(source, symbol, source_post_id)`。
+  - 社区爬虫 `backend/providers/community.py`：默认 `source=xueqiu`；`source=all` 也归一到雪球讨论区；`community_posts` 唯一键 `(source, symbol, source_post_id)`。
   - 雪球 `backend/providers/xueqiu.py`：**实时 quote**（`stock.xueqiu.com/v5/stock/quote.json`，需 `KEIKO_XUEQIU_COOKIE`）补全 GLM prompt 里的名称/现价/涨跌幅；评论 API 被 WAF 拦截时用 **DrissionPage** headless 打开个股页，在浏览器内 `fetch(status.json)` 拿 JSON（参考 [ForgeRSS](https://github.com/tmwgsicp/ForgeRSS)）。
   - 刷新范围：显式 symbols → **`acct-admin` 自选股**（`KEIKO_SENTIMENT_ACCOUNT_ID`）→ 近 30 日活跃股；不会无参扫全市场。
   - 详情页按钮已改为 **「刷新」**；情绪 UI 遵循 A 股红涨绿跌（`cn-up` / `cn-down`）。

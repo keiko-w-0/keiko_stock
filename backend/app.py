@@ -22,8 +22,8 @@ from .history import (
     create_baostock_financial_backfill_job,
     ensure_query_data,
     ingestion_run_payload,
-    refresh_akshare_data,
     refresh_baostock_data,
+    refresh_market_data_baostock_first_batch,
     refresh_stock_detail_data,
     run_a_share_filings_backfill_job,
     run_baostock_backfill_job,
@@ -90,6 +90,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def static_file_response(path: str) -> FileResponse:
+    return FileResponse(
+        ROOT_DIR / path,
+        headers={
+            "Cache-Control": "no-store, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
 
 
 @app.on_event("startup")
@@ -803,7 +814,7 @@ def refresh_data(
             return refresh_tushare_data(conn, payload.symbols, payload.refresh_universe, account_id or DEFAULT_ACCOUNT_ID)
     if payload.provider == "akshare" or scope in {"akshare", "history", "a-share-history"}:
         with get_db() as conn:
-            return refresh_akshare_data(conn, payload.symbols, payload.refresh_universe)
+            return refresh_market_data_baostock_first_batch(conn, payload.symbols, payload.refresh_universe)
     if payload.provider == "baostock" or scope in {"baostock", "history-backfill", "a-share-backfill"}:
         with get_db() as conn:
             result = create_baostock_backfill_job(conn, payload.symbols, payload.refresh_universe)
@@ -833,34 +844,34 @@ def refresh_data(
 
 @app.get("/")
 def index() -> FileResponse:
-    return FileResponse(ROOT_DIR / "index.html")
+    return static_file_response("index.html")
 
 
 @app.get("/index.html")
 def index_html() -> FileResponse:
-    return FileResponse(ROOT_DIR / "index.html")
+    return static_file_response("index.html")
 
 
 @app.get("/styles.css")
 def styles() -> FileResponse:
-    return FileResponse(ROOT_DIR / "styles.css")
+    return static_file_response("styles.css")
 
 
 @app.get("/app.js")
 def app_js() -> FileResponse:
-    return FileResponse(ROOT_DIR / "app.js")
+    return static_file_response("app.js")
 
 
 @app.get("/manifest.webmanifest")
 def manifest() -> FileResponse:
-    return FileResponse(ROOT_DIR / "manifest.webmanifest")
+    return static_file_response("manifest.webmanifest")
 
 
 @app.get("/service-worker.js")
 def service_worker() -> FileResponse:
-    return FileResponse(ROOT_DIR / "service-worker.js")
+    return static_file_response("service-worker.js")
 
 
 @app.get("/assets/app-icon.svg")
 def app_icon() -> FileResponse:
-    return FileResponse(ROOT_DIR / "assets" / "app-icon.svg")
+    return static_file_response("assets/app-icon.svg")

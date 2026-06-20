@@ -18,7 +18,7 @@ from backend.sentiment import crawl_community_for_symbols, refresh_sentiment
 def main() -> int:
     parser = argparse.ArgumentParser(description="Crawl community discussion posts and optionally refresh sentiment.")
     parser.add_argument("symbols", nargs="+", help="Symbols or names to crawl, for example 600519.SH or 贵州茅台.")
-    parser.add_argument("--source", default="eastmoney_guba", help="Community source. Default: eastmoney_guba.")
+    parser.add_argument("--source", default="xueqiu", help="Community source. Default: xueqiu.")
     parser.add_argument("--limit", type=int, default=40, help="Posts per symbol.")
     parser.add_argument("--timeout", type=int, default=15, help="HTTP timeout seconds.")
     parser.add_argument("--sleep-seconds", type=float, default=0.8, help="Delay after each symbol request.")

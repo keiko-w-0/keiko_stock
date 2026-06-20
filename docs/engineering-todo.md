@@ -327,7 +327,7 @@
 
 ### Phase 1H：社区情绪（进行中）
 
-- [x] 东方财富股吧爬虫 + `community_posts` 入库。
+- [x] 旧社区源已剔除；`community_posts` 现仅保留雪球入库。
 - [x] 雪球讨论区爬虫（DrissionPage 浏览器内 fetch 过 WAF）。
 - [x] 雪球 quote 补 GLM prompt 实时价/涨跌幅（`KEIKO_XUEQIU_COOKIE`）。
 - [x] 社区 GLM 五档分类 + 关键词；A 股黑话 prompt 规则（guba-v6）。

@@ -18,7 +18,7 @@
 主要改动：
 
 - 新增情绪分析核心：`backend/sentiment.py`，覆盖公告/新闻/财报、社区讨论、交易型情绪三类来源，并写入 `sentiment_evidence` 与 `sentiment_snapshots`。
-- 新增社区数据源：`backend/providers/community.py`，接入东方财富股吧抓取与解析。
+- 新增社区数据源：`backend/providers/community.py`，接入旧社区源抓取与解析；该旧源已于 2026-06-15 剔除，当前社区源仅保留雪球。
 - 新增 API 和 schema：`backend/app.py`、`backend/schemas.py` 增加情绪状态、股票情绪、情绪刷新、社区抓取等接口输入。
 - 扩展数据库：`backend/db.py` 增加社区帖子、情绪证据、情绪快照等数据结构和索引。
 - 前端增加情绪面展示：`app.js`、`styles.css`、`index.html` 展示综合情绪、分项情绪、证据卡片、刷新状态和对应样式。

@@ -1,4 +1,4 @@
-const CACHE_NAME = "jubao-pen-source-reliability-v2";
+const CACHE_NAME = "jubao-pen-kline-tooltip-font-v7";
 const APP_SHELL = [
   "/",
   "/index.html",

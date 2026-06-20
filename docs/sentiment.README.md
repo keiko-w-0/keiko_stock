@@ -27,13 +27,12 @@
 
 从 `community_posts` 读帖子（标题 + 正文），默认分析上限 **120 条**。刷新前可先爬取社区数据（`crawl_community_for_symbols` → `backend/providers/community.py`）。
 
-#### 数据源（默认 `source=all`）
+#### 数据源（默认 `source=xueqiu`，`all` 也只等同雪球）
 
 | source | 说明 | 模块 |
 |---|---|---|
-| `eastmoney_guba` | 东方财富股吧 | HTTP 抓取列表页 + 详情页 |
 | `xueqiu` | 雪球个股讨论区 | HTTP 优先；WAF 拦截时 DrissionPage 浏览器内 `fetch` |
-| `all` | 上述两者合并 | 默认；单源失败记入 `errors`，不拖垮整轮 |
+| `all` | 当前等同 `xueqiu` | 保留兼容入口，不再抓取其它社区源 |
 
 `community_posts` 唯一键：`(source, symbol, source_post_id)`。同一评论重复抓取只更新同一行。
 
@@ -214,7 +213,7 @@ LLM 优先级：**GLM > DeepSeek**（读 `.env` 或环境变量）。
 
 ```bash
 # 单只股票试跑
-python3 scripts/run_community_sentiment_agent.py --once 600519.SH
+python3 scripts/run_community_sentiment_agent.py --once 000543.SZ
 
 # 空参数 = 仅刷新 acct-admin 关注列表
 python3 scripts/run_community_sentiment_agent.py --once
@@ -233,6 +232,7 @@ python3 scripts/run_community_sentiment_agent.py --once --all-active
 - 公告仅在 `filing_refresh_state` 有缺口时拉取
 - 使用 GLM/DeepSeek（`--no-llm` 仅本地排查）
 - **单轮超时**默认 **1200 秒（20 分钟）**（`KEIKO_SENTIMENT_CYCLE_TIMEOUT_SECONDS`）；超时后停止剩余股票，已完成的快照保留，状态记 `timed_out=true`。手动长跑可用 `--cycle-timeout-seconds 0` 关闭限制。
+- **并行刷新**：`refresh_sentiment` 按 **10 只一批**并行处理（`KEIKO_SENTIMENT_SYMBOL_BATCH_SIZE`，默认 10）；每只股票独立 SQLite 连接，批内同时爬社区 + GLM 分析。
 
 macOS 定时：`scripts/com.keiko.community-sentiment-agent.plist`（`StartInterval=1800`，每 30 分钟触发；脚本在 08:00 前自动跳过）
 
@@ -284,7 +284,8 @@ launchctl load ~/Library/LaunchAgents/com.keiko.community-sentiment-agent.plist
 
 **保留**
 
-- 单条股吧/雪球原文 + 单条分析结论：**3 天**（`cleanup_expired_community_sentiment`）
+- 单条股吧/雪球原文：长期保留在 `community_posts`，供后续回测使用
+- 单条社区分析结论：**3 天**（`cleanup_expired_community_sentiment`）
 - `community_sentiment_daily`：永久日汇总（计数、分数、关键词、LLM 总评，**不含**评论原文）
 
 ---

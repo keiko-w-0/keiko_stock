@@ -40,6 +40,7 @@ ENV_FILE = ROOT_DIR / ".env"
 DEFAULT_COMMUNITY_LIMIT = 120
 DEFAULT_SENTIMENT_EVIDENCE_LIMIT = 120
 COMMUNITY_DETAIL_RETENTION_DAYS = 3
+ENABLE_COMMUNITY_DAILY_CONCLUSION = False
 LLM_CACHE_TTL_MINUTES = 30
 LLM_BATCH_SIZE = 24
 LLM_COMMUNITY_BATCH_SIZE = 10
@@ -49,6 +50,7 @@ LLM_MAX_CONCURRENCY = 2
 LLM_BATCH_TIMEOUT_SECONDS = 25
 LLM_COMMUNITY_TIMEOUT_SECONDS = 40
 SENTIMENT_CYCLE_TIMEOUT_SECONDS = 1200.0
+SENTIMENT_SYMBOL_BATCH_SIZE = 10
 
 
 def refresh_sentiment(
@@ -86,43 +88,66 @@ def refresh_sentiment(
     }
     errors: list[dict[str, str]] = []
     refreshed: list[str] = []
+    refreshed_set: set[str] = set()
+    batch_size = sentiment_symbol_batch_size()
 
-    for symbol in target_symbols:
+    for batch in chunked_symbols(target_symbols, batch_size):
         if cycle_deadline_exceeded(cycle_deadline):
-            errors.append(cycle_timeout_error(cycle_deadline, "sentiment-refresh", pending_symbols=target_symbols[len(refreshed):]))
-            break
-        try:
-            if crawl_community:
-                crawl_started = time.monotonic()
-                crawl = crawl_community_for_symbols(conn, [symbol], limit=community_limit)
-                record_sentiment_step(
-                    performance,
-                    "community-crawl",
-                    crawl_started,
-                    {"symbol": symbol, "posts": int(crawl["counts"].get("posts", 0))},
+            errors.append(
+                cycle_timeout_error(
+                    cycle_deadline,
+                    "sentiment-refresh",
+                    pending_symbols=[symbol for symbol in target_symbols if symbol not in refreshed_set],
                 )
-                crawled = int(crawl["counts"].get("posts", 0))
-                counts["community_posts_crawled"] += crawled
-                counts["community_posts"] += crawled
-                errors.extend(crawl.get("errors") or [])
-            result = refresh_symbol_sentiment(
-                conn,
-                symbol,
-                days=days,
-                use_llm=use_llm,
-                evidence_limit=evidence_limit,
-                analyze_filing_news=analyze_filing_news,
             )
-            merge_sentiment_performance(performance, result.get("performance") or {}, symbol=symbol)
-            for key in ("filing_news_evidence", "community_evidence", "market_evidence", "snapshots"):
-                counts[key] += int(result["counts"].get(key, 0))
-            counts["community_posts_today"] += int(result["counts"].get("community_evidence", 0))
-            counts["symbols"] += 1
-            refreshed.append(symbol)
-        except Exception as exc:
-            errors.append({"symbol": symbol, "error": str(exc)})
+            break
 
-    conn.commit()
+        workers = min(batch_size, len(batch))
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = {
+                executor.submit(
+                    _refresh_sentiment_symbol_task,
+                    symbol,
+                    days=days,
+                    use_llm=use_llm,
+                    crawl_community=crawl_community,
+                    community_limit=community_limit,
+                    evidence_limit=evidence_limit,
+                    analyze_filing_news=analyze_filing_news,
+                ): symbol
+                for symbol in batch
+            }
+            for future in as_completed(futures):
+                task = future.result()
+                symbol = str(task.get("symbol") or "")
+                if not task.get("ok"):
+                    errors.append({"symbol": symbol, "error": str(task.get("error") or "sentiment refresh failed")})
+                    continue
+                result = task.get("result") or {}
+                merge_sentiment_performance(performance, result.get("performance") or {}, symbol=symbol)
+                for key in ("filing_news_evidence", "community_evidence", "market_evidence", "snapshots"):
+                    counts[key] += int((result.get("counts") or {}).get(key, 0))
+                counts["community_posts_today"] += int((result.get("counts") or {}).get("community_evidence", 0))
+                crawl_counts = task.get("crawl_counts") or {}
+                counts["community_posts_crawled"] += int(crawl_counts.get("community_posts_crawled") or 0)
+                counts["community_posts"] += int(crawl_counts.get("community_posts") or 0)
+                errors.extend(task.get("crawl_errors") or [])
+                counts["symbols"] += 1
+                if symbol and symbol not in refreshed_set:
+                    refreshed_set.add(symbol)
+                    refreshed.append(symbol)
+
+        if cycle_deadline_exceeded(cycle_deadline):
+            errors.append(
+                cycle_timeout_error(
+                    cycle_deadline,
+                    "sentiment-refresh",
+                    pending_symbols=[symbol for symbol in target_symbols if symbol not in refreshed_set],
+                )
+            )
+            break
+
+    refreshed = [symbol for symbol in target_symbols if symbol in refreshed_set]
     performance["total_ms"] = elapsed_ms(total_started)
     llm_stats = performance.get("llm") or {}
     return {
@@ -141,8 +166,61 @@ def refresh_sentiment(
         "errors": errors,
         "performance": performance,
         "usage": summarize_llm_usage(llm_stats),
+        "parallel_batch_size": batch_size,
         "refreshed_at": now_iso(),
     }
+
+
+def _refresh_sentiment_symbol_task(
+    symbol: str,
+    *,
+    days: int,
+    use_llm: bool,
+    crawl_community: bool,
+    community_limit: int,
+    evidence_limit: int,
+    analyze_filing_news: bool,
+) -> dict[str, Any]:
+    from .db import get_db
+
+    try:
+        with get_db() as conn:
+            crawl_counts = {"community_posts_crawled": 0, "community_posts": 0}
+            crawl_errors: list[dict[str, str]] = []
+            crawl_started = 0.0
+            if crawl_community:
+                crawl_started = time.monotonic()
+                crawl = crawl_community_for_symbols(conn, [symbol], limit=community_limit)
+                crawled = int(crawl["counts"].get("posts", 0))
+                crawl_counts = {"community_posts_crawled": crawled, "community_posts": crawled}
+                crawl_errors = list(crawl.get("errors") or [])
+            result = refresh_symbol_sentiment(
+                conn,
+                symbol,
+                days=days,
+                use_llm=use_llm,
+                evidence_limit=evidence_limit,
+                analyze_filing_news=analyze_filing_news,
+            )
+            performance = result.get("performance") or new_sentiment_performance()
+            if crawl_community:
+                record_sentiment_step(
+                    performance,
+                    "community-crawl",
+                    crawl_started,
+                    {"symbol": symbol, "posts": int(crawl_counts.get("community_posts_crawled") or 0)},
+                )
+                result["performance"] = performance
+            conn.commit()
+        return {
+            "ok": True,
+            "symbol": str(result.get("symbol") or symbol),
+            "result": result,
+            "crawl_counts": crawl_counts,
+            "crawl_errors": crawl_errors,
+        }
+    except Exception as exc:
+        return {"ok": False, "symbol": symbol, "error": str(exc)}
 
 
 def refresh_symbol_sentiment(
@@ -242,7 +320,7 @@ def sentiment_status(conn: sqlite3.Connection) -> dict[str, Any]:
         "prompt_version": SENTIMENT_PROMPT_VERSION,
         "llm": llm_config_status(mask=True),
         "community_sources": {
-            "default": "all",
+            "default": "xueqiu",
             "xueqiu_configured": xueqiu_configured(),
         },
         "counts": {
@@ -568,7 +646,7 @@ def refresh_live_inputs_for_community_cycle(
             "refreshed_at": now_iso(),
         }
 
-    from .history import refresh_akshare_data, refresh_filings_for_symbol_if_needed
+    from .history import refresh_filings_for_symbol_if_needed, refresh_market_data_baostock_first
 
     counts = {"market_symbols": 0, "daily_bars": 0, "market_snapshots": 0, "filing_symbols": 0, "filings": 0}
     errors: list[dict[str, str]] = []
@@ -581,18 +659,16 @@ def refresh_live_inputs_for_community_cycle(
         processed += 1
         if refresh_market:
             try:
-                result = refresh_akshare_data(
-                    conn,
-                    [symbol],
-                    refresh_universe=False,
-                    days=market_days,
-                    allow_slow_fallback=False,
-                )
+                result = refresh_market_data_baostock_first(conn, symbol, market_days)
                 market_counts = result.get("counts") or {}
-                counts["daily_bars"] += int(market_counts.get("daily_bars") or 0)
-                counts["market_snapshots"] += int(market_counts.get("market_snapshots") or 0)
-                counts["market_symbols"] += 1 if result.get("symbols") else 0
-                errors.extend(result.get("errors") or [])
+                daily_bars = int(market_counts.get("daily_bars") or 0)
+                market_snapshots = int(market_counts.get("market_snapshots") or 0)
+                counts["daily_bars"] += daily_bars
+                counts["market_snapshots"] += market_snapshots
+                market_refreshed = bool(result.get("symbols")) or bool(daily_bars or market_snapshots)
+                counts["market_symbols"] += 1 if market_refreshed else 0
+                if not market_refreshed:
+                    errors.extend(result.get("errors") or [])
             except Exception as exc:
                 errors.append({"symbol": symbol, "scope": "market", "error": str(exc)})
         if refresh_filings:
@@ -1595,7 +1671,7 @@ def upsert_community_daily_summary(
     symbol: str,
     trade_date: str,
     use_llm: bool = True,
-    source: str = "eastmoney_guba",
+    source: str = "xueqiu",
     llm_stats: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     normalized_day = normalize_day(trade_date)
@@ -1704,7 +1780,7 @@ def community_daily_evidence_rows(
     conn: sqlite3.Connection,
     symbol: str,
     trade_date: str,
-    source: str = "eastmoney_guba",
+    source: str = "xueqiu",
 ) -> list[dict[str, Any]]:
     rows = conn.execute(
         """
@@ -1766,6 +1842,8 @@ def community_daily_conclusion(
     use_llm: bool = True,
     llm_stats: dict[str, Any] | None = None,
 ) -> dict[str, str]:
+    if not ENABLE_COMMUNITY_DAILY_CONCLUSION:
+        return {"conclusion": "", "model_provider": "disabled", "model_name": ""}
     llm = preferred_llm_config()
     if use_llm and llm["configured"]:
         try:
@@ -1896,19 +1974,6 @@ def cleanup_expired_community_sentiment(
 ) -> dict[str, Any]:
     days = max(1, min(int(retention_days or COMMUNITY_DETAIL_RETENTION_DAYS), 30))
     cutoff = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
-    evidence_by_post = conn.execute(
-        """
-        delete from sentiment_evidence
-        where sentiment_type = 'community'
-          and source_table = 'community_posts'
-          and source_id in (
-            select cast(id as text)
-            from community_posts
-            where fetched_at < ?
-          )
-        """,
-        (cutoff,),
-    ).rowcount
     evidence_by_analysis = conn.execute(
         """
         delete from sentiment_evidence
@@ -1918,21 +1983,15 @@ def cleanup_expired_community_sentiment(
         """,
         (cutoff,),
     ).rowcount
-    posts = conn.execute(
-        """
-        delete from community_posts
-        where fetched_at < ?
-        """,
-        (cutoff,),
-    ).rowcount
     conn.commit()
     return {
         "mode": "community-sentiment-retention-cleanup",
         "retention_days": days,
         "cutoff": cutoff,
+        "preserve_community_posts": True,
         "deleted": {
-            "community_posts": max(posts, 0),
-            "community_evidence": max(evidence_by_post, 0) + max(evidence_by_analysis, 0),
+            "community_posts": 0,
+            "community_evidence": max(evidence_by_analysis, 0),
         },
         "cleaned_at": now_iso(),
     }
@@ -2072,6 +2131,28 @@ def community_average_score(items: list[dict[str, Any]]) -> dict[str, float]:
         "mild_negative_count": class_counts["偏负面"],
         "negative_count": class_counts["负面"],
     }
+
+
+def community_source_breakdown(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for item in items:
+        source = str(item.get("source") or "community").strip() or "community"
+        grouped.setdefault(source, []).append(item)
+    source_order = {"xueqiu": 0}
+    rows: list[dict[str, Any]] = []
+    for source, source_items in grouped.items():
+        stats = community_average_score(source_items)
+        rows.append(
+            {
+                "source": source,
+                "score": stats.get("score"),
+                "confidence": stats.get("confidence"),
+                "count": len(source_items),
+                "class_counts": stats.get("class_counts", {}),
+            }
+        )
+    rows.sort(key=lambda item: (source_order.get(str(item.get("source") or ""), 99), -int(item.get("count") or 0), str(item.get("source") or "")))
+    return rows
 
 
 def community_class_counts(items: list[dict[str, Any]]) -> dict[str, int]:
@@ -2260,19 +2341,24 @@ def apply_current_community_snapshot(conn: sqlite3.Connection, snapshot: dict[st
     type_scores = dict(raw.get("type_scores") or {})
     if current_rows:
         community_stats = community_average_score(current_rows)
+        community_sources = community_source_breakdown(current_rows)
         source_counts["community"] = len(current_rows)
         type_scores["community"] = community_stats
         snapshot["community_score"] = community_stats["score"]
     else:
+        community_sources = []
         source_counts["community"] = 0
         type_scores.pop("community", None)
         snapshot["community_score"] = None
     raw["type_scores"] = type_scores
     raw["source_counts"] = source_counts
+    raw["community_sources"] = community_sources
     raw["community_scope"] = {
         "day": community_analysis_day(),
         "prompt_version": SENTIMENT_PROMPT_VERSION,
         "method_version": SENTIMENT_METHOD_VERSION,
+        "current_count": len(current_rows),
+        "sources": community_sources,
         "score_method": "today community LLM sentiment_score (-100 to 100) average with sentiment_class counts",
     }
     snapshot["source_counts"] = source_counts
@@ -2961,6 +3047,7 @@ def build_agent_usage(result: dict[str, Any]) -> dict[str, Any]:
         "skipped": bool(result.get("skipped")),
         "timed_out": bool(result.get("timed_out")),
         "cycle_timeout_seconds": result.get("cycle_timeout_seconds"),
+        "parallel_batch_size": int((sentiment.get("parallel_batch_size") or 0) or 0) or None,
         "community_posts_crawled": int(sentiment_counts.get("community_posts_crawled") or sentiment_counts.get("community_posts") or 0),
         "community_posts_today": int(sentiment_counts.get("community_posts_today") or sentiment_counts.get("community_evidence") or 0),
         "community_evidence": int(sentiment_counts.get("community_evidence") or 0),
@@ -3090,6 +3177,20 @@ def llm_timeout_seconds(community: bool = False) -> int:
     except ValueError:
         parsed = default
     return max(5, min(parsed, 120))
+
+
+def sentiment_symbol_batch_size() -> int:
+    value = os.environ.get("KEIKO_SENTIMENT_SYMBOL_BATCH_SIZE", "").strip()
+    try:
+        parsed = int(value)
+    except ValueError:
+        parsed = SENTIMENT_SYMBOL_BATCH_SIZE
+    return max(1, min(parsed, 20))
+
+
+def chunked_symbols(symbols: list[str], size: int) -> list[list[str]]:
+    batch_size = max(1, size)
+    return [symbols[index : index + batch_size] for index in range(0, len(symbols), batch_size)]
 
 
 def sentiment_cycle_timeout_seconds() -> float:

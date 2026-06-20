@@ -37,7 +37,7 @@ def main() -> int:
     parser.add_argument("--community-limit", type=int, default=120, help="Community posts per symbol per cycle (each source, when source=all).")
     parser.add_argument("--evidence-limit", type=int, default=120, help="Community evidence rows per symbol to analyze.")
     parser.add_argument("--analysis-days", type=int, default=30, help="Lookback window for sentiment snapshots.")
-    parser.add_argument("--retention-days", type=int, default=3, help="Days to keep per-comment raw text and analysis.")
+    parser.add_argument("--retention-days", type=int, default=3, help="Days to keep per-comment analysis details; raw community posts are preserved.")
     parser.add_argument("--market-days", type=int, default=20, help="Short K-line refresh window per cycle.")
     parser.add_argument("--no-market-refresh", action="store_true", help="Do not refresh K-line data in the cycle.")
     parser.add_argument("--no-filing-refresh", action="store_true", help="Do not check announcements in the cycle.")

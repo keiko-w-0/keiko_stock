@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+import time
 from typing import Any
 
 from fastapi import HTTPException
@@ -41,7 +42,11 @@ def account_portfolio(conn: sqlite3.Connection, account_id: str) -> dict[str, An
         if position["quantity"] > 0
     ]
     totals = portfolio_totals(positions)
-    cache_positions(conn, account_id, positions)
+    try:
+        cache_positions(conn, account_id, positions)
+    except sqlite3.OperationalError:
+        # Community agent or other writers may hold the DB briefly; portfolio still returns live values.
+        pass
     return {
         "account_id": account_id,
         "positions": positions,
@@ -197,30 +202,44 @@ def portfolio_totals(positions: list[dict[str, Any]]) -> dict[str, Any]:
 
 def cache_positions(conn: sqlite3.Connection, account_id: str, positions: list[dict[str, Any]]) -> None:
     computed_at = now_iso()
-    conn.execute("delete from account_positions_cache where account_id = ?", (account_id,))
-    for position in positions:
-        conn.execute(
-            """
-            insert into account_positions_cache (
-              account_id, symbol, quantity, avg_cost, realized_pnl, unrealized_pnl, return_rate, computed_at
-            )
-            values (?, ?, ?, ?, ?, ?, ?, ?)
-            on conflict(account_id, symbol) do update set
-              quantity = excluded.quantity,
-              avg_cost = excluded.avg_cost,
-              realized_pnl = excluded.realized_pnl,
-              unrealized_pnl = excluded.unrealized_pnl,
-              return_rate = excluded.return_rate,
-              computed_at = excluded.computed_at
-            """,
-            (
-                account_id,
-                position["symbol"],
-                position["quantity"],
-                position["avg_cost"],
-                position["realized_profit"],
-                position["unrealized_profit"],
-                position["return_rate"],
-                computed_at,
-            ),
+    payloads = [
+        (
+            account_id,
+            position["symbol"],
+            position["quantity"],
+            position["avg_cost"],
+            position["realized_profit"],
+            position["unrealized_profit"],
+            position["return_rate"],
+            computed_at,
         )
+        for position in positions
+    ]
+    for attempt in range(6):
+        try:
+            conn.execute("begin immediate")
+            conn.execute("delete from account_positions_cache where account_id = ?", (account_id,))
+            if payloads:
+                conn.executemany(
+                    """
+                    insert into account_positions_cache (
+                      account_id, symbol, quantity, avg_cost, realized_pnl, unrealized_pnl, return_rate, computed_at
+                    )
+                    values (?, ?, ?, ?, ?, ?, ?, ?)
+                    on conflict(account_id, symbol) do update set
+                      quantity = excluded.quantity,
+                      avg_cost = excluded.avg_cost,
+                      realized_pnl = excluded.realized_pnl,
+                      unrealized_pnl = excluded.unrealized_pnl,
+                      return_rate = excluded.return_rate,
+                      computed_at = excluded.computed_at
+                    """,
+                    payloads,
+                )
+            conn.commit()
+            return
+        except sqlite3.OperationalError as exc:
+            conn.rollback()
+            if "locked" not in str(exc).lower() or attempt >= 5:
+                raise
+            time.sleep(min(0.05 * (2**attempt), 1.0))

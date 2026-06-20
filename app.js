@@ -396,7 +396,6 @@ const providerDisplayLabels = {
   alpha_vantage: "Alpha Vantage",
   cninfo: "CNINFO 公告",
   cninfo_sse_szse: "A 股公告自动源",
-  eastmoney_guba: "东方财富股吧",
   finnhub: "Finnhub",
   finnhub_market: "Finnhub 美股行情",
   finnhub_financial: "Finnhub 基本面",
@@ -618,7 +617,6 @@ const fallbackDataSources = [
   { id: "cn-tushare-financial", market: "A", label: "Tushare Pro 财务/估值", provider: "tushare", source_kind: "financial", source_kind_label: "财务/估值", requires_key: true, credential_label: "Tushare token", enabled: false, configured: false, active: false, credential_hint: "" },
   { id: "cn-exchange-filings", market: "A", label: "CNINFO / 交易所公告", provider: "cninfo_sse_szse", source_kind: "filing", source_kind_label: "公告/披露", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "" },
   { id: "cn-news-sentiment", market: "A", label: "A股新闻情绪", provider: "mock_news_cn", source_kind: "news", source_kind_label: "新闻情绪", requires_key: true, credential_label: "News API key", enabled: false, configured: false, active: false, credential_hint: "" },
-  { id: "cn-eastmoney-guba-community", market: "A", label: "东方财富股吧评论", provider: "eastmoney_guba", source_kind: "news", source_kind_label: "新闻情绪", requires_key: false, credential_label: "无需 key", enabled: true, configured: true, active: true, credential_hint: "", reliability: { source_id: "cn-eastmoney-guba-community", method: "community_posts", total: 1, successes: 0, failures: 1, success_rate: 0, failure_rate: 100, latest_at: "", latest_error: "最近没有成功入库记录", status: "warn", note: "社区源按最近是否有成功入库记录计算" } },
   { id: "cn-xueqiu-community", market: "A", label: "雪球评论", provider: "xueqiu", source_kind: "news", source_kind_label: "新闻情绪", requires_key: false, credential_label: "Cookie / 浏览器会话", enabled: true, configured: true, active: true, credential_hint: "", reliability: { source_id: "cn-xueqiu-community", method: "community_posts", total: 1, successes: 0, failures: 1, success_rate: 0, failure_rate: 100, latest_at: "", latest_error: "雪球评论最近没有成功入库记录，可能被 Cookie/WAF/浏览器会话阻断", status: "warn", note: "社区源按最近是否有成功入库记录计算" } },
   { id: "hk-market-vendor", market: "HK", label: "港股行情供应商", provider: "mock_hk_market", source_kind: "market", source_kind_label: "行情", requires_key: true, credential_label: "Market API key", enabled: false, configured: false, active: false, credential_hint: "" },
   { id: "hk-financial-provider", market: "HK", label: "港股财务/估值", provider: "mock_hk_financial", source_kind: "financial", source_kind_label: "财务/估值", requires_key: true, credential_label: "Financial API key", enabled: false, configured: false, active: false, credential_hint: "" },
@@ -937,6 +935,7 @@ let backtestDrawQueued = false;
 let stockListRefreshQueued = false;
 let selectStockRequestId = 0;
 const maxStockCardDetailLoads = 2;
+const stockKlineHoverState = new WeakMap();
 const stockDetailPeriodOptions = [
   { id: "intraday", label: "分时" },
   { id: "daily", label: "日K" },
@@ -1323,6 +1322,15 @@ function hasMetric(value) {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+function firstFiniteNumber(...values) {
+  for (const value of values) {
+    if (value === null || value === undefined || value === "") continue;
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) return numeric;
+  }
+  return null;
+}
+
 function formatMetric(value, digits = 1, suffix = "") {
   return hasMetric(value) ? `${value.toFixed(digits)}${suffix}` : "暂无";
 }
@@ -1378,8 +1386,8 @@ function sentimentToneForType(value, label = "", type = "") {
   if (value === null || value === undefined || value === "") return "neutral";
   const numeric = normalizeCommunityScore(Number(value));
   const labelText = String(label || "");
-  if (labelText.includes("positive") || numeric >= 25) return "cn-up";
-  if (labelText.includes("negative") || numeric <= -25) return "cn-down";
+  if (labelText.includes("positive") || numeric >= 10) return "cn-up";
+  if (labelText.includes("negative") || numeric <= -10) return "cn-down";
   return "neutral";
 }
 
@@ -1511,6 +1519,101 @@ function normalizedCommunityClassCounts(typeStats = {}, rows = []) {
     ? typeStats.class_counts
     : communityClassCountsFromRows(rows);
   return Object.fromEntries(communityClassOrder.map((item) => [item, Number(raw[item] || 0)]));
+}
+
+function communitySourceLabel(source) {
+  const text = String(source || "").trim();
+  if (!text) return "社区源";
+  if (text === "xueqiu") return "雪球";
+  return providerDisplayName(text);
+}
+
+function communitySourceStatsFromRows(rows = []) {
+  const groups = new Map();
+  rows.forEach((row) => {
+    const source = String(row?.source || "community").trim() || "community";
+    const current = groups.get(source) || { source, scoreSum: 0, scoreCount: 0, count: 0 };
+    const score = normalizeCommunityScore(Number(row?.sentiment_score));
+    current.count += 1;
+    if (score !== null) {
+      current.scoreSum += score;
+      current.scoreCount += 1;
+    }
+    groups.set(source, current);
+  });
+  const sourceOrder = { xueqiu: 0 };
+  return [...groups.values()]
+    .map((item) => ({
+      source: item.source,
+      label: communitySourceLabel(item.source),
+      score: item.scoreCount ? item.scoreSum / item.scoreCount : null,
+      count: item.count
+    }))
+    .sort((a, b) => (sourceOrder[a.source] ?? 99) - (sourceOrder[b.source] ?? 99) || b.count - a.count || a.label.localeCompare(b.label, "zh-CN"));
+}
+
+function communitySourceStatsFromSnapshot(snapshot) {
+  const rawSources = snapshot?.raw?.community_sources ?? snapshot?.raw?.community_scope?.sources ?? [];
+  if (!Array.isArray(rawSources)) return [];
+  const sourceOrder = { xueqiu: 0 };
+  return rawSources
+    .map((item) => ({
+      source: String(item?.source || "community"),
+      label: communitySourceLabel(item?.source),
+      score: normalizeCommunityScore(Number(item?.score)),
+      count: Number(item?.count || 0)
+    }))
+    .filter((item) => item.count > 0)
+    .sort((a, b) => (sourceOrder[a.source] ?? 99) - (sourceOrder[b.source] ?? 99) || b.count - a.count || a.label.localeCompare(b.label, "zh-CN"));
+}
+
+function aggregateCommunitySourceStats(sources = []) {
+  const rows = Array.isArray(sources) ? sources : [];
+  let count = 0;
+  let scoreWeight = 0;
+  let scoreCount = 0;
+  rows.forEach((item) => {
+    const itemCount = Math.max(0, Math.round(Number(item?.count || 0)));
+    const score = normalizeCommunityScore(Number(item?.score));
+    count += itemCount;
+    if (itemCount > 0 && score !== null) {
+      scoreWeight += score * itemCount;
+      scoreCount += itemCount;
+    }
+  });
+  return {
+    score: scoreCount > 0 ? scoreWeight / scoreCount : null,
+    count: count > 0 ? count : null
+  };
+}
+
+function communitySourceStatsForDetail(stock, detail) {
+  const snapshot = detail?.information?.sentiment;
+  const key = stock && snapshot ? sentimentPayloadKey(stock.symbol, sentimentWindowDays(snapshot)) : "";
+  const payloadRows = key ? (sentimentPayloadCache.get(key)?.evidence?.community ?? []) : [];
+  const rowStats = communitySourceStatsFromRows(payloadRows);
+  return rowStats.length ? rowStats : communitySourceStatsFromSnapshot(snapshot);
+}
+
+function renderCommunitySourceBreakdown(stats = [], options = {}) {
+  const rows = Array.isArray(stats) ? stats.filter((item) => Number(item.count || 0) > 0) : [];
+  if (!rows.length) {
+    return options.emptyText ? `<div class="community-source-empty">${escapeHTML(options.emptyText)}</div>` : "";
+  }
+  const className = options.className ? ` ${options.className}` : "";
+  return `
+    <div class="community-source-breakdown${className}">
+      ${rows.map((item) => {
+        const tone = sentimentToneForType(item.score, "", "community");
+        return `
+          <span>
+            <em>${escapeHTML(item.label || communitySourceLabel(item.source))}</em>
+            <strong class="${tone === "cn-up" || tone === "cn-down" ? tone : ""}">${formatSentimentScore(item.score, 1, "community")}/${Number(item.count || 0)}</strong>
+          </span>
+        `;
+      }).join("")}
+    </div>
+  `;
 }
 
 function escapeRegExp(value) {
@@ -2511,7 +2614,7 @@ async function pollSentimentSnapshot(symbol) {
   }
 }
 
-async function loadSentimentPayload(symbol, windowDays = 30) {
+async function loadSentimentPayload(symbol, windowDays = 30, options = {}) {
   const key = sentimentPayloadKey(symbol, windowDays);
   if (sentimentPayloadCache.has(key) || sentimentPayloadLoading.has(key)) return;
   sentimentPayloadLoading.add(key);
@@ -2529,7 +2632,21 @@ async function loadSentimentPayload(symbol, windowDays = 30) {
   } finally {
     sentimentPayloadLoading.delete(key);
     renderSentimentAside(selectedStock(), stockDetailCache.get(symbol));
+    scheduleStockListRefresh();
+    if (options.renderDetails && selectedSymbol === symbol && !singleDrawer.hidden) {
+      const current = stockBySymbol(symbol);
+      if (current) renderDetails(current);
+    }
   }
+}
+
+function ensureSentimentPayloadForDetail(stock, detail) {
+  const snapshot = detail?.information?.sentiment;
+  if (!stock || !snapshot || !apiState.connected) return;
+  const windowDays = sentimentWindowDays(snapshot);
+  const key = sentimentPayloadKey(stock.symbol, windowDays);
+  if (sentimentPayloadCache.has(key) || sentimentPayloadLoading.has(key) || sentimentPayloadErrors.has(key)) return;
+  void loadSentimentPayload(stock.symbol, windowDays, { renderDetails: true });
 }
 
 async function refreshCurrentSentiment(useLlm = true) {
@@ -3703,7 +3820,7 @@ function renderBacktestSentimentDailyRow(row) {
         <span>收盘 ${formatDetailNumber(row.close, 2)}</span>
         <span>额 ${formatBacktestAmount(row.amount)}</span>
       </div>
-      <p>${escapeHTML(row.conclusion || "暂无日级结论。")}</p>
+      ${row.conclusion ? `<p>${escapeHTML(row.conclusion)}</p>` : ""}
       ${keywords.length ? `<div class="backtest-sentiment-keywords">${keywords.map((item) => `<mark>${escapeHTML(item.keyword)} ${Number(item.count || 0)}</mark>`).join("")}</div>` : ""}
     </article>
   `;
@@ -3726,7 +3843,7 @@ function renderBacktestRealtimeRow(row) {
         <span>帖 ${Number(row.community_posts_today || 0)}</span>
         <span>析 ${Number(row.daily_analyzed_count || 0)}</span>
       </div>
-      <p>${escapeHTML(row.daily_conclusion || "暂无最新社区总评。")}</p>
+      ${row.daily_conclusion ? `<p>${escapeHTML(row.daily_conclusion)}</p>` : ""}
       <div class="backtest-sentiment-meta">
         <span>K线 ${escapeHTML(row.kline_fetched_at || "暂无")}</span>
         <span>情绪 ${escapeHTML(row.latest_sentiment_at || "暂无")}</span>
@@ -3876,9 +3993,50 @@ function roundMoney(value) {
   return Number(value.toFixed(2));
 }
 
+function stockCardMarketMetrics(stock) {
+  const detail = stockDetailCache.get(stock.symbol);
+  const summary = detail?.summary ?? {};
+  const dailyBars = detail?.market_data?.periods?.daily?.bars ?? [];
+  const latestBar = dailyBars.at(-1) ?? {};
+  const amount = firstFiniteNumber(latestBar.amount, summary.amount, stock.metrics?.avgAmountCny);
+  const turnover = firstFiniteNumber(latestBar.turnover_rate, summary.turnover_rate, stock.metrics?.turnoverRate);
+  const pe = firstFiniteNumber(latestBar.pe_ttm, summary.pe_ttm, stock.metrics?.pe);
+  const volume = firstFiniteNumber(latestBar.volume, summary.volume);
+  return [
+    ["成交量", volume === null ? "暂无" : formatShareVolume(volume)],
+    ["成交额", amount === null ? "暂无" : formatLargeMoney(amount, stock.currency)],
+    ["换手率", turnover === null ? "暂无" : formatDetailNumber(turnover, 2, "%")],
+    ["PE", pe === null ? "暂无" : formatPeTtm(pe)]
+  ];
+}
+
+function stockCardCommunitySummary(stock) {
+  const detail = stockDetailCache.get(stock.symbol);
+  const snapshot = detail?.information?.sentiment;
+  const sourceCounts = snapshot?.source_counts ?? snapshot?.raw?.source_counts ?? {};
+  const snapshotCount = firstFiniteNumber(sourceCounts.community);
+  const discussionCount = Array.isArray(detail?.information?.discussions) ? detail.information.discussions.length : null;
+  const key = snapshot ? sentimentPayloadKey(stock.symbol, sentimentWindowDays(snapshot)) : "";
+  const payloadRows = key ? (sentimentPayloadCache.get(key)?.evidence?.community ?? []) : [];
+  const payloadSources = communitySourceStatsFromRows(payloadRows);
+  const sources = payloadSources.length ? payloadSources : communitySourceStatsFromSnapshot(snapshot);
+  const sourceAggregate = aggregateCommunitySourceStats(sources);
+  const aggregateCount = firstFiniteNumber(sourceAggregate.count);
+  const commentCount = aggregateCount ?? snapshotCount ?? discussionCount;
+  const communityScore = firstFiniteNumber(sourceAggregate.score, snapshot?.community_score);
+  const tone = sentimentToneForType(communityScore, "", "community");
+  return {
+    score: formatSentimentScore(communityScore, 0, "community"),
+    count: commentCount === null ? "暂无" : String(Math.max(0, Math.round(commentCount))),
+    toneClass: tone === "cn-up" || tone === "cn-down" ? tone : ""
+  };
+}
+
 function renderStockCard(stock) {
   const changeClass = stock.change >= 0 ? "up" : "down";
   const sign = stock.change >= 0 ? "+" : "";
+  const marketMetrics = stockCardMarketMetrics(stock);
+  const community = stockCardCommunitySummary(stock);
   return `
     <article class="stock-card ${stock.symbol === selectedSymbol ? "selected" : ""}" data-symbol="${stock.symbol}">
       <div class="card-head">
@@ -3888,7 +4046,6 @@ function renderStockCard(stock) {
         </div>
         <div class="card-actions">
           ${renderStockBadges(stock)}
-          <div class="score-ring" style="--score: ${stock.score}%"><span>${stock.score}</span></div>
         </div>
       </div>
       <div class="price-row">
@@ -3903,21 +4060,18 @@ function renderStockCard(stock) {
         data-thumb-market="${escapeHTML(stock.market)}"
         data-spark="${stock.spark.join(",")}"
       ></canvas>
-      <div class="meta-row">
-        <span class="freshness-badge ${stock.freshnessStatus}">数据 ${statusText(stock.freshnessStatus)}</span>
-        <span class="confidence">证据 ${stock.truthScore}%</span>
+      <div class="card-market-metrics">
+        ${marketMetrics.map(([label, value]) => `
+          <span>
+            <em>${label}</em>
+            <strong>${value}</strong>
+          </span>
+        `).join("")}
       </div>
-      <div class="mini-metrics">
-        <span>成交额 ${formatCnyAmount(stock.metrics.avgAmountCny)}</span>
-        <span>换手 ${stock.metrics.turnoverRate.toFixed(2)}%</span>
-        <span>价差 ${stock.metrics.spreadBps}bp</span>
+      <div class="card-sentiment-line">
+        <span>股吧情绪面</span>
+        <strong class="card-community-total ${community.toneClass}">${community.score}/${community.count}</strong>
       </div>
-      <div class="factor-list">
-        ${Object.entries(stock.factors).map(([name, value]) => renderFactor(stock, name, value)).join("")}
-      </div>
-      <ul class="reason-list">
-        ${stock.reasons.slice(0, 2).map((reason) => `<li>${reason}</li>`).join("")}
-      </ul>
       <button class="ghost-action" data-analyze="${stock.symbol}" type="button">查看分析</button>
     </article>
   `;
@@ -4209,6 +4363,7 @@ function renderDetails(stock) {
     void loadStockDetail(stock.symbol, stock.market);
   }
   const detailPayload = stockDetailCache.get(stock.symbol);
+  ensureSentimentPayloadForDetail(stock, detailPayload);
   detailTitle.textContent = `${stock.symbol} · ${stock.name}`;
   renderDrawerFavoriteButton(stock);
   detailBody.innerHTML = `
@@ -4448,7 +4603,7 @@ function renderStockDetailPanel(stock) {
       </div>
       <div class="stock-kline-block terminal-chart-block">
         ${bars.length ? `
-          <canvas class="stock-kline-canvas terminal-kline-canvas" width="920" height="420" data-stock-kline="${escapeHTML(stock.symbol)}" data-period="${escapeHTML(period)}"></canvas>
+          <canvas class="stock-kline-canvas terminal-kline-canvas" width="920" height="420" data-stock-kline="${escapeHTML(stock.symbol)}" data-period="${escapeHTML(period)}" aria-label="K线图"></canvas>
         ` : `
           <div class="stock-detail-empty">
             <strong>暂无 K 线数据</strong>
@@ -4456,11 +4611,12 @@ function renderStockDetailPanel(stock) {
           </div>
         `}
       </div>
+      ${renderStockCommunitySourcePanel(stock, detail)}
       <div class="stock-quote-grid terminal-quote-grid">
         ${renderQuoteMetric("昨收", formatDetailNumber(summary.pre_close, 2))}
         ${renderQuoteMetric("成交额", formatLargeMoney(summary.amount, summary.currency))}
         ${renderQuoteMetric("换手", formatDetailNumber(summary.turnover_rate, 2, "%"))}
-        ${renderQuoteMetric("PE(TTM)", formatPeTtm(summary.pe_ttm), Number(summary.pe_ttm) <= 0 ? "loss" : "")}
+        ${renderQuoteMetric("PE(TTM)", formatPeTtm(summary.pe_ttm), Number.isFinite(Number(summary.pe_ttm)) && Number(summary.pe_ttm) <= 0 ? "loss" : "")}
         ${renderQuoteMetric("PB", formatPositiveDetailNumber(summary.pb, 2))}
         ${renderQuoteMetric("PS(TTM)", formatPositiveDetailNumber(summary.ps_ttm, 2))}
         ${renderQuoteMetric("52周最高", formatDetailNumber(summary.high_52w, 2))}
@@ -4477,6 +4633,27 @@ function renderStockDetailPanel(stock) {
       ${renderFinancialQuarterPanel(detail)}
       ${renderStockInformationPanel(stock, detail)}
     </section>
+  `;
+}
+
+function renderStockCommunitySourcePanel(stock, detail) {
+  const snapshot = detail?.information?.sentiment;
+  if (!snapshot) return "";
+  const key = sentimentPayloadKey(stock.symbol, sentimentWindowDays(snapshot));
+  const loading = sentimentPayloadLoading.has(key);
+  const error = sentimentPayloadErrors.get(key);
+  const stats = communitySourceStatsForDetail(stock, detail);
+  if (!stats.length && !loading && !error) return "";
+  return `
+    <div class="stock-community-source-panel">
+      <div>
+        <strong>社区来源</strong>
+        <span>按数据源统计均分/条数</span>
+      </div>
+      ${stats.length
+        ? renderCommunitySourceBreakdown(stats, { className: "stock-community-source-breakdown" })
+        : `<div class="community-source-empty">${escapeHTML(loading ? "正在读取社区来源统计" : error || "暂无社区来源统计")}</div>`}
+    </div>
   `;
 }
 
@@ -4940,6 +5117,7 @@ function renderSentimentEvidencePanel(stock, detail, type) {
 
 function renderCommunitySentimentStrip(typeScore, typeStats, rows, activeClass = "") {
   const counts = normalizedCommunityClassCounts(typeStats, rows);
+  const sourceStats = communitySourceStatsFromRows(rows);
   const total = communityClassOrder.reduce((sum, item) => sum + Number(counts[item] || 0), 0);
   const allShownCount = Math.min(rows.length, 12);
   const allTotal = total || rows.length;
@@ -4964,6 +5142,7 @@ function renderCommunitySentimentStrip(typeScore, typeStats, rows, activeClass =
         明细 <strong>${allShownCount}/${allTotal}</strong>
       </button>
     </div>
+    ${renderCommunitySourceBreakdown(sourceStats, { className: "sentiment-community-sources", emptyText: rows.length ? "暂无来源拆分" : "" })}
   `;
 }
 
@@ -5044,7 +5223,6 @@ function communityEvidenceSourceStatus(item) {
   }
   const source = String(item.source || "").toLowerCase();
   const hasVerifiedContent = item.source_content_available === true || item.source_text_kind === "detail_text";
-  const isEastmoney = source.includes("eastmoney");
   if (hasVerifiedContent) {
     return {
       badge: "已抓取正文",
@@ -5052,15 +5230,6 @@ function communityEvidenceSourceStatus(item) {
       linkClass: "",
       linkLabel: "原文",
       title: "已抓取到正文，打开原帖"
-    };
-  }
-  if (isEastmoney) {
-    return {
-      badge: "未抓到正文",
-      className: "sentiment-source-warning",
-      linkClass: "sentiment-link-unverified",
-      linkLabel: "列表链接",
-      title: item.source_detail_error || "东方财富详情页可能返回身份核实页；当前证据仅来自股吧列表标题"
     };
   }
   return {
@@ -5884,21 +6053,21 @@ function drawPositionKline() {
 
 function drawStockDetailCharts() {
   document.querySelectorAll("[data-stock-kline]").forEach((canvas) => {
-    const symbol = canvas.dataset.stockKline;
-    const period = canvas.dataset.period;
-    const detail = stockDetailCache.get(symbol);
-    const bars = detail?.market_data?.periods?.[period]?.bars ?? [];
-    drawStockKlineChart(canvas, bars, detail?.summary ?? {});
+    redrawStockKlineCanvas(canvas);
   });
 }
 
-function drawStockKlineChart(canvas, bars, summary = {}) {
-  const { ctx, width, height } = prepareCanvasForDraw(canvas, 920, 420);
-  ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, width, height);
+function redrawStockKlineCanvas(canvas) {
+  if (!canvas) return;
+  const symbol = canvas.dataset.stockKline;
+  const period = canvas.dataset.period;
+  const detail = stockDetailCache.get(symbol);
+  const bars = detail?.market_data?.periods?.[period]?.bars ?? [];
+  drawStockKlineChart(canvas, bars, detail?.summary ?? {});
+}
 
-  const validBars = bars
+function normalizeStockKlineBars(bars) {
+  return (bars || [])
     .filter((bar) => Number.isFinite(Number(bar.close)))
     .map((bar) => ({
       ...bar,
@@ -5908,9 +6077,19 @@ function drawStockKlineChart(canvas, bars, summary = {}) {
       close: Number(bar.close),
       volume: Number.isFinite(Number(bar.volume)) ? Number(bar.volume) : 0,
       amount: Number.isFinite(Number(bar.amount)) ? Number(bar.amount) : 0,
+      change_pct: Number.isFinite(Number(bar.change_pct)) ? Number(bar.change_pct) : null,
       turnover_rate: Number.isFinite(Number(bar.turnover_rate)) ? Number(bar.turnover_rate) : null,
       date: bar.date ?? bar.trade_date ?? bar.datetime
     }));
+}
+
+function drawStockKlineChart(canvas, bars, summary = {}) {
+  const { ctx, width, height } = prepareCanvasForDraw(canvas, 920, 420);
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+
+  const validBars = normalizeStockKlineBars(bars);
   const visible = validBars.slice(-92);
   if (visible.length < 2) {
     ctx.fillStyle = "#66737d";
@@ -5954,9 +6133,30 @@ function drawStockKlineChart(canvas, bars, summary = {}) {
   const yPrice = (value) => priceTop + priceHeight - ((value - priceMin) / priceSpan) * priceHeight;
   const xFor = (index) => padLeft + xStep * index + xStep / 2;
   const chartRight = width - padRight;
+  const hover = stockKlineHoverState.get(canvas);
+  const hoverIndex = stockKlineHoverIndex(hover, padLeft, chartRight, xStep, visible.length, height);
+  const activeIndex = hoverIndex ?? visible.length - 1;
+  const maConfigs = [
+    { window: 5, label: "MA5", color: "#5f6368" },
+    { window: 10, label: "MA10", color: "#8a17ff" },
+    { window: 30, label: "MA30", color: "#f5a400" }
+  ];
+  const closeValues = validBars.map((bar) => bar.close);
+  const maSeries = maConfigs.map((config) => {
+    const values = movingAverage(closeValues, config.window);
+    return {
+      ...config,
+      values,
+      visibleValues: values.slice(-visible.length)
+    };
+  });
 
   drawStockChartGrid(ctx, padLeft, padRight, priceTop, priceHeight, width, priceMin, priceMax);
-  drawStockChartLegend(ctx, visible, validBars, summary, padLeft, priceTop, width);
+  if (hoverIndex !== null) {
+    ctx.fillStyle = "rgba(49, 109, 255, 0.06)";
+    ctx.fillRect(Math.max(padLeft, xFor(hoverIndex) - xStep / 2), priceTop, Math.min(xStep, chartRight - padLeft), height - priceTop - 8);
+  }
+  drawStockChartLegend(ctx, visible, validBars, summary, padLeft, priceTop, width, activeIndex, maSeries);
 
   visible.forEach((bar, index) => {
     const x = xFor(index);
@@ -5974,25 +6174,263 @@ function drawStockKlineChart(canvas, bars, summary = {}) {
     ctx.fillRect(x - candleWidth / 2, top, candleWidth, Math.max(bottom - top, 2));
   });
 
-  const maConfigs = [
-    { window: 5, color: "#5f6368" },
-    { window: 10, color: "#8a17ff" },
-    { window: 30, color: "#f5a400" }
-  ];
-  maConfigs.forEach((config) => {
-    const values = movingAverage(validBars.map((bar) => bar.close), config.window).slice(-visible.length);
-    drawIndicatorLine(ctx, values, xFor, yPrice, config.color, 1.8);
+  maSeries.forEach((config) => {
+    drawIndicatorLine(ctx, config.visibleValues, xFor, yPrice, config.color, 1.8);
   });
 
   const priceMarkerSlots = [];
   drawPriceMarker(ctx, padLeft, chartRight, yPrice, technicalRange.resistance, formatTechnicalLevel(technicalRange.resistance), "#ff263d", "resistance", priceMarkerSlots);
   drawPriceMarker(ctx, padLeft, chartRight, yPrice, currentPrice, formatAxisNumber(currentPrice), "#ff263d", "current", priceMarkerSlots);
   drawPriceMarker(ctx, padLeft, chartRight, yPrice, technicalRange.support, formatTechnicalLevel(technicalRange.support), "#55b72f", "support", priceMarkerSlots);
-  drawStockVolumePanel(ctx, visible, xFor, candleWidth, padLeft, padRight, volumeTop, volumeHeight, width);
+  drawStockVolumePanel(ctx, visible, xFor, candleWidth, padLeft, padRight, volumeTop, volumeHeight, width, activeIndex);
   if (!isNarrowChart) {
-    drawStockMacdPanel(ctx, validBars, visible.length, xFor, padLeft, padRight, macdTop, macdHeight, width);
+    drawStockMacdPanel(ctx, validBars, visible.length, xFor, padLeft, padRight, macdTop, macdHeight, width, activeIndex);
   }
   drawStockXAxis(ctx, visible, xFor, isNarrowChart ? height - 14 : macdTop - 8, width, padLeft, padRight);
+  if (hoverIndex !== null) {
+    drawStockKlineHoverOverlay(ctx, {
+      visible,
+      allBars: validBars,
+      summary,
+      hover,
+      hoverIndex,
+      xFor,
+      yPrice,
+      padLeft,
+      chartRight,
+      priceTop,
+      priceHeight,
+      priceMin,
+      priceMax,
+      priceSpan,
+      volumeTop,
+      volumeHeight,
+      macdTop,
+      macdHeight,
+      width,
+      height,
+      isNarrowChart,
+      maSeries
+    });
+  }
+}
+
+function stockKlineHoverIndex(hover, padLeft, chartRight, xStep, visibleLength, height) {
+  if (!hover || !Number.isFinite(hover.x) || !Number.isFinite(hover.y)) return null;
+  if (hover.x < padLeft || hover.x > chartRight || hover.y < 0 || hover.y > height) return null;
+  const index = Math.floor((hover.x - padLeft) / Math.max(xStep, 1));
+  return Math.max(0, Math.min(visibleLength - 1, index));
+}
+
+function drawStockKlineHoverOverlay(ctx, options) {
+  const {
+    visible,
+    allBars,
+    summary,
+    hover,
+    hoverIndex,
+    xFor,
+    yPrice,
+    padLeft,
+    chartRight,
+    priceTop,
+    priceHeight,
+    priceMax,
+    priceSpan,
+    volumeTop,
+    volumeHeight,
+    macdTop,
+    macdHeight,
+    width,
+    height,
+    isNarrowChart,
+    maSeries
+  } = options;
+  const bar = visible[hoverIndex];
+  if (!bar) return;
+
+  const x = xFor(hoverIndex);
+  const overlayBottom = isNarrowChart
+    ? height - 24
+    : Math.min(height - 8, macdTop + macdHeight);
+  const pointerInPricePanel = hover.y >= priceTop && hover.y <= priceTop + priceHeight;
+  const horizontalY = pointerInPricePanel
+    ? hover.y
+    : yPrice(bar.close);
+  const hoverPrice = priceMax - ((horizontalY - priceTop) / Math.max(priceHeight, 1)) * priceSpan;
+
+  ctx.save();
+  ctx.strokeStyle = "rgba(82, 89, 99, 0.86)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 5]);
+  ctx.beginPath();
+  ctx.moveTo(x, priceTop);
+  ctx.lineTo(x, overlayBottom);
+  ctx.moveTo(padLeft, horizontalY);
+  ctx.lineTo(chartRight, horizontalY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  drawStockKlineAxisPill(ctx, formatStockHoverPrice(hoverPrice), chartRight + 6, horizontalY, width);
+  drawStockKlineDatePill(ctx, longTradeDate(bar.date), x, overlayBottom, padLeft, chartRight);
+  drawStockKlineHoverTooltip(ctx, {
+    visible,
+    allBars,
+    summary,
+    hoverIndex,
+    x,
+    padLeft,
+    chartRight,
+    priceTop,
+    width,
+    height,
+    maSeries
+  });
+  ctx.restore();
+}
+
+function drawStockKlineAxisPill(ctx, text, x, y, width) {
+  ctx.save();
+  ctx.font = "900 12px system-ui";
+  const labelWidth = Math.max(50, ctx.measureText(text).width + 12);
+  const labelHeight = 22;
+  const labelX = Math.min(x, width - labelWidth - 4);
+  const labelY = Math.max(4, Math.min(y - labelHeight / 2, ctx.canvas.getBoundingClientRect().height - labelHeight - 4));
+  roundedRectPath(ctx, labelX, labelY, labelWidth, labelHeight, 6);
+  ctx.fillStyle = "#ff263d";
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, labelX + labelWidth / 2, labelY + labelHeight / 2 + 0.5);
+  ctx.restore();
+}
+
+function drawStockKlineDatePill(ctx, text, x, y, padLeft, chartRight) {
+  ctx.save();
+  ctx.font = "900 12px system-ui";
+  const labelWidth = Math.max(74, ctx.measureText(text).width + 16);
+  const labelHeight = 22;
+  const labelX = Math.max(padLeft, Math.min(x - labelWidth / 2, chartRight - labelWidth));
+  const labelY = Math.max(4, y - labelHeight + 2);
+  roundedRectPath(ctx, labelX, labelY, labelWidth, labelHeight, 6);
+  ctx.fillStyle = "#172026";
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, labelX + labelWidth / 2, labelY + labelHeight / 2 + 0.5);
+  ctx.restore();
+}
+
+function drawStockKlineHoverTooltip(ctx, options) {
+  const {
+    visible,
+    allBars,
+    summary,
+    hoverIndex,
+    x,
+    padLeft,
+    chartRight,
+    priceTop,
+    width,
+    height,
+  } = options;
+  const metrics = stockKlineBarMetrics(allBars, visible, hoverIndex, summary);
+  const directionColor = metrics.change >= 0 ? "#e23b22" : "#059447";
+  const currency = summary.currency || "CNY";
+  const rows = [
+    { label: "时间", value: longTradeDate(metrics.bar.date), color: "#172026" },
+    { label: "开盘价", value: formatStockHoverPrice(metrics.bar.open), color: "#172026" },
+    { label: "最高价", value: formatStockHoverPrice(metrics.bar.high), color: "#e23b22" },
+    { label: "最低价", value: formatStockHoverPrice(metrics.bar.low), color: "#059447" },
+    { label: "收盘价", value: formatStockHoverPrice(metrics.bar.close), color: directionColor },
+    { label: "涨跌额", value: formatSignedNumber(metrics.change, 2), color: directionColor },
+    { label: "涨跌幅", value: Number.isFinite(metrics.changePct) ? formatSignedNumber(metrics.changePct, 2, "%") : "暂无", color: directionColor },
+    { label: "成交量", value: formatShareVolume(metrics.bar.volume), color: "#172026" },
+    { label: "成交额", value: formatLargeMoney(metrics.bar.amount, currency), color: "#172026" },
+    { label: "换手率", value: Number.isFinite(Number(metrics.bar.turnover_rate)) ? formatDetailNumber(metrics.bar.turnover_rate, 2, "%") : "暂无", color: "#172026" }
+  ];
+  const compact = width < 640;
+  const rowHeight = compact ? 17 : 19;
+  const paddingX = 12;
+  const paddingY = 10;
+  const tooltipWidth = compact ? 176 : 196;
+  const tooltipHeight = paddingY * 2 + rows.length * rowHeight;
+  const boxWidth = Math.max(150, Math.min(tooltipWidth, chartRight - padLeft - 12));
+  const boxHeight = tooltipHeight;
+  let boxX = padLeft + 10;
+  if (x < boxX + boxWidth + 16) {
+    boxX = Math.min(chartRight - boxWidth - 8, x + 16);
+  }
+  boxX = Math.max(padLeft + 6, Math.min(boxX, chartRight - boxWidth - 6));
+  const boxY = Math.max(8, Math.min(priceTop + 8, height - boxHeight - 8));
+
+  ctx.save();
+  ctx.shadowColor = "rgba(15, 23, 32, 0.16)";
+  ctx.shadowBlur = 14;
+  ctx.shadowOffsetY = 5;
+  roundedRectPath(ctx, boxX, boxY, boxWidth, boxHeight, 8);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.97)";
+  ctx.fill();
+  ctx.shadowColor = "transparent";
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#ff4d4f";
+  ctx.stroke();
+
+  ctx.textBaseline = "middle";
+  ctx.beginPath();
+  ctx.rect(boxX + 6, boxY + 6, boxWidth - 12, boxHeight - 12);
+  ctx.clip();
+  rows.forEach((row, index) => {
+    const y = boxY + paddingY + rowHeight / 2 + index * rowHeight;
+    ctx.font = "850 13px system-ui";
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#4e5a64";
+    ctx.fillText(row.label, boxX + paddingX, y);
+    ctx.fillStyle = row.color;
+    ctx.font = "900 13px system-ui";
+    drawCanvasFittedText(ctx, row.value, boxX + boxWidth - paddingX, y, boxWidth - 92, "right");
+  });
+  ctx.restore();
+}
+
+function drawCanvasFittedText(ctx, text, x, y, maxWidth, align = "left") {
+  const raw = String(text ?? "");
+  let output = raw;
+  if (ctx.measureText(output).width > maxWidth) {
+    while (output.length > 1 && ctx.measureText(`${output}...`).width > maxWidth) {
+      output = output.slice(0, -1);
+    }
+    output = `${output}...`;
+  }
+  ctx.textAlign = align;
+  ctx.fillText(output, x, y);
+}
+
+function stockKlineBarMetrics(allBars, visible, visibleIndex, summary = {}) {
+  const bar = visible[visibleIndex];
+  const globalIndex = Math.max(0, allBars.length - visible.length + visibleIndex);
+  const previousClose = Number(allBars[globalIndex - 1]?.close ?? bar.open);
+  const rawChangePct = Number(bar.change_pct);
+  const changePct = Number.isFinite(rawChangePct)
+    ? rawChangePct
+    : (Number.isFinite(previousClose) && previousClose !== 0 ? ((bar.close - previousClose) / previousClose) * 100 : null);
+  const change = Number.isFinite(changePct) && Number.isFinite(previousClose)
+    ? (previousClose * changePct) / 100
+    : bar.close - previousClose;
+  return {
+    bar,
+    globalIndex,
+    previousClose,
+    change,
+    changePct
+  };
+}
+
+function formatStockHoverPrice(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric.toFixed(2) : "暂无";
 }
 
 function prepareCanvasForDraw(canvas, fallbackWidth, fallbackHeight) {
@@ -6041,7 +6479,7 @@ function drawStockChartGrid(ctx, padLeft, padRight, top, panelHeight, width, min
   }
 }
 
-function drawStockVolumePanel(ctx, visible, xFor, candleWidth, padLeft, padRight, top, panelHeight, width) {
+function drawStockVolumePanel(ctx, visible, xFor, candleWidth, padLeft, padRight, top, panelHeight, width, activeIndex = visible.length - 1) {
   const maxVolume = Math.max(...visible.map((bar) => bar.volume), 1);
   const chartRight = width - padRight;
   ctx.fillStyle = "#ffffff";
@@ -6064,7 +6502,7 @@ function drawStockVolumePanel(ctx, visible, xFor, candleWidth, padLeft, padRight
   ctx.fillStyle = "#ff263d";
   ctx.font = "900 14px system-ui";
   ctx.textAlign = "left";
-  ctx.fillText(`VOLUME: ${formatShareVolume(visible.at(-1)?.volume)}`, padLeft + 8, top + 18);
+  ctx.fillText(`VOLUME: ${formatShareVolume(visible[activeIndex]?.volume)}`, padLeft + 8, top + 18);
   ctx.fillStyle = "#555b62";
   ctx.font = "700 13px system-ui";
   ctx.textAlign = "left";
@@ -6073,7 +6511,7 @@ function drawStockVolumePanel(ctx, visible, xFor, candleWidth, padLeft, padRight
   });
 }
 
-function drawStockMacdPanel(ctx, allBars, visibleLength, xFor, padLeft, padRight, top, panelHeight, width) {
+function drawStockMacdPanel(ctx, allBars, visibleLength, xFor, padLeft, padRight, top, panelHeight, width, activeIndex = visibleLength - 1) {
   const macd = computeMacd(allBars.map((bar) => bar.close));
   const visibleMacd = macd.slice(-visibleLength);
   const values = visibleMacd.flatMap((item) => [item.dif, item.dea, item.hist]);
@@ -6098,7 +6536,7 @@ function drawStockMacdPanel(ctx, allBars, visibleLength, xFor, padLeft, padRight
   });
   drawIndicatorLine(ctx, visibleMacd.map((item) => item.dif), xFor, yMacd, "#5f6368", 1.8);
   drawIndicatorLine(ctx, visibleMacd.map((item) => item.dea), xFor, yMacd, "#8a17ff", 1.8);
-  const last = visibleMacd.at(-1);
+  const last = visibleMacd[activeIndex] ?? visibleMacd.at(-1);
   ctx.font = "900 14px system-ui";
   ctx.textAlign = "left";
   let legendX = padLeft + 10;
@@ -6141,12 +6579,13 @@ function drawStockXAxis(ctx, visible, xFor, axisY, width, padLeft, padRight) {
   }
 }
 
-function drawStockChartLegend(ctx, visible, allBars, summary, padLeft, priceTop, width) {
-  const latest = visible.at(-1);
+function drawStockChartLegend(ctx, visible, allBars, summary, padLeft, priceTop, width, activeIndex = visible.length - 1, maSeries = []) {
+  const latest = visible[activeIndex] ?? visible.at(-1);
+  const metrics = stockKlineBarMetrics(allBars, visible, activeIndex, summary);
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
-  const change = Number(summary.change ?? latest.close - latest.open);
-  const changePct = Number(summary.change_pct);
+  const change = metrics.change;
+  const changePct = metrics.changePct;
   const isNarrow = width < 640;
   const legendY = Math.max(22, priceTop - (isNarrow ? 54 : 34));
   const secondLineY = legendY + 20;
@@ -6173,15 +6612,9 @@ function drawStockChartLegend(ctx, visible, allBars, summary, padLeft, priceTop,
     drawCanvasText(ctx, Number.isFinite(changePct) ? formatSignedNumber(changePct, 2, "%") : "暂无", x, legendY, changePct >= 0 ? "#e23b22" : "#059447", valueFont);
   }
 
-  const maConfigs = [
-    { window: 5, label: "MA5", color: "#5f6368" },
-    { window: 10, label: "MA10", color: "#8a17ff" },
-    { window: 30, label: "MA30", color: "#f5a400" }
-  ];
   let maX = padLeft + 6;
-  maConfigs.forEach((config) => {
-    const values = movingAverage(allBars.map((bar) => bar.close), config.window);
-    maX = drawCanvasText(ctx, `${config.label} ${formatAxisNumber(values.at(-1))}  `, maX, maY, config.color, valueFont);
+  maSeries.forEach((config) => {
+    maX = drawCanvasText(ctx, `${config.label} ${formatAxisNumber(config.values[metrics.globalIndex])}  `, maX, maY, config.color, valueFont);
   });
 }
 
@@ -6565,7 +6998,7 @@ function renderSourceCard(source) {
           <input data-source-key="${source.id}" type="${source.requires_key ? "password" : "text"}" placeholder="${escapeHTML(placeholder)}" ${source.requires_key ? "" : "disabled"} />
         </label>
         <button class="primary-action" data-source-save="${source.id}" type="button">保存配置</button>
-        ${["akshare", "baostock", "baostock-financial", "cninfo_sse_szse", "cninfo", "sse", "szse", "tushare", "finnhub", "eastmoney_guba", "xueqiu"].includes(source.provider) ? `<button class="ghost-action small" data-source-refresh="${escapeHTML(source.provider)}" type="button">刷新数据</button>` : ""}
+        ${["akshare", "baostock", "baostock-financial", "cninfo_sse_szse", "cninfo", "sse", "szse", "tushare", "finnhub", "xueqiu"].includes(source.provider) ? `<button class="ghost-action small" data-source-refresh="${escapeHTML(source.provider)}" type="button">刷新数据</button>` : ""}
       </div>
       ${renderSourceReliability(source)}
       <div class="source-meta">
@@ -7285,10 +7718,9 @@ async function refreshProviderData(provider) {
       : provider === "cninfo" ? "CNINFO 公告"
       : provider === "sse" ? "上交所公告"
       : provider === "szse" ? "深交所公告"
-      : provider === "eastmoney_guba" ? "东方财富股吧评论"
       : provider === "xueqiu" ? "雪球评论"
       : provider;
-    if (["eastmoney_guba", "xueqiu"].includes(provider)) {
+    if (provider === "xueqiu") {
       const selected = selectedStock()?.symbol;
       const symbols = [...new Set([selected, ...favoriteSymbols].filter(Boolean))].slice(0, 30);
       updateBackendStatus(`${label} 刷新中`);
@@ -7860,6 +8292,45 @@ anomalyReport.addEventListener("click", (event) => {
   }
 });
 
+function handleStockKlinePointer(event) {
+  const canvas = event.target.closest?.("[data-stock-kline]");
+  if (!canvas) return;
+  if (event.type === "pointerdown") {
+    canvas.setPointerCapture?.(event.pointerId);
+  }
+  const rect = canvas.getBoundingClientRect();
+  stockKlineHoverState.set(canvas, {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  });
+  redrawStockKlineCanvas(canvas);
+}
+
+function clearStockKlineHover(canvas) {
+  if (!canvas || !stockKlineHoverState.has(canvas)) return;
+  stockKlineHoverState.delete(canvas);
+  redrawStockKlineCanvas(canvas);
+}
+
+function handleStockKlinePointerOut(event) {
+  const canvas = event.target.closest?.("[data-stock-kline]");
+  if (!canvas) return;
+  if (event.relatedTarget && canvas.contains(event.relatedTarget)) return;
+  clearStockKlineHover(canvas);
+}
+
+function handleStockKlinePointerEnd(event) {
+  if (event.pointerType === "mouse") return;
+  const canvas = event.target.closest?.("[data-stock-kline]");
+  clearStockKlineHover(canvas);
+}
+
+detailBody.addEventListener("pointerdown", handleStockKlinePointer);
+detailBody.addEventListener("pointermove", handleStockKlinePointer);
+detailBody.addEventListener("pointerout", handleStockKlinePointerOut);
+detailBody.addEventListener("pointercancel", handleStockKlinePointerEnd);
+detailBody.addEventListener("pointerup", handleStockKlinePointerEnd);
+
 detailBody.addEventListener("click", (event) => {
   const periodButton = event.target.closest("[data-detail-period]");
   const infoTabButton = event.target.closest("[data-detail-info-tab]");
@@ -8193,7 +8664,23 @@ setActiveTab(navSectionIds.includes(normalizeTabId(location.hash.slice(1))) ? no
 updateBackendStatus();
 loadAccountFromApi();
 
-if ("serviceWorker" in navigator && location.protocol !== "file:") {
+function isLocalDevHost() {
+  return ["localhost", "127.0.0.1", "0.0.0.0", "::1"].includes(location.hostname);
+}
+
+function clearLocalAppCaches() {
+  if (!isLocalDevHost()) return;
+  navigator.serviceWorker?.getRegistrations?.().then((registrations) => {
+    registrations.forEach((registration) => registration.unregister());
+  }).catch(() => {});
+  window.caches?.keys?.().then((keys) => {
+    keys.forEach((key) => window.caches.delete(key));
+  }).catch(() => {});
+}
+
+clearLocalAppCaches();
+
+if ("serviceWorker" in navigator && location.protocol !== "file:" && !isLocalDevHost()) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/service-worker.js").catch((error) => {
       apiState.lastError = `PWA 缓存注册失败：${error.message}`;

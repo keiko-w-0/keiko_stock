@@ -32,11 +32,21 @@ from .symbol_resolver import infer_symbol, resolve_symbol
 
 AKSHARE_MARKET_PROVIDER = "akshare-market"
 BAOSTOCK_MARKET_PROVIDER = "baostock-market"
+MARKET_PROVIDER_PRIORITY = {
+    "tushare-market": 6,
+    "baostock-market": 5,
+    "akshare-market": 4,
+    "finnhub-market": 2,
+    "mock-market": 1,
+}
 BAOSTOCK_FINANCIAL_PROVIDER = "baostock-financial"
 BAOSTOCK_REPORT_PROVIDER = "baostock-report"
 TUSHARE_MARKET_PROVIDER = "tushare-market"
 BAOSTOCK_BACKGROUND_STALE_MINUTES = 45
 BAOSTOCK_BATCH_SLEEP_SECONDS = 1.0
+AKSHARE_HIST_VOLUME_LOT_SIZE = 100
+MARKET_RESCAN_SCOPE = "a-share-market-rescan"
+MARKET_RESCAN_BATCH_SLEEP_SECONDS = 0.5
 BAOSTOCK_FINANCIAL_NO_DATA_RETRY_DAYS = 7
 BAOSTOCK_PRIORITY_REFRESH_WAIT_SECONDS = 20.0
 A_SHARE_FILING_PROVIDER = "cninfo_sse_szse"
@@ -125,8 +135,13 @@ def refresh_akshare_data(
             errors.append({"symbol": symbol, "error": "AKShare 历史同步当前只处理 A 股 .SH/.SZ/.BJ"})
             continue
         try:
-            rows = fetch_akshare_hist(symbol, start_date, end_date)
-            inserted = upsert_akshare_history(conn, symbol, rows)
+            rows, valuation_by_date = fetch_akshare_hist_and_valuation(
+                symbol,
+                start_date,
+                end_date,
+                days=days,
+            )
+            inserted = upsert_akshare_history(conn, symbol, rows, valuation_by_date=valuation_by_date)
             counts["daily_bars"] += inserted
             if rows:
                 upsert_latest_history_snapshot(conn, symbol, rows[-1])
@@ -230,7 +245,7 @@ def ensure_query_data(
         return {"status": "not_found", "errors": []}
     if not is_a_share(symbol):
         return {"status": "skipped", "symbol": symbol, "errors": []}
-    result = refresh_akshare_data(conn, [symbol], refresh_universe=False, days=days)
+    result = refresh_market_data_baostock_first(conn, symbol, days)
     try:
         filing_result = refresh_filings_for_symbol_if_needed(conn, symbol, days=STOCK_DETAIL_FILING_DAYS)
         filing_count = int(filing_result.get("filings") or 0)
@@ -378,6 +393,98 @@ def refresh_stock_detail_data(
     }
 
 
+def refresh_market_data_baostock_first(
+    conn: sqlite3.Connection,
+    symbol: str,
+    days: int,
+) -> dict[str, Any]:
+    end_date = latest_baostock_daily_trade_date()
+    start_date = baostock_history_start_date(end_date, days)
+    akshare_end = date.today().strftime("%Y%m%d")
+    akshare_start = (date.today() - timedelta(days=days)).strftime("%Y%m%d")
+    result = refresh_market_symbol_recent(
+        conn,
+        symbol,
+        start_date,
+        end_date,
+        akshare_start,
+        akshare_end,
+        days,
+        use_akshare=True,
+        use_baostock=True,
+    )
+    status = "ok" if result["counts"]["daily_bars"] or result["counts"]["market_snapshots"] else "partial"
+    return {
+        "status": status,
+        "mode": "baostock-first-market",
+        "symbols": [symbol] if result["counts"]["daily_bars"] or result["counts"]["market_snapshots"] else [],
+        "counts": result["counts"],
+        "errors": result["errors"],
+    }
+
+
+def refresh_market_data_baostock_first_batch(
+    conn: sqlite3.Connection,
+    symbols: list[str] | None = None,
+    refresh_universe: bool = False,
+    days: int = 260,
+) -> dict[str, Any]:
+    run_id = start_ingestion(conn, "baostock-first", "a-share-history", symbols or [], refresh_universe)
+    conn.commit()
+    errors: list[dict[str, str]] = []
+    updated_symbols: list[str] = []
+    counts: dict[str, Any] = {
+        "symbols": 0,
+        "daily_bars": 0,
+        "market_snapshots": 0,
+        "akshare_gap_dates": 0,
+        "pruned_akshare_rows": 0,
+    }
+
+    if refresh_universe or not symbols:
+        try:
+            counts["symbols"] += upsert_baostock_universe(
+                conn,
+                query_baostock_all_stock(latest_baostock_daily_trade_date()),
+            )
+        except Exception as exc:
+            errors.append({"scope": "baostock-universe", "error": str(exc)})
+
+    target_symbols = normalize_symbols(conn, symbols or [])
+    for symbol in target_symbols:
+        if not is_a_share(symbol):
+            errors.append({"symbol": symbol, "error": "A 股历史同步当前只处理 .SH/.SZ/.BJ 代码"})
+            continue
+        try:
+            result = refresh_market_data_baostock_first(conn, symbol, days)
+            symbol_counts = result.get("counts") or {}
+            counts["daily_bars"] += int(symbol_counts.get("daily_bars") or 0)
+            counts["market_snapshots"] += int(symbol_counts.get("market_snapshots") or 0)
+            counts["akshare_gap_dates"] += int(symbol_counts.get("akshare_gap_dates") or 0)
+            counts["pruned_akshare_rows"] += int(symbol_counts.get("pruned_akshare_rows") or 0)
+            if result.get("symbols"):
+                updated_symbols.extend(result["symbols"])
+            if result.get("errors"):
+                errors.extend(result["errors"])
+        except Exception as exc:
+            errors.append({"symbol": symbol, "error": str(exc)})
+
+    status = "ok" if updated_symbols or counts["symbols"] or counts["daily_bars"] else "partial"
+    finish_ingestion(conn, run_id, status, updated_symbols, counts, errors)
+    conn.commit()
+    return {
+        "status": status,
+        "mode": "baostock-first-history",
+        "run_id": run_id,
+        "refreshed_at": now_iso(),
+        "symbols": updated_symbols,
+        "requested_symbols": target_symbols,
+        "counts": counts,
+        "errors": errors,
+        "warehouse": warehouse_summary(conn),
+    }
+
+
 def refresh_stock_detail_market_step(symbol: str, days: int) -> dict[str, Any]:
     from .live_quote import fetch_live_market_quote, persist_live_quote_snapshot
     from .market_calendar import evaluate_market_quote_refresh, latest_db_trade_date
@@ -423,13 +530,7 @@ def refresh_stock_detail_market_step(symbol: str, days: int) -> dict[str, Any]:
                 "counts": counts,
                 "errors": errors,
             }
-        result = refresh_akshare_data(
-            conn,
-            [symbol],
-            refresh_universe=False,
-            days=refresh_days,
-            allow_slow_fallback=True,
-        )
+        result = refresh_market_data_baostock_first(conn, symbol, refresh_days)
         result["requested_days"] = refresh_days
         result["reason"] = reason
         result["quote_refresh"] = plan
@@ -2081,6 +2182,612 @@ def baostock_symbol_refresh_priority(conn: sqlite3.Connection, symbol: str, favo
     return tier, symbol
 
 
+def akshare_hist_volume_to_shares(volume: float | None) -> float | None:
+    if volume is None or volume <= 0:
+        return volume
+    return volume * AKSHARE_HIST_VOLUME_LOT_SIZE
+
+
+def repair_akshare_volume_units(conn: sqlite3.Connection) -> int:
+    cursor = conn.execute(
+        """
+        update daily_bars
+        set volume = volume * ?
+        where rowid in (
+          select a.rowid
+          from daily_bars a
+          join daily_bars b
+            on a.symbol = b.symbol
+           and a.trade_date = b.trade_date
+          where a.provider = ?
+            and b.provider = ?
+            and coalesce(a.adjust, '') = coalesce(b.adjust, '')
+            and a.volume > 0
+            and b.volume > 0
+            and a.volume * ? between b.volume * 0.9 and b.volume * 1.1
+            and a.volume < b.volume * 0.5
+        )
+        """,
+        (
+            AKSHARE_HIST_VOLUME_LOT_SIZE,
+            AKSHARE_MARKET_PROVIDER,
+            BAOSTOCK_MARKET_PROVIDER,
+            AKSHARE_HIST_VOLUME_LOT_SIZE,
+        ),
+    )
+    return int(cursor.rowcount or 0)
+
+
+def akshare_bar_suspicious(akshare_volume: float | None, baostock_volume: float | None) -> bool:
+    if akshare_volume is None or baostock_volume is None:
+        return False
+    if akshare_volume <= 0 or baostock_volume <= 0:
+        return False
+    return akshare_volume < baostock_volume * 0.8
+
+
+def patch_akshare_payload_from_baostock(conn: sqlite3.Connection, payload: dict[str, Any]) -> dict[str, Any]:
+    symbol = str(payload.get("symbol") or "")
+    trade_date = str(payload.get("trade_date") or "")
+    adjust = str(payload.get("adjust") or "")
+    if not symbol or not trade_date:
+        return payload
+    row = conn.execute(
+        """
+        select open, high, low, close, volume, amount, change_pct, turnover_rate
+        from daily_bars
+        where symbol = ?
+          and trade_date = ?
+          and provider = ?
+          and coalesce(adjust, '') = ?
+        order by fetched_at desc
+        limit 1
+        """,
+        (symbol, trade_date, BAOSTOCK_MARKET_PROVIDER, adjust),
+    ).fetchone()
+    if not row:
+        return payload
+    baostock_volume = coerce_float(row["volume"])
+    akshare_volume = coerce_float(payload.get("volume"))
+    if not akshare_bar_suspicious(akshare_volume, baostock_volume):
+        return payload
+    patched = dict(payload)
+    for key in ("open", "high", "low", "close", "volume", "amount", "change_pct", "turnover_rate"):
+        value = coerce_float(row[key])
+        if value is not None:
+            patched[key] = value
+    return patched
+
+
+def repair_akshare_bars_from_baostock(
+    conn: sqlite3.Connection,
+    *,
+    trade_date: str | None = None,
+    since_date: str | None = None,
+) -> int:
+    filters = [
+        "a.provider = ?",
+        "b.provider = ?",
+        "coalesce(a.adjust, '') = coalesce(b.adjust, '')",
+        "a.volume > 0",
+        "b.volume > 0",
+        "a.volume < b.volume * 0.8",
+    ]
+    params: list[Any] = [AKSHARE_MARKET_PROVIDER, BAOSTOCK_MARKET_PROVIDER]
+    if trade_date:
+        filters.append("a.trade_date = ?")
+        params.append(trade_date)
+    elif since_date:
+        filters.append("a.trade_date >= ?")
+        params.append(since_date)
+    cursor = conn.execute(
+        f"""
+        update daily_bars
+        set
+          open = (
+            select b.open from daily_bars b
+            where b.symbol = daily_bars.symbol
+              and b.trade_date = daily_bars.trade_date
+              and b.provider = ?
+              and coalesce(b.adjust, '') = coalesce(daily_bars.adjust, '')
+            limit 1
+          ),
+          high = (
+            select b.high from daily_bars b
+            where b.symbol = daily_bars.symbol
+              and b.trade_date = daily_bars.trade_date
+              and b.provider = ?
+              and coalesce(b.adjust, '') = coalesce(daily_bars.adjust, '')
+            limit 1
+          ),
+          low = (
+            select b.low from daily_bars b
+            where b.symbol = daily_bars.symbol
+              and b.trade_date = daily_bars.trade_date
+              and b.provider = ?
+              and coalesce(b.adjust, '') = coalesce(daily_bars.adjust, '')
+            limit 1
+          ),
+          close = (
+            select b.close from daily_bars b
+            where b.symbol = daily_bars.symbol
+              and b.trade_date = daily_bars.trade_date
+              and b.provider = ?
+              and coalesce(b.adjust, '') = coalesce(daily_bars.adjust, '')
+            limit 1
+          ),
+          volume = (
+            select b.volume from daily_bars b
+            where b.symbol = daily_bars.symbol
+              and b.trade_date = daily_bars.trade_date
+              and b.provider = ?
+              and coalesce(b.adjust, '') = coalesce(daily_bars.adjust, '')
+            limit 1
+          ),
+          amount = (
+            select b.amount from daily_bars b
+            where b.symbol = daily_bars.symbol
+              and b.trade_date = daily_bars.trade_date
+              and b.provider = ?
+              and coalesce(b.adjust, '') = coalesce(daily_bars.adjust, '')
+            limit 1
+          ),
+          change_pct = coalesce(
+            change_pct,
+            (
+              select b.change_pct from daily_bars b
+              where b.symbol = daily_bars.symbol
+                and b.trade_date = daily_bars.trade_date
+                and b.provider = ?
+                and coalesce(b.adjust, '') = coalesce(daily_bars.adjust, '')
+              limit 1
+            )
+          ),
+          turnover_rate = coalesce(
+            turnover_rate,
+            (
+              select b.turnover_rate from daily_bars b
+              where b.symbol = daily_bars.symbol
+                and b.trade_date = daily_bars.trade_date
+                and b.provider = ?
+                and coalesce(b.adjust, '') = coalesce(daily_bars.adjust, '')
+              limit 1
+            )
+          )
+        where rowid in (
+          select a.rowid
+          from daily_bars a
+          join daily_bars b
+            on a.symbol = b.symbol
+           and a.trade_date = b.trade_date
+          where {" and ".join(filters)}
+        )
+        """,
+        (
+            BAOSTOCK_MARKET_PROVIDER,
+            BAOSTOCK_MARKET_PROVIDER,
+            BAOSTOCK_MARKET_PROVIDER,
+            BAOSTOCK_MARKET_PROVIDER,
+            BAOSTOCK_MARKET_PROVIDER,
+            BAOSTOCK_MARKET_PROVIDER,
+            BAOSTOCK_MARKET_PROVIDER,
+            BAOSTOCK_MARKET_PROVIDER,
+            *params,
+        ),
+    )
+    return int(cursor.rowcount or 0)
+
+
+def market_rescan_symbols(conn: sqlite3.Connection, tier: str = "all") -> list[str]:
+    universe = baostock_daily_universe_symbols(conn)
+    favorites = set(baostock_refresh_favorite_symbols(conn))
+    ranked = sorted(
+        universe,
+        key=lambda symbol: baostock_symbol_refresh_priority(conn, symbol, favorites),
+    )
+    clean_tier = str(tier or "all").strip().lower()
+    if clean_tier == "favorites":
+        return [symbol for symbol in ranked if symbol in favorites]
+    if clean_tier in {"stocks", "stock"}:
+        return [
+            symbol
+            for symbol in ranked
+            if symbol not in favorites and not is_index_like_symbol(conn, symbol)
+        ]
+    if clean_tier in {"indices", "index"}:
+        return [symbol for symbol in ranked if is_index_like_symbol(conn, symbol)]
+    return ranked
+
+
+def force_refresh_baostock_history_batch(
+    conn: sqlite3.Connection,
+    symbols: list[str],
+    start_date: str,
+    end_date: str,
+) -> dict[str, Any]:
+    target_symbols = [symbol for symbol in symbols if is_baostock_supported_a_share(symbol)]
+    skipped = [
+        {
+            "symbol": symbol,
+            "error": "BaoStock 历史同步当前只处理沪深 .SH/.SZ 代码；北交所走 AKShare/Tushare",
+        }
+        for symbol in symbols
+        if symbol not in target_symbols
+    ]
+    if not target_symbols:
+        return {"symbols": [], "daily_bars": 0, "market_snapshots": 0, "errors": skipped}
+    date_ranges = {symbol: [(start_date, end_date)] for symbol in target_symbols}
+    try:
+        results, errors = query_baostock_history_batch(
+            target_symbols,
+            start_date,
+            end_date,
+            date_ranges_by_symbol=date_ranges,
+        )
+    except BaostockError as exc:
+        return {
+            "symbols": [],
+            "daily_bars": 0,
+            "market_snapshots": 0,
+            "errors": [*skipped, {"scope": "baostock-history-batch", "error": str(exc)}],
+        }
+    updated_symbols: list[str] = []
+    daily_bars = 0
+    snapshots = 0
+    for symbol, rows in results.items():
+        inserted = upsert_baostock_history(conn, rows)
+        daily_bars += inserted
+        snapshots += upsert_baostock_latest_snapshot(conn, symbol, rows)
+        if inserted:
+            updated_symbols.append(symbol)
+    return {
+        "symbols": updated_symbols,
+        "daily_bars": daily_bars,
+        "market_snapshots": snapshots,
+        "errors": [*skipped, *errors],
+    }
+
+
+def baostock_trade_dates(
+    conn: sqlite3.Connection,
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    adjust: str = "qfq",
+) -> set[str]:
+    rows = conn.execute(
+        """
+        select trade_date
+        from daily_bars
+        where symbol = ?
+          and provider = ?
+          and coalesce(adjust, '') = ?
+          and trade_date between ? and ?
+        """,
+        (symbol, BAOSTOCK_MARKET_PROVIDER, adjust, start_date, end_date),
+    ).fetchall()
+    return {str(row["trade_date"]) for row in rows if row["trade_date"]}
+
+
+def prune_akshare_shadowed_by_baostock(
+    conn: sqlite3.Connection,
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    adjust: str = "qfq",
+    trade_dates: set[str] | None = None,
+) -> int:
+    if trade_dates:
+        placeholders = ", ".join("?" for _ in trade_dates)
+        date_filter = f"trade_date in ({placeholders})"
+        date_params: list[Any] = sorted(trade_dates)
+    else:
+        date_filter = "trade_date between ? and ?"
+        date_params = [start_date, end_date]
+    cursor = conn.execute(
+        f"""
+        delete from daily_bars
+        where provider = ?
+          and symbol = ?
+          and coalesce(adjust, '') = ?
+          and {date_filter}
+          and exists (
+            select 1
+            from daily_bars b
+            where b.symbol = daily_bars.symbol
+              and b.trade_date = daily_bars.trade_date
+              and b.provider = ?
+              and coalesce(b.adjust, '') = coalesce(daily_bars.adjust, '')
+          )
+        """,
+        (AKSHARE_MARKET_PROVIDER, symbol, adjust, *date_params, BAOSTOCK_MARKET_PROVIDER),
+    )
+    return int(cursor.rowcount or 0)
+
+
+def prune_akshare_shadowed_by_baostock_payloads(
+    conn: sqlite3.Connection,
+    payloads: list[dict[str, Any]],
+) -> int:
+    grouped: dict[tuple[str, str], set[str]] = {}
+    for payload in payloads:
+        if str(payload.get("provider") or "") != BAOSTOCK_MARKET_PROVIDER:
+            continue
+        symbol = str(payload.get("symbol") or "")
+        trade_date = str(payload.get("trade_date") or "")
+        adjust = str(payload.get("adjust") or "")
+        if not symbol or not trade_date:
+            continue
+        grouped.setdefault((symbol, adjust), set()).add(trade_date)
+    deleted = 0
+    for (symbol, adjust), trade_dates in grouped.items():
+        if not trade_dates:
+            continue
+        sorted_dates = sorted(trade_dates)
+        deleted += prune_akshare_shadowed_by_baostock(
+            conn,
+            symbol,
+            sorted_dates[0],
+            sorted_dates[-1],
+            adjust=adjust,
+            trade_dates=trade_dates,
+        )
+    return deleted
+
+
+def refresh_akshare_gap_fill_symbol(
+    conn: sqlite3.Connection,
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    akshare_start: str,
+    akshare_end: str,
+    days: int,
+    adjust: str = "qfq",
+) -> dict[str, Any]:
+    counts = {"daily_bars": 0, "market_snapshots": 0, "akshare_gap_dates": 0}
+    errors: list[dict[str, str]] = []
+    if not is_a_share(symbol):
+        return {"counts": counts, "errors": errors}
+    if is_index_like_symbol(conn, symbol):
+        return {"counts": counts, "errors": errors}
+    baostock_dates = baostock_trade_dates(conn, symbol, start_date, end_date, adjust=adjust)
+    try:
+        rows, valuation_by_date = fetch_akshare_hist_and_valuation(
+            symbol,
+            akshare_start,
+            akshare_end,
+            days=days,
+        )
+        gap_rows = []
+        for row in rows:
+            trade_date = normalize_date(text_value(row, ["日期", "date", "trade_date"]))
+            if not trade_date or trade_date < start_date or trade_date > end_date:
+                continue
+            if trade_date in baostock_dates:
+                continue
+            gap_rows.append(row)
+        if not gap_rows:
+            return {"counts": counts, "errors": errors}
+        counts["daily_bars"] += upsert_akshare_history(conn, symbol, gap_rows, valuation_by_date=valuation_by_date)
+        counts["akshare_gap_dates"] = len(gap_rows)
+        if gap_rows:
+            upsert_latest_history_snapshot(conn, symbol, gap_rows[-1])
+            counts["market_snapshots"] += 1
+    except Exception as exc:
+        errors.append({"symbol": symbol, "source": "akshare-gap", "error": str(exc)})
+    return {"counts": counts, "errors": errors}
+
+
+def refresh_market_symbol_recent(
+    conn: sqlite3.Connection,
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    akshare_start: str,
+    akshare_end: str,
+    days: int,
+    *,
+    use_akshare: bool = True,
+    use_baostock: bool = True,
+) -> dict[str, Any]:
+    counts = {"daily_bars": 0, "market_snapshots": 0, "akshare_gap_dates": 0, "pruned_akshare_rows": 0}
+    errors: list[dict[str, str]] = []
+    if use_baostock and is_baostock_supported_a_share(symbol):
+        try:
+            rows = query_baostock_history(symbol, start_date, end_date)
+            counts["daily_bars"] += upsert_baostock_history(conn, rows)
+            counts["market_snapshots"] += upsert_baostock_latest_snapshot(conn, symbol, rows)
+            counts["pruned_akshare_rows"] += prune_akshare_shadowed_by_baostock(
+                conn,
+                symbol,
+                start_date,
+                end_date,
+            )
+        except Exception as exc:
+            errors.append({"symbol": symbol, "source": "baostock", "error": str(exc)})
+    if use_akshare:
+        gap_result = refresh_akshare_gap_fill_symbol(
+            conn,
+            symbol,
+            start_date,
+            end_date,
+            akshare_start,
+            akshare_end,
+            days,
+        )
+        counts["daily_bars"] += gap_result["counts"]["daily_bars"]
+        counts["market_snapshots"] += gap_result["counts"]["market_snapshots"]
+        counts["akshare_gap_dates"] += gap_result["counts"]["akshare_gap_dates"]
+        errors.extend(gap_result["errors"])
+    return {"counts": counts, "errors": errors}
+
+
+def create_market_rescan_job(
+    conn: sqlite3.Connection,
+    symbols: list[str] | None = None,
+    tier: str = "all",
+    days: int = 30,
+    batch_size: int = 20,
+) -> dict[str, Any]:
+    mark_stale_running_ingestions(conn, "market-rescan", MARKET_RESCAN_SCOPE, stale_minutes=30)
+    conn.commit()
+    running = latest_running_ingestion(conn, "market-rescan", MARKET_RESCAN_SCOPE)
+    if running:
+        return {
+            "status": "running",
+            "mode": "market-rescan",
+            "run_id": running["id"],
+            "already_running": True,
+            "job": ingestion_run_payload(conn, int(running["id"])),
+            "warehouse": warehouse_summary(conn),
+        }
+    requested_symbols = normalize_symbols(conn, symbols or [])
+    target_symbols = requested_symbols or market_rescan_symbols(conn, tier)
+    end_date = latest_baostock_daily_trade_date()
+    start_date = baostock_history_start_date(end_date, days)
+    run_id = start_ingestion(conn, "market-rescan", MARKET_RESCAN_SCOPE, target_symbols, False)
+    counts = {
+        "symbols": 0,
+        "daily_bars": 0,
+        "market_snapshots": 0,
+        "batches": 0,
+        "batch_size": batch_size,
+        "batch_sleep_seconds": MARKET_RESCAN_BATCH_SLEEP_SECONDS,
+        "requested_symbol_count": len(target_symbols),
+        "remaining_candidates": len(target_symbols),
+        "days": days,
+        "tier": tier,
+        "target_start": start_date,
+        "target_end": end_date,
+    }
+    update_ingestion_progress(conn, run_id, [], counts, [])
+    conn.commit()
+    return {
+        "status": "queued",
+        "mode": "market-rescan",
+        "run_id": run_id,
+        "already_running": False,
+        "counts": counts,
+        "warehouse": warehouse_summary(conn),
+    }
+
+
+def run_market_rescan_job(
+    run_id: int,
+    symbols: list[str] | None = None,
+    tier: str = "all",
+    days: int = 30,
+    batch_size: int = 20,
+    *,
+    use_akshare: bool = True,
+    use_baostock: bool = True,
+    repair_volume: bool = True,
+) -> None:
+    updated_symbols: list[str] = []
+    errors: list[dict[str, str]] = []
+    counts: dict[str, Any] = {
+        "symbols": 0,
+        "daily_bars": 0,
+        "market_snapshots": 0,
+        "batches": 0,
+        "batch_size": batch_size,
+        "batch_sleep_seconds": MARKET_RESCAN_BATCH_SLEEP_SECONDS,
+        "days": days,
+        "tier": tier,
+        "repaired_akshare_volume_rows": 0,
+        "processed_symbols": 0,
+    }
+    try:
+        with get_db() as conn:
+            if repair_volume:
+                repair_end_date = latest_baostock_daily_trade_date()
+                repair_start_date = baostock_history_start_date(repair_end_date, days)
+                counts["repaired_akshare_volume_rows"] = repair_akshare_volume_units(conn)
+                counts["repaired_akshare_bar_rows"] = repair_akshare_bars_from_baostock(
+                    conn,
+                    since_date=repair_start_date,
+                )
+                conn.commit()
+            target_symbols = normalize_symbols(conn, symbols or []) or market_rescan_symbols(conn, tier)
+            counts["requested_symbol_count"] = len(target_symbols)
+            counts["remaining_candidates"] = len(target_symbols)
+            end_date = latest_baostock_daily_trade_date()
+            start_date = baostock_history_start_date(end_date, days)
+            akshare_end = date.today().strftime("%Y%m%d")
+            akshare_start = (date.today() - timedelta(days=days)).strftime("%Y%m%d")
+            counts["target_start"] = start_date
+            counts["target_end"] = end_date
+            update_ingestion_progress(conn, run_id, updated_symbols, counts, errors)
+            conn.commit()
+
+        for batch_symbols in chunked(target_symbols, batch_size):
+            with get_db() as conn:
+                if should_pause_after_priority_request(conn, run_id, counts):
+                    break
+                batch_counts = {"daily_bars": 0, "market_snapshots": 0, "akshare_gap_dates": 0, "pruned_akshare_rows": 0}
+                batch_updated: list[str] = []
+                if use_baostock:
+                    baostock_batch = force_refresh_baostock_history_batch(
+                        conn,
+                        batch_symbols,
+                        start_date,
+                        end_date,
+                    )
+                    batch_counts["daily_bars"] += baostock_batch["daily_bars"]
+                    batch_counts["market_snapshots"] += baostock_batch["market_snapshots"]
+                    batch_updated.extend(baostock_batch["symbols"])
+                    errors.extend(baostock_batch["errors"])
+                    for symbol in batch_symbols:
+                        if is_baostock_supported_a_share(symbol):
+                            batch_counts["pruned_akshare_rows"] += prune_akshare_shadowed_by_baostock(
+                                conn,
+                                symbol,
+                                start_date,
+                                end_date,
+                            )
+                if use_akshare:
+                    for symbol in batch_symbols:
+                        gap_result = refresh_akshare_gap_fill_symbol(
+                            conn,
+                            symbol,
+                            start_date,
+                            end_date,
+                            akshare_start,
+                            akshare_end,
+                            days,
+                        )
+                        batch_counts["daily_bars"] += gap_result["counts"]["daily_bars"]
+                        batch_counts["market_snapshots"] += gap_result["counts"]["market_snapshots"]
+                        batch_counts["akshare_gap_dates"] += gap_result["counts"]["akshare_gap_dates"]
+                        if gap_result["counts"]["daily_bars"] or gap_result["counts"]["market_snapshots"]:
+                            batch_updated.append(symbol)
+                        errors.extend(gap_result["errors"])
+                counts["daily_bars"] += batch_counts["daily_bars"]
+                counts["market_snapshots"] += batch_counts["market_snapshots"]
+                counts["akshare_gap_dates"] = int(counts.get("akshare_gap_dates") or 0) + batch_counts["akshare_gap_dates"]
+                counts["pruned_akshare_rows"] = int(counts.get("pruned_akshare_rows") or 0) + batch_counts["pruned_akshare_rows"]
+                updated_symbols.extend(batch_updated)
+                counts["processed_symbols"] += len(batch_symbols)
+                counts["symbols"] = len(set(updated_symbols))
+                counts["batches"] += 1
+                counts["remaining_candidates"] = max(len(target_symbols) - counts["processed_symbols"], 0)
+                update_ingestion_progress(conn, run_id, updated_symbols, counts, errors)
+                conn.commit()
+            time.sleep(MARKET_RESCAN_BATCH_SLEEP_SECONDS)
+
+        with get_db() as conn:
+            counts["remaining_candidates"] = 0
+            status = "partial" if counts.get("paused_after_priority_request") else "ok"
+            finish_ingestion(conn, run_id, status, updated_symbols, counts, errors)
+            conn.commit()
+    except Exception as exc:
+        with get_db() as conn:
+            errors.append({"scope": "market-rescan", "error": str(exc)})
+            finish_ingestion(conn, run_id, "failed", updated_symbols, counts, errors)
+            conn.commit()
+
+
 def is_index_like_symbol(conn: sqlite3.Connection, symbol: str) -> bool:
     row = conn.execute(
         "select symbol, name, sector, industry from symbols where symbol = ?",
@@ -2871,6 +3578,101 @@ def fetch_akshare_hist(symbol: str, start_date: str, end_date: str) -> list[dict
     return frame.to_dict("records")
 
 
+def akshare_valuation_period(days: int) -> str:
+    clean_days = max(20, int(days or 260))
+    if clean_days <= 370:
+        return "近一年"
+    if clean_days <= 1100:
+        return "近三年"
+    if clean_days <= 1900:
+        return "近五年"
+    return "全部"
+
+
+def build_akshare_valuation_map(rows: list[dict[str, Any]]) -> dict[str, dict[str, float | None]]:
+    merged: dict[str, dict[str, float | None]] = {}
+    for row in rows:
+        trade_date = normalize_date(text_value(row, ["数据日期", "TRADE_DATE", "date"]))
+        if not trade_date:
+            continue
+        merged[trade_date] = {
+            "pe_ttm": number_value(row, ["PE(TTM)", "PE_TTM", "pe_ttm"]),
+            "pb": number_value(row, ["市净率", "PB_MRQ", "pb"]),
+            "ps_ttm": number_value(row, ["市销率", "PS_TTM", "ps_ttm"]),
+            "pcf_ncf_ttm": number_value(row, ["市现率", "PCF_OCF_TTM", "pcf_ncf_ttm"]),
+        }
+    return merged
+
+
+def fetch_akshare_value_em(symbol: str) -> dict[str, dict[str, float | None]]:
+    import akshare as ak
+
+    code = symbol.split(".")[0]
+    frame = ak.stock_value_em(symbol=code)
+    return build_akshare_valuation_map(frame.to_dict("records"))
+
+
+def fetch_akshare_baidu_valuation(symbol: str, days: int = 260) -> dict[str, dict[str, float | None]]:
+    import akshare as ak
+
+    code = symbol.split(".")[0]
+    period = akshare_valuation_period(days)
+    merged: dict[str, dict[str, float | None]] = {}
+    pe_frame = ak.stock_zh_valuation_baidu(symbol=code, indicator="市盈率(TTM)", period=period)
+    for row in pe_frame.to_dict("records"):
+        trade_date = normalize_date(str(row.get("date") or ""))
+        if not trade_date:
+            continue
+        merged.setdefault(trade_date, {})["pe_ttm"] = number_value(row, ["value"])
+    pb_frame = ak.stock_zh_valuation_baidu(symbol=code, indicator="市净率", period=period)
+    for row in pb_frame.to_dict("records"):
+        trade_date = normalize_date(str(row.get("date") or ""))
+        if not trade_date:
+            continue
+        merged.setdefault(trade_date, {})["pb"] = number_value(row, ["value"])
+    return merged
+
+
+def fetch_akshare_valuation_by_date(symbol: str, days: int = 260) -> dict[str, dict[str, float | None]]:
+    try:
+        valuation = fetch_akshare_value_em(symbol)
+        if valuation:
+            return valuation
+    except Exception:
+        pass
+    try:
+        return fetch_akshare_baidu_valuation(symbol, days=days)
+    except Exception:
+        return {}
+
+
+def fetch_akshare_hist_and_valuation(
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    days: int = 260,
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, float | None]]]:
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        hist_future = executor.submit(fetch_akshare_hist, symbol, start_date, end_date)
+        valuation_future = executor.submit(fetch_akshare_valuation_by_date, symbol, days)
+        rows = hist_future.result()
+        valuation_by_date = valuation_future.result()
+    return rows, valuation_by_date
+
+
+def akshare_valuation_metrics(
+    valuation_by_date: dict[str, dict[str, float | None]] | None,
+    trade_date: str,
+) -> dict[str, float | None]:
+    metrics = (valuation_by_date or {}).get(trade_date) or {}
+    return {
+        "pe_ttm": metrics.get("pe_ttm"),
+        "pb": metrics.get("pb"),
+        "ps_ttm": metrics.get("ps_ttm"),
+        "pcf_ncf_ttm": metrics.get("pcf_ncf_ttm"),
+    }
+
+
 def fetch_tushare_universe(conn: sqlite3.Connection) -> list[dict[str, Any]]:
     token = tushare_token(conn, DEFAULT_ACCOUNT_ID)
     if not token:
@@ -2994,6 +3796,7 @@ def upsert_baostock_history(conn: sqlite3.Connection, rows: list[dict[str, Any]]
             }
         )
     upsert_daily_payloads(conn, payloads)
+    prune_akshare_shadowed_by_baostock_payloads(conn, payloads)
     return len(payloads)
 
 
@@ -3845,7 +4648,12 @@ def upsert_spot_market_snapshots(conn: sqlite3.Connection, rows: list[dict[str, 
     return len(payloads)
 
 
-def upsert_akshare_history(conn: sqlite3.Connection, symbol: str, rows: list[dict[str, Any]]) -> int:
+def upsert_akshare_history(
+    conn: sqlite3.Connection,
+    symbol: str,
+    rows: list[dict[str, Any]],
+    valuation_by_date: dict[str, dict[str, float | None]] | None = None,
+) -> int:
     fetched_at = now_iso()
     payloads = []
     for row in rows:
@@ -3853,26 +4661,35 @@ def upsert_akshare_history(conn: sqlite3.Connection, symbol: str, rows: list[dic
         close = number_value(row, ["收盘", "close"])
         if not trade_date or close is None:
             continue
+        metrics = akshare_valuation_metrics(valuation_by_date, trade_date)
+        raw_payload = dict(row)
+        if any(value is not None for value in metrics.values()):
+            raw_payload["valuation"] = metrics
         payloads.append(
-            {
-                "symbol": symbol,
-                "trade_date": trade_date,
-                "provider": AKSHARE_MARKET_PROVIDER,
-                "adjust": "qfq",
-                "open": number_value(row, ["开盘", "open"]),
-                "high": number_value(row, ["最高", "high"]),
-                "low": number_value(row, ["最低", "low"]),
-                "close": close,
-                "pre_close": None,
-                "change_pct": number_value(row, ["涨跌幅", "pct_chg"]),
-                "volume": number_value(row, ["成交量", "volume"]),
-                "amount": number_value(row, ["成交额", "amount"]),
-                "turnover_rate": number_value(row, ["换手率", "turnover"]),
-                "pe_ttm": None,
-                "pb": None,
-                "raw_json": json.dumps(row, ensure_ascii=False, default=str),
-                "fetched_at": fetched_at,
-            }
+            patch_akshare_payload_from_baostock(
+                conn,
+                {
+                    "symbol": symbol,
+                    "trade_date": trade_date,
+                    "provider": AKSHARE_MARKET_PROVIDER,
+                    "adjust": "qfq",
+                    "open": number_value(row, ["开盘", "open"]),
+                    "high": number_value(row, ["最高", "high"]),
+                    "low": number_value(row, ["最低", "low"]),
+                    "close": close,
+                    "pre_close": None,
+                    "change_pct": number_value(row, ["涨跌幅", "pct_chg"]),
+                    "volume": akshare_hist_volume_to_shares(number_value(row, ["成交量", "volume"])),
+                    "amount": number_value(row, ["成交额", "amount"]),
+                    "turnover_rate": number_value(row, ["换手率", "turnover"]),
+                    "pe_ttm": metrics["pe_ttm"],
+                    "pb": metrics["pb"],
+                    "ps_ttm": metrics["ps_ttm"],
+                    "pcf_ncf_ttm": metrics["pcf_ncf_ttm"],
+                    "raw_json": json.dumps(raw_payload, ensure_ascii=False, default=str),
+                    "fetched_at": fetched_at,
+                },
+            )
         )
     upsert_daily_payloads(conn, payloads)
     return len(payloads)
@@ -3902,7 +4719,7 @@ def upsert_latest_history_snapshot(conn: sqlite3.Connection, symbol: str, row: d
             f"{trade_date}T15:00:00+08:00",
             now_iso(),
             close,
-            number_value(row, ["成交量", "volume"]) or 0,
+            akshare_hist_volume_to_shares(number_value(row, ["成交量", "volume"])) or 0,
             number_value(row, ["成交额", "amount"]) or 0,
             number_value(row, ["换手率", "turnover"]) or 0,
             5,
@@ -3912,6 +4729,93 @@ def upsert_latest_history_snapshot(conn: sqlite3.Connection, symbol: str, row: d
     )
 
 
+def backfill_daily_bar_metrics_from_db(conn: sqlite3.Connection, payload: dict[str, Any]) -> dict[str, Any]:
+    symbol = str(payload.get("symbol") or "")
+    trade_date = str(payload.get("trade_date") or "")
+    provider = str(payload.get("provider") or "")
+    adjust = str(payload.get("adjust") or "")
+    if not symbol or not trade_date or not provider:
+        return payload
+    metric_keys = ("pe_ttm", "pb", "ps_ttm", "pcf_ncf_ttm", "pre_close", "turnover_rate")
+    if all(payload.get(key) not in (None, 0, "") for key in ("pe_ttm", "pb")):
+        return payload
+    row = conn.execute(
+        """
+        select pe_ttm, pb, ps_ttm, pcf_ncf_ttm, pre_close, turnover_rate
+        from daily_bars
+        where symbol = ?
+          and trade_date = ?
+          and coalesce(adjust, '') = ?
+          and provider != ?
+        order by
+          case provider
+            when 'tushare-market' then 6
+            when 'baostock-market' then 5
+            when 'akshare-market' then 4
+            when 'finnhub-market' then 2
+            else 1
+          end desc,
+          fetched_at desc
+        limit 1
+        """,
+        (symbol, trade_date, adjust, provider),
+    ).fetchone()
+    if not row:
+        return payload
+    patched = dict(payload)
+    for key in metric_keys:
+        if patched.get(key) in (None, 0, "") and row[key] not in (None, 0, ""):
+            patched[key] = row[key]
+    return patched
+
+
+def payload_has_valuation_metrics(payload: dict[str, Any]) -> bool:
+    return any(payload.get(key) not in (None, 0, "") for key in ("pe_ttm", "pb", "ps_ttm", "pcf_ncf_ttm"))
+
+
+def dedupe_daily_bars_shadowed_providers(
+    conn: sqlite3.Connection,
+    payloads: list[dict[str, Any]],
+) -> int:
+    if not payloads:
+        return 0
+    payload_by_key: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    for payload in payloads:
+        symbol = str(payload.get("symbol") or "")
+        trade_date = str(payload.get("trade_date") or "")
+        provider = str(payload.get("provider") or "")
+        adjust = str(payload.get("adjust") or "")
+        if not symbol or not trade_date or not provider:
+            continue
+        payload_by_key[(symbol, trade_date, provider, adjust)] = payload
+    deleted = 0
+    for symbol, trade_date, provider, adjust in payload_by_key:
+        payload = payload_by_key[(symbol, trade_date, provider, adjust)]
+        if not payload_has_valuation_metrics(payload):
+            continue
+        writing_priority = MARKET_PROVIDER_PRIORITY.get(provider, 0)
+        lower_providers = [
+            name for name, priority in MARKET_PROVIDER_PRIORITY.items() if priority < writing_priority
+        ]
+        if not lower_providers:
+            continue
+        placeholders = ", ".join("?" * len(lower_providers))
+        deleted += int(
+            conn.execute(
+                f"""
+                delete from daily_bars
+                where symbol = ?
+                  and trade_date = ?
+                  and coalesce(adjust, '') = ?
+                  and provider in ({placeholders})
+                """,
+                (symbol, trade_date, adjust, *lower_providers),
+            ).rowcount
+            or 0
+        )
+    return max(0, deleted)
+
+
 def upsert_daily_payloads(conn: sqlite3.Connection, payloads: list[dict[str, Any]]) -> None:
     defaults = {
         "ps_ttm": None,
@@ -3919,7 +4823,10 @@ def upsert_daily_payloads(conn: sqlite3.Connection, payloads: list[dict[str, Any
         "is_st": None,
         "trade_status": None,
     }
-    rows = [{**defaults, **payload} for payload in payloads]
+    rows = [
+        backfill_daily_bar_metrics_from_db(conn, {**defaults, **payload})
+        for payload in payloads
+    ]
     conn.executemany(
         """
         insert into daily_bars (
@@ -3937,11 +4844,11 @@ def upsert_daily_payloads(conn: sqlite3.Connection, payloads: list[dict[str, Any
           high = excluded.high,
           low = excluded.low,
           close = excluded.close,
-          pre_close = excluded.pre_close,
+          pre_close = coalesce(excluded.pre_close, daily_bars.pre_close),
           change_pct = excluded.change_pct,
           volume = excluded.volume,
           amount = excluded.amount,
-          turnover_rate = excluded.turnover_rate,
+          turnover_rate = coalesce(excluded.turnover_rate, daily_bars.turnover_rate),
           pe_ttm = coalesce(excluded.pe_ttm, daily_bars.pe_ttm),
           pb = coalesce(excluded.pb, daily_bars.pb),
           ps_ttm = coalesce(excluded.ps_ttm, daily_bars.ps_ttm),
@@ -3953,6 +4860,7 @@ def upsert_daily_payloads(conn: sqlite3.Connection, payloads: list[dict[str, Any
         """,
         rows,
     )
+    dedupe_daily_bars_shadowed_providers(conn, rows)
 
 
 def normalize_symbols(conn: sqlite3.Connection, symbols: list[str]) -> list[str]:
@@ -4278,6 +5186,15 @@ def text_value(row: dict[str, Any], keys: list[str]) -> str:
         if value not in (None, ""):
             return str(value).strip()
     return ""
+
+
+def coerce_float(value: Any) -> float | None:
+    if value in (None, "", "-"):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def number_value(row: dict[str, Any], keys: list[str]) -> float | None:
