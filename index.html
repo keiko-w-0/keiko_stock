@@ -9,8 +9,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>聚宝盆</title>
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="assets/app-icon.svg" />
+    <link rel="icon" href="assets/app-logo.jpg" type="image/jpeg" />
+    <link rel="apple-touch-icon" href="assets/app-logo.jpg" />
     <script>
       (() => {
         const isLocal = ["localhost", "127.0.0.1", "0.0.0.0", "::1"].includes(location.hostname);
@@ -27,17 +27,16 @@
         });
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=20260620-iwencai-recall-v4" />
-    <script defer src="app.js?v=20260620-iwencai-recall-v6"></script>
+    <link rel="stylesheet" href="styles.css?v=20260621-brand-logo-v1" />
+    <script defer src="app.js?v=20260620-pool-idle-v1"></script>
   </head>
   <body>
     <div class="app-shell">
       <aside class="rail" aria-label="主导航">
         <div class="brand">
-          <div class="brand-mark">K</div>
+          <img class="brand-mark" src="assets/app-logo.jpg" alt="" aria-hidden="true" />
           <div>
             <h1>聚宝盆</h1>
-            <p>本地研究台 · 数据 API</p>
           </div>
         </div>
 
@@ -67,7 +66,7 @@
         <header class="topbar">
           <div>
             <p class="eyebrow">2026-06-05 · Asia/Shanghai</p>
-            <h2>聚宝盆研究台</h2>
+            <h2>聚宝盆</h2>
           </div>
           <div class="status-strip" aria-label="系统状态">
             <label class="account-switcher">

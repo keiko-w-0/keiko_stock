@@ -7,6 +7,7 @@ import random
 import sqlite3
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +28,6 @@ from backend.providers.iwencai_profile import (
     finish_iwencai_run,
     get_iwencai_db,
     init_iwencai_profile_db,
-    iwencai_profile_is_fresh,
     mark_iwencai_state,
     start_iwencai_run,
     upsert_iwencai_profile,
@@ -85,6 +85,17 @@ def main() -> int:
     parser.add_argument("--hexin-js-url", default=IWENCAI_HEXIN_JS_URL, help="Download URL for hexin-v script.")
     parser.add_argument("--node", default="", help="Node.js executable path.")
     parser.add_argument("--status-every", type=int, default=10, help="Print progress every N processed targets.")
+    parser.add_argument(
+        "--failed-cooldown-hours",
+        type=float,
+        default=0,
+        help="Skip symbols whose latest failed crawl is a 403 within this many hours. 0 disables.",
+    )
+    parser.add_argument(
+        "--disable-circuit-probe",
+        action="store_true",
+        help="Disable the last-success probe before a consecutive-403 cooldown.",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Only print target order; do not request iWenCai.")
     parser.add_argument("--json", action="store_true", help="Print machine-readable final JSON.")
     args = parser.parse_args()
@@ -114,19 +125,7 @@ def main() -> int:
         return 0
 
     iwencai_db_path = Path(args.iwencai_db).expanduser()
-    with get_iwencai_db(iwencai_db_path) as iwencai_conn:
-        init_iwencai_profile_db(iwencai_conn)
-        run_id = start_iwencai_run(iwencai_conn, run_scope(args), run_tier_order(args), len(targets))
-        iwencai_conn.commit()
-
-    client = IwencaiProfileClient(
-        hexin_js_path=args.hexin_js or None,
-        hexin_js_url=args.hexin_js_url,
-        node_path=args.node or None,
-        timeout=args.timeout,
-        max_retries=args.max_retries,
-    )
-
+    candidate_count = len(targets)
     counts: dict[str, int] = {
         "profiles": 0,
         "highlights": 0,
@@ -135,27 +134,50 @@ def main() -> int:
         "ok": 0,
         "no_sections": 0,
         "skipped_recent": 0,
+        "skipped_recent_failed": 0,
         "failed": 0,
+        "circuit_403_probes": 0,
+        "circuit_403_probe_passes": 0,
     }
     errors: list[dict[str, Any]] = []
     processed = 0
     status = "ok"
     consecutive_403 = 0
     cooldown_count = 0
+    last_success_question = ""
+    last_success_target: Target | None = None
+
+    with get_iwencai_db(iwencai_db_path) as iwencai_conn:
+        init_iwencai_profile_db(iwencai_conn)
+        if not args.force:
+            targets, prefilter_counts = prefilter_iwencai_targets(
+                iwencai_conn,
+                targets,
+                stale_hours=args.stale_hours,
+                failed_cooldown_hours=args.failed_cooldown_hours,
+            )
+            for key, value in prefilter_counts.items():
+                counts[key] = counts.get(key, 0) + value
+            processed = counts.get("skipped_recent", 0) + counts.get("skipped_recent_failed", 0)
+            print_prefilter_summary(args, candidate_count, len(targets), counts)
+        run_id = start_iwencai_run(iwencai_conn, run_scope(args), run_tier_order(args), candidate_count)
+        iwencai_conn.commit()
+
+    client = (
+        new_iwencai_client(args)
+        if targets
+        else None
+    )
 
     try:
         with get_iwencai_db(iwencai_db_path) as iwencai_conn:
             init_iwencai_profile_db(iwencai_conn)
             for index, target in enumerate(targets, start=1):
                 symbol = target["symbol"]
-                if not args.force and iwencai_profile_is_fresh(iwencai_conn, symbol, args.stale_hours):
-                    counts["skipped_recent"] += 1
-                    processed += 1
-                    print_progress(args, index, len(targets), target, "skipped_recent", counts)
-                    continue
-
                 question = question_for_target(target)
                 try:
+                    if client is None:
+                        raise RuntimeError("iwencai client is not initialized")
                     payload = client.fetch_robot_data(question)
                     extracted = extract_iwencai_profile(
                         payload,
@@ -173,6 +195,8 @@ def main() -> int:
                     iwencai_conn.commit()
                     processed += 1
                     consecutive_403 = 0
+                    last_success_question = question
+                    last_success_target = target
                     print_progress(args, index, len(targets), target, extracted_status, counts)
                 except Exception as exc:  # noqa: BLE001 - per-symbol crawler should continue.
                     error = str(exc)
@@ -196,17 +220,29 @@ def main() -> int:
                         consecutive_403 = 0
 
                     if should_pause_for_403(args, consecutive_403, cooldown_count):
-                        cooldown_count += 1
-                        print_circuit_pause(args, consecutive_403, cooldown_count, target)
-                        time.sleep(max(0.0, args.circuit_cooldown_seconds))
-                        client = IwencaiProfileClient(
-                            hexin_js_path=args.hexin_js or None,
-                            hexin_js_url=args.hexin_js_url,
-                            node_path=args.node or None,
-                            timeout=args.timeout,
-                            max_retries=args.max_retries,
-                        )
-                        consecutive_403 = 0
+                        should_cooldown = True
+                        if client is not None and last_success_question and not args.disable_circuit_probe:
+                            counts["circuit_403_probes"] = counts.get("circuit_403_probes", 0) + 1
+                            probe_client, probe_ok, probe_error = probe_iwencai_circuit(args, last_success_question)
+                            print_circuit_probe(
+                                args,
+                                consecutive_403,
+                                target,
+                                last_success_target,
+                                probe_ok=probe_ok,
+                                probe_error=probe_error,
+                            )
+                            if probe_ok and probe_client is not None:
+                                client = probe_client
+                                counts["circuit_403_probe_passes"] = counts.get("circuit_403_probe_passes", 0) + 1
+                                consecutive_403 = 0
+                                should_cooldown = False
+                        if should_cooldown:
+                            cooldown_count += 1
+                            print_circuit_pause(args, consecutive_403, cooldown_count, target)
+                            time.sleep(max(0.0, args.circuit_cooldown_seconds))
+                            client = new_iwencai_client(args)
+                            consecutive_403 = 0
 
                 if index < len(targets):
                     sleep_seconds = max(0.0, args.sleep) + random.random() * max(0.0, args.jitter)
@@ -222,9 +258,15 @@ def main() -> int:
                 run_id,
                 final_status(status, counts),
                 updated_count=counts.get("profiles", 0),
-                skipped_count=counts.get("skipped_recent", 0),
+                skipped_count=counts.get("skipped_recent", 0) + counts.get("skipped_recent_failed", 0),
                 failed_count=counts.get("failed", 0),
-                counts={**counts, "processed": processed, "requested": len(targets), "circuit_403_cooldowns": cooldown_count},
+                counts={
+                    **counts,
+                    "processed": processed,
+                    "requested": candidate_count,
+                    "active_requested": len(targets),
+                    "circuit_403_cooldowns": cooldown_count,
+                },
                 errors=errors,
             )
             iwencai_conn.commit()
@@ -233,7 +275,8 @@ def main() -> int:
         "run_id": run_id,
         "status": final_status(status, counts),
         "db": str(iwencai_db_path),
-        "requested": len(targets),
+        "requested": candidate_count,
+        "active_requested": len(targets),
         "processed": processed,
         "counts": counts,
         "errors": errors[-10:],
@@ -243,9 +286,10 @@ def main() -> int:
     else:
         print(
             f"run_id={run_id} status={result['status']} db={iwencai_db_path} "
-            f"requested={len(targets)} processed={processed} "
+            f"requested={candidate_count} active={len(targets)} processed={processed} "
             f"ok={counts.get('ok', 0)} no_sections={counts.get('no_sections', 0)} "
-            f"skipped={counts.get('skipped_recent', 0)} failed={counts.get('failed', 0)} "
+            f"skipped={counts.get('skipped_recent', 0)} "
+            f"skipped_failed={counts.get('skipped_recent_failed', 0)} failed={counts.get('failed', 0)} "
             f"events={counts.get('important_events', 0)} concepts={counts.get('concepts', 0)}"
         )
         if errors:
@@ -341,12 +385,115 @@ def rows_for_symbols(conn: sqlite3.Connection, symbols: list[str], target_type: 
     return rows
 
 
+def prefilter_iwencai_targets(
+    conn: sqlite3.Connection,
+    targets: list[Target],
+    *,
+    stale_hours: float,
+    failed_cooldown_hours: float,
+) -> tuple[list[Target], dict[str, int]]:
+    counts = {"skipped_recent": 0, "skipped_recent_failed": 0}
+    if not targets:
+        return [], counts
+
+    symbols = [target["symbol"] for target in targets]
+    fresh_symbols = recent_profile_symbols(conn, symbols, stale_hours)
+    recent_failed_symbols = recent_403_failed_symbols(conn, symbols, failed_cooldown_hours)
+    active: list[Target] = []
+    for target in targets:
+        symbol = target["symbol"]
+        if symbol in fresh_symbols:
+            counts["skipped_recent"] += 1
+        elif symbol in recent_failed_symbols:
+            counts["skipped_recent_failed"] += 1
+        else:
+            active.append(target)
+    return active, counts
+
+
+def recent_profile_symbols(conn: sqlite3.Connection, symbols: list[str], stale_hours: float) -> set[str]:
+    if stale_hours <= 0 or not symbols:
+        return set()
+    rows = query_iwencai_rows_by_symbols(
+        conn,
+        """
+        select symbol, status, fetched_at
+        from iwencai_profiles
+        where symbol in ({placeholders})
+        """,
+        symbols,
+    )
+    return {
+        str(row["symbol"])
+        for row in rows
+        if row["status"] in {"ok", "no_sections"} and iso_time_is_recent(row["fetched_at"], stale_hours)
+    }
+
+
+def recent_403_failed_symbols(conn: sqlite3.Connection, symbols: list[str], cooldown_hours: float) -> set[str]:
+    if cooldown_hours <= 0 or not symbols:
+        return set()
+    rows = query_iwencai_rows_by_symbols(
+        conn,
+        """
+        select symbol, status, last_error, updated_at
+        from iwencai_crawl_state
+        where symbol in ({placeholders})
+          and status = 'failed'
+        """,
+        symbols,
+    )
+    return {
+        str(row["symbol"])
+        for row in rows
+        if is_iwencai_403(str(row["last_error"] or "")) and iso_time_is_recent(row["updated_at"], cooldown_hours)
+    }
+
+
+def query_iwencai_rows_by_symbols(
+    conn: sqlite3.Connection,
+    sql_template: str,
+    symbols: list[str],
+    *,
+    chunk_size: int = 800,
+) -> list[sqlite3.Row]:
+    rows: list[sqlite3.Row] = []
+    for batch in chunked(symbols, chunk_size):
+        placeholders = ",".join("?" for _ in batch)
+        rows.extend(conn.execute(sql_template.format(placeholders=placeholders), batch).fetchall())
+    return rows
+
+
+def chunked(values: list[str], size: int) -> list[list[str]]:
+    return [values[index : index + size] for index in range(0, len(values), max(1, size))]
+
+
+def iso_time_is_recent(value: Any, hours: float) -> bool:
+    if hours <= 0 or not value:
+        return False
+    try:
+        observed = datetime.fromisoformat(str(value))
+    except ValueError:
+        return False
+    return (datetime.now() - observed).total_seconds() < hours * 3600
+
+
 def question_for_target(target: Target) -> str:
     name = str(target.get("name") or "").strip()
     if name:
         return name
     symbol = str(target.get("symbol") or "").strip()
     return symbol.split(".", 1)[0] if "." in symbol else symbol
+
+
+def new_iwencai_client(args: argparse.Namespace) -> IwencaiProfileClient:
+    return IwencaiProfileClient(
+        hexin_js_path=args.hexin_js or None,
+        hexin_js_url=args.hexin_js_url,
+        node_path=args.node or None,
+        timeout=args.timeout,
+        max_retries=args.max_retries,
+    )
 
 
 def run_scope(args: argparse.Namespace) -> str:
@@ -384,6 +531,15 @@ def should_pause_for_403(args: argparse.Namespace, consecutive_403: int, cooldow
     return max_cooldowns == 0 or cooldown_count < max_cooldowns
 
 
+def probe_iwencai_circuit(args: argparse.Namespace, question: str) -> tuple[IwencaiProfileClient | None, bool, str]:
+    try:
+        client = new_iwencai_client(args)
+        client.fetch_robot_data(question)
+        return client, True, ""
+    except Exception as exc:  # noqa: BLE001 - probe only decides whether to cool down.
+        return None, False, str(exc)
+
+
 def print_circuit_pause(
     args: argparse.Namespace,
     consecutive_403: int,
@@ -397,6 +553,51 @@ def print_circuit_pause(
     print(
         f"[circuit-breaker] consecutive_403={consecutive_403} cooldown_count={cooldown_count} "
         f"last={target['symbol']} {target['name']} pause_seconds={seconds:.0f} resume_at={resume_at}",
+        flush=True,
+    )
+
+
+def print_circuit_probe(
+    args: argparse.Namespace,
+    consecutive_403: int,
+    target: Target,
+    probe_target: Target | None,
+    *,
+    probe_ok: bool,
+    probe_error: str,
+) -> None:
+    if args.json:
+        return
+    probe_symbol = (probe_target or {}).get("symbol", "")
+    if probe_ok:
+        print(
+            f"[circuit-probe] consecutive_403={consecutive_403} last={target['symbol']} {target['name']} "
+            f"probe={probe_symbol} ok -> continue_without_cooldown",
+            flush=True,
+        )
+    else:
+        print(
+            f"[circuit-probe] consecutive_403={consecutive_403} last={target['symbol']} {target['name']} "
+            f"probe={probe_symbol} failed={probe_error[:180]}",
+            flush=True,
+        )
+
+
+def print_prefilter_summary(
+    args: argparse.Namespace,
+    candidate_count: int,
+    active_count: int,
+    counts: dict[str, int],
+) -> None:
+    if args.json:
+        return
+    skipped_recent = counts.get("skipped_recent", 0)
+    skipped_failed = counts.get("skipped_recent_failed", 0)
+    if not skipped_recent and not skipped_failed:
+        return
+    print(
+        f"[prefilter] candidates={candidate_count} active={active_count} "
+        f"skipped_recent={skipped_recent} skipped_recent_403_failed={skipped_failed}",
         flush=True,
     )
 

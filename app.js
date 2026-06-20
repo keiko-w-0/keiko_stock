@@ -325,8 +325,8 @@ const filterCatalog = [
   {
     group: "估值与质量",
     items: [
-      { id: "pe-positive", label: "PE(TTM) > 0", test: (stock) => hasMetric(stock.metrics.pe) && stock.metrics.pe > 0, logic: "取最新行情 PE(TTM)；PE<=0 视为亏损或无有效盈利口径。", keywords: ["盈利", "pe为正"] },
-      { id: "pe-low", label: "PE(TTM) <= 30", test: (stock) => hasMetric(stock.metrics.pe) && stock.metrics.pe > 0 && stock.metrics.pe <= 30, logic: "取最新行情 PE(TTM)；先排除亏损，再过滤不过热估值。", keywords: ["pe低", "估值低"] },
+      { id: "pe-positive", label: "PE(TTM) > 0", test: (stock) => { const pe = stockPeTtm(stock); return hasMetric(pe) && pe > 0; }, logic: "取最新行情 PE(TTM)；PE<=0 视为亏损或无有效盈利口径。", keywords: ["盈利", "pe为正"] },
+      { id: "pe-low", label: "PE(TTM) <= 30", test: (stock) => { const pe = stockPeTtm(stock); return hasMetric(pe) && pe > 0 && pe <= 30; }, logic: "取最新行情 PE(TTM)；先排除亏损，再过滤不过热估值。", keywords: ["pe低", "估值低"] },
       { id: "pb-low", label: "PB <= 3", test: (stock) => hasMetric(stock.metrics.pb) && stock.metrics.pb > 0 && stock.metrics.pb <= 3, logic: "取最新行情 PB；适合资产较重或周期类公司估值对比。", keywords: ["pb低", "市净率"] },
       { id: "roe-high", label: "ROE >= 15%", test: (stock) => hasMetric(stock.metrics.roe) && stock.metrics.roe >= 15, logic: "取最新可用财报 ROE；衡量股东权益回报和盈利质量。", keywords: ["roe", "质量", "盈利能力"] },
       { id: "revenue-growth-positive", label: "营收增长 > 0", test: (stock) => hasMetric(stock.metrics.revenueGrowth) && stock.metrics.revenueGrowth > 0, logic: "取最新可用财报 revenue_growth；确认基本面仍在扩张。", keywords: ["营收增长", "成长"] },
@@ -852,6 +852,7 @@ let selectedSymbol = stocks[0].symbol;
 let filterMode = "all";
 let activeFilterIds = new Set();
 let databaseScreenerActive = false;
+let poolScreeningApplied = false;
 let iwencaiRecallActive = false;
 let iwencaiRecallBySymbol = new Map();
 let iwencaiRecallQuery = "";
@@ -3306,8 +3307,7 @@ async function loadStocksFromApi() {
   if (!Array.isArray(data.stocks) || !data.stocks.length) return;
   stocks = data.stocks.map(normalizeApiStock).map((stock) => enrichStock(stock));
   if (!isRecallScreenerActive()) {
-    screenerStocks = [];
-    databaseScreenerActive = false;
+    clearPoolScreeningResults();
   }
   if (!stockBySymbol(selectedSymbol)) selectedSymbol = stocks[0].symbol;
   if (!stockBySymbol(selectedAnomalySymbol)) selectedAnomalySymbol = stocks[0].symbol;
@@ -3427,8 +3427,7 @@ async function loadAccountFromApi(accountId = apiState.accountId) {
     apiState.sharedCache = null;
     apiState.sourceSummary = null;
     apiState.portfolio = null;
-    screenerStocks = [];
-    databaseScreenerActive = false;
+    clearPoolScreeningResults();
     apiState.lastError = `数据 API 未连接：${error.message}`;
     applyDataSourcePayload({ sources: fallbackDataSources });
     await loadAkshareCapabilities();
@@ -3499,19 +3498,66 @@ function syncStocksFromBackendPortfolio(portfolio) {
   });
 }
 
+function hasPoolFilterCriteria() {
+  return activeFilterIds.size > 0
+    || Boolean(activeIndustry)
+    || Boolean(filterPrompt.value.trim())
+    || activeMarket !== "all";
+}
+
+function isPoolScreeningActive() {
+  return poolScreeningApplied || databaseScreenerActive || isRecallScreenerActive();
+}
+
+function clearPoolScreeningResults() {
+  poolScreeningApplied = false;
+  screenerStocks = [];
+  databaseScreenerActive = false;
+  iwencaiRecallActive = false;
+  iwencaiRecallBySymbol = new Map();
+  iwencaiRecallQuery = "";
+}
+
+function poolResultStocks() {
+  if (!isPoolScreeningActive()) return [];
+  return filteredStocks();
+}
+
 function filteredStocks() {
   const recallMode = isRecallScreenerActive();
   const screenerMode = apiState.connected && (databaseScreenerActive || recallMode);
   const source = screenerMode ? screenerStocks : stocks;
   const marketList = activeMarket === "all" ? source : source.filter((stock) => stock.market === activeMarket);
   const industryList = activeIndustry ? marketList.filter(stockMatchesActiveIndustry) : marketList;
-  if (screenerMode) return industryList;
+  return applyActivePoolFilters(industryList);
+}
+
+function applyActivePoolFilters(list) {
   const activeRulesList = [...activeFilterIds].map((id) => filtersById.get(id)).filter(Boolean);
-  if (!activeRulesList.length) return industryList;
-  return industryList.filter((stock) => {
+  if (!activeRulesList.length) return list;
+  return list.filter((stock) => {
     const results = activeRulesList.map((rule) => rule.test(stock));
     return filterMode === "all" ? results.every(Boolean) : results.some(Boolean);
   });
+}
+
+function shouldClientRefilterOnly() {
+  return isRecallScreenerActive() && Boolean(filterPrompt.value.trim());
+}
+
+async function refreshPoolFilters() {
+  renderActiveRules();
+  if (shouldClientRefilterOnly()) {
+    renderCandidates();
+    updateBackendStatus(`问财画像 + 条件筛选：${poolResultStocks().length} 只`);
+    return;
+  }
+  if (!hasPoolFilterCriteria()) {
+    clearPoolScreeningResults();
+    renderCandidates();
+    return;
+  }
+  await runDatabaseScreener();
 }
 
 function stockMatchesActiveIndustry(stock) {
@@ -3628,6 +3674,7 @@ async function runIwencaiRecallScreener(query) {
     iwencaiRecallQuery = query;
     iwencaiRecallActive = true;
     databaseScreenerActive = true;
+    poolScreeningApplied = true;
     screenerStocks = await buildRecallScreenerStocks(results);
 
     if (screenerStocks.length && !screenerStocks.some((stock) => stock.symbol === selectedSymbol)) {
@@ -3636,11 +3683,12 @@ async function runIwencaiRecallScreener(query) {
     renderCandidates();
     renderWatchlist();
     renderStockAnomalyReport(selectedAnomalySymbol);
-    updateBackendStatus(`问财画像召回完成：${filteredStocks().length} 只`);
+    updateBackendStatus(`问财画像召回完成：${poolResultStocks().length} 只`);
   } catch (error) {
     if (requestId !== iwencaiRecallRequestId) return;
     apiState.lastError = `问财画像召回失败：${error.message}`;
     updateBackendStatus(apiState.lastError);
+    poolScreeningApplied = true;
     screenerStocks = [];
     databaseScreenerActive = true;
     iwencaiRecallActive = true;
@@ -3657,9 +3705,13 @@ async function runDatabaseScreener() {
   iwencaiRecallActive = false;
   iwencaiRecallBySymbol = new Map();
   iwencaiRecallQuery = "";
+  if (!hasPoolFilterCriteria()) {
+    clearPoolScreeningResults();
+    renderCandidates();
+    return;
+  }
   if (!apiState.connected) {
-    screenerStocks = [];
-    databaseScreenerActive = false;
+    clearPoolScreeningResults();
     renderCandidates();
     return;
   }
@@ -3682,6 +3734,7 @@ async function runDatabaseScreener() {
     const apiStocks = Array.isArray(payload.stocks) ? payload.stocks : [];
     screenerStocks = mergeApiStocks(apiStocks);
     databaseScreenerActive = true;
+    poolScreeningApplied = true;
     if (screenerStocks.length && !screenerStocks.some((stock) => stock.symbol === selectedSymbol)) {
       selectedSymbol = screenerStocks[0].symbol;
     }
@@ -3689,13 +3742,12 @@ async function runDatabaseScreener() {
     renderWatchlist();
     renderStockAnomalyReport(selectedAnomalySymbol);
     const warehouse = payload.warehouse ?? {};
-    updateBackendStatus(`数据库筛选完成：${payload.count ?? stocks.length} 只，历史日线 ${warehouse.daily_bars ?? 0} 条`);
+    updateBackendStatus(`数据库筛选完成：${payload.count ?? screenerStocks.length} 只，历史日线 ${warehouse.daily_bars ?? 0} 条`);
   } catch (error) {
     if (requestId !== screenerRequestId) return;
     apiState.lastError = `数据库筛选失败：${error.message}`;
     updateBackendStatus(apiState.lastError);
-    screenerStocks = [];
-    databaseScreenerActive = false;
+    clearPoolScreeningResults();
     renderCandidates();
   }
 }
@@ -3709,7 +3761,7 @@ function renderScreenerLoading(message = "正在筛选完整股票池，请稍�
 }
 
 function renderCandidates() {
-  const list = filteredStocks();
+  const list = poolResultStocks();
   const showRecallReason = isRecallScreenerActive();
   candidateCount.textContent = `${list.length} 只`;
   if (candidateGrid) candidateGrid.innerHTML = renderStockCardList(list, { showRecallReason });
@@ -3723,11 +3775,13 @@ function renderCandidates() {
 
 function renderStockCardList(list, options = {}) {
   if (!list.length) {
-    const emptyMessage = isRecallScreenerActive()
-      ? (apiState.lastError?.includes("问财画像召回失败")
-        ? apiState.lastError
-        : "当前问财画像召回没有匹配股票。")
-      : "当前过滤组合没有匹配股票。";
+    const emptyMessage = !isPoolScreeningActive()
+      ? "设置筛选条件后点击「应用」查看结果"
+      : isRecallScreenerActive()
+        ? (apiState.lastError?.includes("问财画像召回失败")
+          ? apiState.lastError
+          : "当前问财画像召回没有匹配股票。")
+        : "当前过滤组合没有匹配股票。";
     return `<div class="empty-state">${escapeHTML(emptyMessage)}</div>`;
   }
   const visible = list.slice(0, STOCK_CARD_RENDER_LIMIT);
@@ -3744,7 +3798,7 @@ function renderStockCardList(list, options = {}) {
 
 function anomalyUniverse() {
   const bySymbol = new Map();
-  filteredStocks().forEach((stock) => bySymbol.set(stock.symbol, stock));
+  poolResultStocks().forEach((stock) => bySymbol.set(stock.symbol, stock));
   [...favoriteSymbols].map(stockBySymbol).filter(Boolean).forEach((stock) => bySymbol.set(stock.symbol, stock));
   openPositions().forEach((position) => bySymbol.set(position.symbol, position.stock));
   return [...bySymbol.values()];
@@ -4277,6 +4331,14 @@ function roundMoney(value) {
   return Number(value.toFixed(2));
 }
 
+function stockPeTtm(stock) {
+  const detail = stockDetailCache.get(stock.symbol);
+  const summary = detail?.summary ?? {};
+  const dailyBars = detail?.market_data?.periods?.daily?.bars ?? [];
+  const latestBar = dailyBars.at(-1) ?? {};
+  return firstFiniteNumber(latestBar.pe_ttm, summary.pe_ttm, stock.metrics?.pe);
+}
+
 function stockCardMarketMetrics(stock) {
   const detail = stockDetailCache.get(stock.symbol);
   const summary = detail?.summary ?? {};
@@ -4284,7 +4346,7 @@ function stockCardMarketMetrics(stock) {
   const latestBar = dailyBars.at(-1) ?? {};
   const amount = firstFiniteNumber(latestBar.amount, summary.amount, stock.metrics?.avgAmountCny);
   const turnover = firstFiniteNumber(latestBar.turnover_rate, summary.turnover_rate, stock.metrics?.turnoverRate);
-  const pe = firstFiniteNumber(latestBar.pe_ttm, summary.pe_ttm, stock.metrics?.pe);
+  const pe = stockPeTtm(stock);
   const volume = firstFiniteNumber(latestBar.volume, summary.volume);
   return [
     ["成交量", volume === null ? "暂无" : formatShareVolume(volume)],
@@ -8685,7 +8747,11 @@ document.querySelectorAll(".segment").forEach((button) => {
     hideStockSearchSuggestions();
     void (async () => {
       await loadIndustryOptions();
-      await runDatabaseScreener();
+      if (hasPoolFilterCriteria()) await runDatabaseScreener();
+      else {
+        clearPoolScreeningResults();
+        renderCandidates();
+      }
     })();
   });
 });
@@ -8694,7 +8760,7 @@ document.querySelectorAll("[data-filter-mode]").forEach((button) => {
   button.addEventListener("click", () => {
     filterMode = button.dataset.filterMode;
     syncFilterModeButtons();
-    void runDatabaseScreener();
+    void refreshPoolFilters();
   });
 });
 
@@ -8703,14 +8769,12 @@ filterGroups.addEventListener("change", (event) => {
   if (!checkbox) return;
   if (checkbox.checked) activeFilterIds.add(checkbox.dataset.filterId);
   else activeFilterIds.delete(checkbox.dataset.filterId);
-  renderActiveRules();
-  void runDatabaseScreener();
+  void refreshPoolFilters();
 });
 
 industryFilter?.addEventListener("change", () => {
   activeIndustry = industryFilter.value;
-  renderActiveRules();
-  void runDatabaseScreener();
+  void refreshPoolFilters();
 });
 
 function handleStockGridClick(event) {
@@ -8927,19 +8991,12 @@ document.querySelector("#resetFilters").addEventListener("click", () => {
   activeFilterIds = new Set();
   activeMarket = "all";
   activeIndustry = "";
-  iwencaiRecallActive = false;
-  iwencaiRecallBySymbol = new Map();
-  iwencaiRecallQuery = "";
-  screenerStocks = [];
-  databaseScreenerActive = false;
+  clearPoolScreeningResults();
   document.querySelectorAll(".segment").forEach((item) => item.classList.toggle("active", item.dataset.market === "all"));
   if (industryFilter) industryFilter.value = "";
   filterPrompt.value = "";
   renderFilterGroups();
-  void (async () => {
-    await loadIndustryOptions();
-    await runDatabaseScreener();
-  })();
+  void loadIndustryOptions().then(() => renderCandidates());
 });
 
 accountSelect.addEventListener("change", () => {

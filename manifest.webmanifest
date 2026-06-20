@@ -1,7 +1,7 @@
 {
   "name": "聚宝盆",
   "short_name": "聚宝盆",
-  "description": "本地优先的选股研究台 mock app",
+  "description": "本地优先的选股工具",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,9 +10,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/assets/app-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/assets/app-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ]

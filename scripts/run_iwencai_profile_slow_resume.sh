@@ -27,9 +27,9 @@ echo "$$" > "$PID_FILE"
   echo "started_at=$(date '+%Y-%m-%d %H:%M:%S %Z %z')"
   echo "workdir=$WORKDIR"
   echo "pid=$$"
-  echo "mode=slow_resume"
-  echo "policy=skip ok/no_sections fresher than 168h; crawl failed and uncrawled targets"
-  echo "circuit=5 consecutive 403 -> pause 7200s -> new session/token -> continue"
+  echo "mode=balanced_resume"
+  echo "policy=skip ok/no_sections fresher than 168h; skip recent 403 failures for 24h; crawl remaining gaps"
+  echo "circuit=3 consecutive 403 -> pause 1800s -> new session/token -> continue"
   echo
 } >> "$RUN_LOG"
 
@@ -37,12 +37,13 @@ set +e
 python3 -u scripts/crawl_iwencai_profile.py \
   --tier all \
   --stale-hours 168 \
-  --sleep 8 \
-  --jitter 7 \
-  --timeout 30 \
+  --failed-cooldown-hours 24 \
+  --sleep 2.5 \
+  --jitter 2.5 \
+  --timeout 20 \
   --max-retries 1 \
-  --circuit-403-threshold 5 \
-  --circuit-cooldown-seconds 7200 \
+  --circuit-403-threshold 3 \
+  --circuit-cooldown-seconds 1800 \
   --status-every 25 \
   >> "$RUN_LOG" 2>&1
 exit_code=$?

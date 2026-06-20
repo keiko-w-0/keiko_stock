@@ -1,6 +1,6 @@
 # 问财基本面画像
 
-更新日期：2026-06-20
+更新日期：2026-06-21
 
 本模块把问财个股详情页里的三块画像写入本地 SQLite，并在单股详情页右侧展示：
 
@@ -60,18 +60,19 @@ data/iwencai_profile.db
 python3 scripts/crawl_iwencai_profile.py 000725.SZ --force
 ```
 
-全量慢速续跑，跳过最近 168 小时内已经 `ok/no_sections` 的记录，只请求失败和未跑标的：
+全量均衡续跑，跳过最近 168 小时内已经 `ok/no_sections` 的记录，并跳过最近 24 小时内 403 失败过的记录，只请求剩余缺口：
 
 ```bash
 python3 -u scripts/crawl_iwencai_profile.py \
   --tier all \
   --stale-hours 168 \
-  --sleep 8 \
-  --jitter 7 \
-  --timeout 30 \
+  --failed-cooldown-hours 24 \
+  --sleep 2.5 \
+  --jitter 2.5 \
+  --timeout 20 \
   --max-retries 1 \
-  --circuit-403-threshold 5 \
-  --circuit-cooldown-seconds 7200 \
+  --circuit-403-threshold 3 \
+  --circuit-cooldown-seconds 1800 \
   --status-every 25
 ```
 
@@ -85,10 +86,13 @@ scripts/run_iwencai_profile_slow_resume.sh
 
 批量运行时如果连续触发问财 `403 Forbidden`，脚本会暂停，等待冷却后新建 session/token 继续。
 
-当前慢跑配置：
+当前均衡续跑配置：
 
-- 连续 `5` 次 403 触发断路
-- 暂停 `7200` 秒，也就是 2 小时
+- 启动时整批跳过最近 `168` 小时内已经 `ok/no_sections` 的记录
+- 启动时跳过最近 `24` 小时内 403 失败过的记录，避免续跑反复卡在同一批目标
+- 连续 `3` 次 403 触发断路
+- 断路前会用新 session/token 对最近成功标的做一次探针；探针成功则继续跑，不进入冷却
+- 暂停 `1800` 秒，也就是 30 分钟
 - 冷却后继续跑剩余标的
 - `--circuit-max-cooldowns 0` 表示不限冷却次数
 
@@ -109,7 +113,7 @@ scripts/run_iwencai_profile_slow_resume.sh
 它会在 `2026-06-20 21:00` 启动问财画像慢速续跑。当前 plist 直接调用 conda Python：
 
 ```text
-/Users/wangwenhui/miniconda3/bin/python3 -u scripts/crawl_iwencai_profile.py --tier all --stale-hours 168 --sleep 8 --jitter 7 --timeout 30 --max-retries 1 --circuit-403-threshold 5 --circuit-cooldown-seconds 7200 --status-every 25
+/Users/wangwenhui/miniconda3/bin/python3 -u scripts/crawl_iwencai_profile.py --tier all --stale-hours 168 --failed-cooldown-hours 24 --sleep 2.5 --jitter 2.5 --timeout 20 --max-retries 1 --circuit-403-threshold 3 --circuit-cooldown-seconds 1800 --status-every 25
 ```
 
 不要再通过 `/bin/bash -lc "cd ...; ./scripts/run_iwencai_profile_slow_resume.sh"` 包装启动；这种方式在 2026-06-20 21:00 触发过 macOS `Operation not permitted`，任务会卡在入口，跑不到问财请求。
