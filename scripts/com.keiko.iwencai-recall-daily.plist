@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.keiko.iwencai-recall-daily</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/wangwenhui/miniconda3/bin/python3</string>
+    <string>scripts/run_iwencai_recall_daily.py</string>
+    <string>--json</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>IWENCAI_BGE_MODEL</key>
+    <string>BAAI/bge-small-zh-v1.5</string>
+    <key>IWENCAI_BGE_DEVICE</key>
+    <string>cpu</string>
+  </dict>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>23</integer>
+    <key>Minute</key>
+    <integer>40</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock/logs/iwencai-recall-daily.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/wangwenhui/Documents/keiko_stock/logs/iwencai-recall-daily.err.log</string>
+
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

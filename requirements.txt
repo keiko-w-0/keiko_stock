@@ -1,7 +1,11 @@
 fastapi>=0.110
 uvicorn[standard]>=0.29
 pydantic>=2
+requests>=2.31
 akshare>=1.15
 eval_type_backport>=0.2.2
 curl_cffi>=0.7
 DrissionPage>=4.1
+qdrant-client>=1.9
+sentence-transformers>=3.0
+huggingface_hub>=0.23

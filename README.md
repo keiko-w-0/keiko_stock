@@ -37,6 +37,38 @@ AKShare 当前主要用于数据探索和部分 A 股历史行情 fallback，并
 - `POST /api/data/finnhub/refresh`：刷新美股数据，例如 body 为 `{"provider":"finnhub","account_id":"acct-admin","symbols":["AAPL","NVDA"]}`。
 - 也可以在设置页的 admin 账户下保存 Finnhub key；环境变量 `KEIKO_FINNHUB_TOKEN` 或 `FINNHUB_API_KEY` 也会被识别。
 
+## 问财基本面画像
+
+2026-06-20 新增问财个股详情画像入库和展示。脚本会抓取问财页面里的三块数据：
+
+- 简介和看点
+- 近期概念事件
+- 所属概念列表
+
+数据写入独立 SQLite：
+
+```bash
+data/iwencai_profile.db
+```
+
+单股详情接口会返回 `fundamental.iwencai`，前端在单股详情抽屉右侧新增 `基本面 / 情绪面` tab。有问财画像时默认显示基本面，展示顺序为简介和看点、近期概念事件、所属概念列表；所属概念详情默认收起，点击后展开。原来 K 线下方重复的“社区来源”条已移除，左侧 K 线图也缩小为更紧凑的展示。
+
+手动抓单个股票：
+
+```bash
+python3 scripts/crawl_iwencai_profile.py 000725.SZ --force
+```
+
+慢速续跑失败和未跑标的，跳过最近 168 小时内已 `ok/no_sections` 的记录：
+
+```bash
+scripts/run_iwencai_profile_slow_resume.sh
+```
+
+慢跑配置内置连续 403 断路保护：连续 5 次 `403 Forbidden` 后暂停 2 小时，冷却后新建 session/token 继续跑。2026-06-20 21:00 本机已设置 LaunchAgent 自动启动慢跑；当前 LaunchAgent 避开 shell 包装，直接调用 conda `python3 -u scripts/crawl_iwencai_profile.py ...`。详细表结构、监控命令和停止方式见 `docs/iwencai-profile.README.md`。
+
+问财画像还可以同步成关键词 + BGE/Qdrant 混合召回库：`scripts/run_iwencai_recall_daily.py` 会按天检查是否有新增可索引画像股票，有新增才整库重建；检索接口是 `/api/iwencai-recall/search`。使用方法见 `docs/iwencai-profile.README.md` 的“画像召回库”小节。
+
 ## BaoStock 历史数据仓库
 
 BaoStock 用作 A 股、ETF、指数的历史回刷源，不作为实时行情源。已接入：
@@ -97,6 +129,7 @@ BaoStock 季频财务和公司报告批次通过子进程执行；如果 SDK 网
 - `com.keiko.baostock-financial-nightly`：每天 02:30 运行季频财务/公司报告回刷，批量为 3，日志位于 `logs/baostock-financial-nightly.log` 和 `logs/baostock-financial-nightly.err.log`。项目内配置文件是 `scripts/com.keiko.baostock-financial-nightly.plist`。
 - `com.keiko.a-share-filings-nightly`：每天 20:30 运行 A 股公告缺口回刷，默认拉 CNINFO 加上对应交易所公告，日志位于 `logs/a-share-filings-nightly.log` 和 `logs/a-share-filings-nightly.err.log`。项目内配置文件是 `scripts/com.keiko.a-share-filings-nightly.plist`。
 - `com.keiko.ingestion-watchdog`：每 15 分钟运行 `scripts/run_ingestion_watchdog.py --json`，发现 stale running、孤儿旧进程、或最新任务 `partial/failed/interrupted` 且仍有剩余候选时，会先终止旧脚本，再小批量启动一个续跑任务。日志位于 `logs/ingestion-watchdog.log` 和 `logs/ingestion-watchdog.err.log`。
+- `com.keiko.iwencai.profile.slowresume.once`：2026-06-20 21:00 运行问财画像慢速续跑，LaunchAgent 直接调用 conda Python，避免 `/bin/bash -lc` 触发 macOS 权限拦截。日志位于 `logs/iwencai_profile_launchd_once.out.log` 和 `logs/iwencai_profile_launchd_once.err.log`。配置文件在 `~/Library/LaunchAgents/com.keiko.iwencai.profile.slowresume.once.plist`。
 
 本地仓库诊断脚本：
 
@@ -243,6 +276,7 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 - `backend/db.py`：SQLite 连接、schema 初始化和种子库写入。
 - `backend/seed_data.py`：SQLite 种子数据，模拟多账户与共享分析缓存。
 - `backend/providers/`：数据源 provider，包含 mock fallback、Tushare、AKShare、Alpha Vantage、Finnhub、BaoStock 和公告适配器。
+- `backend/providers/iwencai_profile.py`：问财基本面画像客户端、解析器、SQLite schema/upsert/read helper，写入 `data/iwencai_profile.db`。
 - `backend/providers/tushare.py`：Tushare Pro HTTP 客户端，按官方 Pro 协议调用 `stock_basic`、`daily`、`daily_basic`、`income`、`fina_indicator`。
 - `backend/tushare_service.py`：Tushare A 股刷新服务，把真实行情和财务快照写入 SQLite 缓存。
 - `backend/history.py`：历史数据仓库服务，负责 AKShare/BaoStock/Tushare fallback、BaoStock 后台回刷、数据库筛选和回测日线读取。
@@ -256,6 +290,8 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 - `scripts/run_baostock_backfill.py`：后台/定时 BaoStock 回刷入口，复用 `ingestion_runs` 和 SQLite 历史仓库，可断点续跑。
 - `scripts/run_baostock_financial_backfill.py`：BaoStock 季频财务指标和公司报告后台回刷入口。
 - `scripts/run_a_share_filings_backfill.py`：A 股公告/披露缺口后台回刷入口，覆盖 CNINFO、SSE、SZSE 和自动源。
+- `scripts/crawl_iwencai_profile.py`：问财画像抓取入口，支持关注股、A 股个股、指数分层抓取、最近数据跳过、连续 403 断路冷却。
+- `scripts/run_iwencai_profile_slow_resume.sh`：问财画像慢速续跑封装脚本，默认跳过新鲜成功记录，补失败和未跑标的。
 - `scripts/debug_warehouse.py`：只读调试 SQLite 历史数据仓库，查看 provider 覆盖、BaoStock 缺口、PE/PB 和 ingestion 任务。
 - `scripts/debug_warehouse.README.md`：debug 脚本和 BaoStock 后台任务使用说明。
 - `requirements.txt`：后端运行依赖。
@@ -263,6 +299,7 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 - `docs/warehouse-schema.md`：SQLite 历史数据仓库字段字典和 provider 原始字段映射。
 - `docs/research-report.md`：数据源、资讯源、真实性判断、情绪面、AI 反思和落地路线报告。
 - `docs/sentiment.README.md`：社区情绪（股吧+雪球）、GLM prompt、雪球 quote/评论配置、半小时 agent、自选股刷新范围。
+- `docs/iwencai-profile.README.md`：问财基本面画像数据库、抓取脚本、断路保护、21:00 慢跑任务和监控命令。
 - `docs/engineering-todo.md`：后端、数据库、API key、自动化、多账户和打包 TODO。
 - `docs/handoff.md`：换电脑或开启新 Codex 会话时的交接说明。
 
@@ -288,6 +325,7 @@ iPhone 上架只能走完整 Xcode + Apple Developer Team + App Store Connect/Te
 - 回测平台：支持选择策略模板、市场、区间、持仓数、调仓频率、手续费和滑点，优先基于数据库历史日线生成研究回测。
 - Tushare Pro：支持账户级 token 配置，刷新 A 股行情/每日指标/利润表/财务指标，搜索和持仓价格优先使用 Tushare 缓存。
 - BaoStock：支持 A 股/ETF/指数代码宇宙回刷、历史 K 线后台长任务、PE/PB 缓存和 SQLite 仓库覆盖率诊断。
+- 问财基本面画像：单股详情右侧新增“基本面分析”tab，展示简介和看点、近期概念事件、所属概念列表；概念详情默认收起可展开。
 - 数据库筛选：筛选股票“应用”直接查 `daily_bars`，自然语言如 `PE<10` 会作为独立 SQL 条件，不会自动勾选复选框。
 
 ## Tushare Pro A 股接入
@@ -327,6 +365,7 @@ Tushare Pro 不同账号有接口频率限制。刷新服务会逐只股票返�
 - Phase 1E：已加入 mock provider、共享快照表、数据源配置表、股票搜索/筛选/记忆 API、网页版设置页和回测平台。
 - Phase 1F：已接入 Tushare Pro A 股行情/财务缓存，支持账户级 token 配置、真实刷新、搜索展示和持仓价格覆盖。
 - Phase 1G：已接入历史数据仓库、BaoStock 回刷、数据库筛选、数据库回测和 `debug_warehouse` 诊断脚本；BaoStock 全量回刷改为后台长任务。
+- Phase 1H：已接入问财基本面画像本地库、慢速续跑脚本、连续 403 断路保护，并在单股详情右侧以 tab 展示基本面画像。
 - 当前优先：先开发网页版；macOS 和 iPhoneOS 打包暂缓。
 - 待做：持久化任务队列/断点续跑、DuckDB/Parquet 大批量历史数据层、真实 LLM 分析服务、Developer ID 签名/公证、Mac App Store/iOS App Store 上架流程暂未接入。
 
@@ -346,4 +385,5 @@ Tushare Pro 不同账号有接口频率限制。刷新服务会逐只股票返�
 - [docs/engineering-todo.md](docs/engineering-todo.md)
 - [docs/handoff.md](docs/handoff.md)
 - [docs/warehouse-schema.md](docs/warehouse-schema.md)
+- [docs/iwencai-profile.README.md](docs/iwencai-profile.README.md)
 - [scripts/debug_warehouse.README.md](scripts/debug_warehouse.README.md)

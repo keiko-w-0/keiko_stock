@@ -31,7 +31,9 @@ from .history import (
     screen_from_database,
     warehouse_summary,
 )
+from .iwencai_recall import iwencai_recall_status, search_iwencai_recall, sync_iwencai_recall_index
 from .portfolio import account_portfolio, refresh_mock_prices, symbols_for_account
+from .providers.iwencai_profile import refresh_iwencai_profile_for_symbol
 from .providers.akshare_provider import (
     akshare_status,
     index_spot,
@@ -78,7 +80,7 @@ from .sentiment import (
 )
 from .stock_detail import stock_detail_payload
 from .stocks import all_stock_payloads, run_screener, search_stocks, stock_memory
-from .symbol_resolver import normalize_symbol_query
+from .symbol_resolver import normalize_symbol_query, resolve_symbol
 from .tushare_service import refresh_tushare_data, tushare_status
 
 
@@ -287,6 +289,75 @@ def api_refresh_stock_detail(
 ) -> dict[str, Any]:
     with get_db() as conn:
         return refresh_stock_detail_data(conn, symbol, market=market, days=days, quarters=quarters)
+
+
+@app.post("/api/stocks/{symbol}/fundamental/iwencai/refresh")
+def api_refresh_iwencai_fundamental(
+    symbol: str,
+    market: str = "all",
+) -> dict[str, Any]:
+    with get_db() as conn:
+        symbol_row = resolve_symbol(conn, symbol, market)
+        if not symbol_row:
+            raise HTTPException(status_code=404, detail=f"symbol not found: {symbol}")
+        try:
+            return refresh_iwencai_profile_for_symbol(symbol_row)
+        except Exception as exc:  # noqa: BLE001 - surface upstream/WAF errors to the UI.
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/iwencai-recall/status")
+def api_iwencai_recall_status(include_qdrant: bool = True) -> dict[str, Any]:
+    return iwencai_recall_status(include_qdrant=include_qdrant)
+
+
+@app.get("/api/iwencai-recall/search")
+def api_iwencai_recall_search(
+    q: str = Query(..., min_length=1),
+    limit: int = Query(20, ge=1, le=100),
+    use_embedding: bool = True,
+    include_stocks: bool = False,
+    account_id: str = DEFAULT_ACCOUNT_ID,
+    min_score: float | None = Query(None, ge=0.0, le=1.0),
+) -> dict[str, Any]:
+    result = search_iwencai_recall(q, limit=limit, use_embedding=use_embedding, min_score=min_score)
+    if not include_stocks:
+        return result
+    symbols = [str(item["symbol"]).upper() for item in result.get("results", [])]
+    if not symbols:
+        result["stocks"] = []
+        return result
+    with get_db() as conn:
+        payloads = all_stock_payloads(
+            conn,
+            account_id=account_id,
+            include_universe=True,
+            symbol_filter=symbols,
+        )
+        payloads_by_symbol = {item["symbol"]: item for item in payloads}
+        for symbol in symbols:
+            if symbol in payloads_by_symbol:
+                continue
+            search_result = search_stocks(conn, query=symbol, market="all", account_id=account_id, limit=1)
+            if search_result["stocks"]:
+                payloads_by_symbol[symbol] = search_result["stocks"][0]
+    result["stocks"] = [payloads_by_symbol[symbol] for symbol in symbols if symbol in payloads_by_symbol]
+    for item in result["results"]:
+        symbol = str(item["symbol"]).upper()
+        item["stock"] = payloads_by_symbol.get(symbol)
+    return result
+
+
+@app.post("/api/iwencai-recall/update")
+def api_update_iwencai_recall(
+    force: bool = False,
+    dry_run: bool = False,
+    batch_size: int = Query(64, ge=1, le=512),
+) -> dict[str, Any]:
+    try:
+        return sync_iwencai_recall_index(force=force, dry_run=dry_run, batch_size=batch_size)
+    except Exception as exc:  # noqa: BLE001 - expose missing Qdrant/BGE setup clearly.
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.get("/stocks/search")

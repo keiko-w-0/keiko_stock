@@ -13,6 +13,7 @@ from fastapi import HTTPException
 from .db import row_to_dict
 from .live_quote import apply_live_quote_to_summary, fetch_live_market_quote
 from .market_calendar import evaluate_market_quote_refresh, latest_db_trade_date
+from .providers.iwencai_profile import read_iwencai_profile
 from .symbol_resolver import resolve_symbol
 
 
@@ -77,6 +78,19 @@ def stock_detail_payload(
         )
     )
     summary = detail_summary(symbol_row, latest_bar, previous_bar, daily_bars, latest_financial)
+    started = time.monotonic()
+    iwencai_profile = read_iwencai_profile(normalized)
+    timings.append(
+        detail_timing(
+            "iwencai_profile_sql",
+            started,
+            {
+                "status": iwencai_profile.get("status"),
+                "events": len(iwencai_profile.get("important_events") or []),
+                "concepts": len(iwencai_profile.get("concepts") or []),
+            },
+        )
+    )
     quote_plan = maybe_refresh_live_quote(conn, normalized, symbol_row, summary)
     if quote_plan.get("quote"):
         summary = apply_live_quote_to_summary(summary, quote_plan["quote"])
@@ -97,10 +111,14 @@ def stock_detail_payload(
             "latest": latest_financial,
             "quarters": financials,
         },
+        "fundamental": {
+            "iwencai": iwencai_profile,
+        },
         "information": information,
         "data_status": {
             "has_daily_bars": bool(daily_bars),
             "has_financials": bool(financials),
+            "has_iwencai_profile": iwencai_profile.get("status") == "ok",
             "has_filings": bool(information["filings"]),
             "has_news": bool(information["news"]),
             "has_discussions": bool(information["discussions"]),

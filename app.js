@@ -852,6 +852,10 @@ let selectedSymbol = stocks[0].symbol;
 let filterMode = "all";
 let activeFilterIds = new Set();
 let databaseScreenerActive = false;
+let iwencaiRecallActive = false;
+let iwencaiRecallBySymbol = new Map();
+let iwencaiRecallQuery = "";
+let iwencaiRecallRequestId = 0;
 let screenerRequestId = 0;
 let favoriteSymbols = new Set(["002594.SZ", "0700.HK", "1810.HK"]);
 let priceRefreshCount = 0;
@@ -903,6 +907,11 @@ const stockDetailLoading = new Set();
 const stockDetailErrors = new Map();
 const stockDetailPeriods = new Map();
 const stockInfoTabs = new Map();
+const detailSideTabs = new Map();
+const fundamentalRefreshing = new Set();
+const fundamentalRefreshErrors = new Map();
+const fundamentalRefreshResults = new Map();
+const fundamentalRefreshStartedAt = new Map();
 const sentimentPayloadCache = new Map();
 const sentimentPayloadLoading = new Set();
 const sentimentPayloadErrors = new Map();
@@ -1155,6 +1164,7 @@ const searchHistoryBindings = [
 
 function enrichStock(stock) {
   const metrics = stock.metrics ?? metricProfiles[stock.symbol];
+  const recallMatch = stock.recallMatch ?? null;
   const enriched = {
     ...stock,
     metrics,
@@ -1165,7 +1175,8 @@ function enrichStock(stock) {
     memoryUpdatedAt: "2026-06-04 22:10",
     supplementCount: 0
   };
-  enriched.evidence = stock.evidence.map((item, index) => enrichEvidence(enriched, item, index));
+  enriched.evidence = (stock.evidence ?? []).map((item, index) => enrichEvidence(enriched, item, index));
+  if (recallMatch) enriched.recallMatch = recallMatch;
   enriched.memory = buildMemory(enriched);
   return enriched;
 }
@@ -1293,6 +1304,7 @@ function isIndexLikeStock(stock) {
 }
 
 function formatPrice(stock) {
+  if (stock?.recallStub && !Number.isFinite(Number(stock.price))) return "暂无";
   if (isIndexLikeStock(stock)) {
     const numeric = Number(stock.price);
     return Number.isFinite(numeric) ? numeric.toFixed(2) : "暂无";
@@ -1799,6 +1811,148 @@ function escapeHTML(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function highlightMatchedTerms(text, terms) {
+  const raw = String(text ?? "");
+  const uniqueTerms = [...new Set((terms ?? []).map((term) => String(term).trim()).filter(Boolean))]
+    .sort((a, b) => b.length - a.length);
+  if (!uniqueTerms.length) return escapeHTML(raw);
+
+  const lowerRaw = raw.toLowerCase();
+  const matches = [];
+  uniqueTerms.forEach((term) => {
+    const lowerTerm = term.toLowerCase();
+    let start = 0;
+    while (start < raw.length) {
+      const index = lowerRaw.indexOf(lowerTerm, start);
+      if (index === -1) break;
+      matches.push({ start: index, end: index + term.length });
+      start = index + term.length;
+    }
+  });
+  if (!matches.length) return escapeHTML(raw);
+
+  matches.sort((a, b) => a.start - b.start || b.end - a.end);
+  const merged = [];
+  matches.forEach((match) => {
+    const last = merged.at(-1);
+    if (!last || match.start >= last.end) merged.push({ ...match });
+    else if (match.end > last.end) last.end = match.end;
+  });
+
+  let html = "";
+  let cursor = 0;
+  merged.forEach(({ start, end }) => {
+    if (start > cursor) html += escapeHTML(raw.slice(cursor, start));
+    html += `<mark class="recall-hit">${escapeHTML(raw.slice(start, end))}</mark>`;
+    cursor = end;
+  });
+  if (cursor < raw.length) html += escapeHTML(raw.slice(cursor));
+  return html;
+}
+
+function recallResultToStockStub(recallItem) {
+  const market = String(recallItem.market ?? "A").toUpperCase();
+  return {
+    symbol: recallItem.symbol,
+    name: recallItem.name ?? recallItem.symbol,
+    market,
+    marketLabel: marketLabels[market] ?? market,
+    currency: market === "HK" ? "HKD" : market === "US" ? "USD" : "CNY",
+    price: null,
+    change: 0,
+    action: "画像匹配",
+    score: Math.round((recallItem.score ?? 0) * 100),
+    lagMinutes: 0,
+    freshnessStatus: "fresh",
+    truthScore: 0,
+    factors: { 基本面: 0, 估值: 0, 技术: 0, 催化: 0, 情绪: 0, 风险: 0 },
+    spark: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    thesis: "",
+    reasons: [],
+    risks: [],
+    evidence: [],
+    reflection: [],
+    recallStub: true
+  };
+}
+
+function topRecallEvidence(recallItem) {
+  const evidence = Array.isArray(recallItem?.evidence) ? recallItem.evidence : [];
+  if (!evidence.length) return null;
+  const matched = evidence.filter((item) => (item.matched_terms ?? []).length > 0);
+  const pool = matched.length ? matched : evidence;
+  return pool.slice().sort((a, b) => {
+    const scoreA = Number(a.keyword_score ?? 0) + Number(a.embedding_score ?? 0) * 10 + (a.matched_terms?.length ?? 0);
+    const scoreB = Number(b.keyword_score ?? 0) + Number(b.embedding_score ?? 0) * 10 + (b.matched_terms?.length ?? 0);
+    return scoreB - scoreA;
+  })[0] ?? null;
+}
+
+function renderRecallReason(recallItem) {
+  const item = topRecallEvidence(recallItem);
+  if (!item) {
+    const terms = recallItem?.matched_terms?.length
+      ? recallItem.matched_terms
+      : iwencaiRecallQuery ? [iwencaiRecallQuery] : [];
+    return `
+      <div class="card-recall-reason">
+        <span class="card-recall-reason-label">筛选理由</span>
+        <p class="card-recall-reason-text">${highlightMatchedTerms(`匹配关键词：${terms.join("、")}`, terms)}</p>
+      </div>
+    `;
+  }
+  const label = item.doc_type_label || item.doc_type || "匹配";
+  const title = String(item.title ?? "").trim();
+  const snippet = String(item.snippet ?? "").replace(/^\.{3}\s*/, "").trim();
+  const terms = item.matched_terms?.length ? item.matched_terms : (recallItem.matched_terms ?? []);
+  const body = snippet || title;
+  const clipped = body.length > 140 ? `${body.slice(0, 140)}…` : body;
+  const fieldLabel = title && title !== body ? `${label} · ${title}` : label;
+  return `
+    <div class="card-recall-reason">
+      <span class="card-recall-reason-label">筛选理由</span>
+      <div class="card-recall-reason-row">
+        <span class="card-recall-reason-field">${escapeHTML(fieldLabel)}</span>
+        <span class="card-recall-reason-text">${highlightMatchedTerms(clipped, terms)}</span>
+      </div>
+    </div>
+  `;
+}
+
+async function buildRecallScreenerStocks(results) {
+  const orderMap = new Map(results.map((item, index) => [item.symbol, index]));
+  const built = await Promise.all(results.map(async (item) => {
+    let stockPayload = item.stock ?? null;
+    if (!stockPayload && apiState.connected) {
+      try {
+        const params = new URLSearchParams({
+          q: item.symbol,
+          market: "all",
+          account_id: apiState.accountId,
+          record: "false",
+          limit: "1"
+        });
+        const searchPayload = await apiRequest(`/api/stocks/search?${params.toString()}`);
+        stockPayload = Array.isArray(searchPayload.stocks) ? searchPayload.stocks[0] : null;
+      } catch (error) {
+        stockPayload = null;
+      }
+    }
+    const base = stockPayload ?? recallResultToStockStub(item);
+    return enrichStock(normalizeApiStock({ ...base, recallMatch: item }));
+  }));
+  built.forEach((item) => {
+    const index = stocks.findIndex((existing) => existing.symbol === item.symbol);
+    if (index >= 0) stocks[index] = item;
+    else stocks.push(item);
+  });
+  return built.sort((a, b) => (orderMap.get(a.symbol) ?? 999) - (orderMap.get(b.symbol) ?? 999));
+}
+
+function isRecallScreenerActive() {
+  return iwencaiRecallActive || screenerStocks.some((stock) => stock.recallMatch);
 }
 
 function readStoredSkillHubArray(key) {
@@ -2440,7 +2594,9 @@ function handleSkillHubAction(event) {
 }
 
 function refreshStartedAtFor(kind) {
-  return kind === "sentiment" ? sentimentRefreshStartedAt : stockDetailRefreshStartedAt;
+  if (kind === "sentiment") return sentimentRefreshStartedAt;
+  if (kind === "fundamental") return fundamentalRefreshStartedAt;
+  return stockDetailRefreshStartedAt;
 }
 
 function formatRefreshElapsed(startedAt) {
@@ -2483,7 +2639,7 @@ function ensureRefreshElapsedTimer() {
 }
 
 function stopRefreshElapsedTimerIfIdle() {
-  if (stockDetailRefreshing.size || sentimentRefreshing.size || !refreshElapsedTimer) return;
+  if (stockDetailRefreshing.size || sentimentRefreshing.size || fundamentalRefreshing.size || !refreshElapsedTimer) return;
   window.clearInterval(refreshElapsedTimer);
   refreshElapsedTimer = null;
 }
@@ -2691,6 +2847,46 @@ async function refreshCurrentSentiment(useLlm = true) {
   } finally {
     sentimentRefreshing.delete(stock.symbol);
     sentimentRefreshStartedAt.delete(stock.symbol);
+    stopRefreshElapsedTimerIfIdle();
+    renderSentimentAside(stockBySymbol(stock.symbol) ?? stock, stockDetailCache.get(stock.symbol));
+  }
+}
+
+async function refreshCurrentFundamental() {
+  const stock = selectedStock();
+  if (!stock || !apiState.connected) return;
+  if (fundamentalRefreshing.has(stock.symbol)) return;
+  const detail = stockDetailCache.get(stock.symbol);
+  fundamentalRefreshing.add(stock.symbol);
+  fundamentalRefreshStartedAt.set(stock.symbol, Date.now());
+  fundamentalRefreshErrors.delete(stock.symbol);
+  fundamentalRefreshResults.delete(stock.symbol);
+  ensureRefreshElapsedTimer();
+  detailSideTabs.set(stock.symbol, "fundamental");
+  renderSentimentAside(stock, detail);
+  try {
+    updateBackendStatus(`刷新 ${stock.symbol} 基本面中`);
+    const params = new URLSearchParams({
+      market: stock.market || "all"
+    });
+    const result = await apiRequest(`/api/stocks/${encodeURIComponent(stock.symbol)}/fundamental/iwencai/refresh?${params.toString()}`, {
+      method: "POST"
+    });
+    fundamentalRefreshResults.set(stock.symbol, result);
+    stockDetailCache.delete(stock.symbol);
+    stockDetailErrors.delete(stock.symbol);
+    await loadStockDetail(stock.symbol, stock.market);
+    const refreshed = stockBySymbol(stock.symbol) ?? stock;
+    renderDetails(refreshed);
+    updateBackendStatus(`${stock.symbol} 基本面已刷新`);
+  } catch (error) {
+    fundamentalRefreshErrors.set(stock.symbol, error.message);
+    apiState.lastError = `${stock.symbol} 基本面刷新失败：${error.message}`;
+    updateBackendStatus(apiState.lastError);
+    renderSentimentAside(stock, stockDetailCache.get(stock.symbol));
+  } finally {
+    fundamentalRefreshing.delete(stock.symbol);
+    fundamentalRefreshStartedAt.delete(stock.symbol);
     stopRefreshElapsedTimerIfIdle();
     renderSentimentAside(stockBySymbol(stock.symbol) ?? stock, stockDetailCache.get(stock.symbol));
   }
@@ -2950,6 +3146,14 @@ function stockSuggestionRank(stock, normalized, aliasSymbol = "") {
   return 8;
 }
 
+function formatStockSuggestionCode(symbol) {
+  const [code = "", market = ""] = String(symbol ?? "").toUpperCase().split(".");
+  if (!code) return "";
+  if (market === "SZ" || market === "SH") return `${market}${code}`;
+  if (market === "HK") return `HK${code.padStart(5, "0")}`;
+  return market ? `${code}.${market}` : code;
+}
+
 function renderStockSearchSuggestions() {
   if (!stockSearchList || !symbolInput) return;
   const query = symbolInput.value.trim();
@@ -2983,20 +3187,23 @@ function renderStockSearchSuggestions() {
   }
   stockSearchList.innerHTML = `
     <div class="stock-suggestion-head">股票</div>
-    ${stockSearchSuggestions.map((stock, index) => `
-      <button
-        id="stock-search-option-${index}"
-        class="stock-suggestion ${index === highlightedStockSuggestion ? "active" : ""}"
-        data-stock-suggestion="${escapeHTML(stock.symbol)}"
-        type="button"
-        role="option"
-        aria-selected="${index === highlightedStockSuggestion ? "true" : "false"}"
-      >
-        <strong>${escapeHTML(stock.name)}</strong>
-        <em>${escapeHTML(stock.symbol)}</em>
-        <small>${escapeHTML(stock.marketLabel ?? stock.market)} · ${escapeHTML(stock.industry ?? stock.currency ?? "")}</small>
-      </button>
-    `).join("")}
+    ${stockSearchSuggestions.map((stock, index) => {
+      const displayCode = formatStockSuggestionCode(stock.symbol);
+      return `
+        <button
+          id="stock-search-option-${index}"
+          class="stock-suggestion ${index === highlightedStockSuggestion ? "active" : ""}"
+          data-stock-suggestion="${escapeHTML(stock.symbol)}"
+          type="button"
+          role="option"
+          aria-selected="${index === highlightedStockSuggestion ? "true" : "false"}"
+        >
+          <span class="stock-suggestion-line">
+            <strong>${escapeHTML(stock.name || stock.symbol)}</strong>${displayCode ? `<em>(${escapeHTML(displayCode)})</em>` : ""}
+          </span>
+        </button>
+      `;
+    }).join("")}
   `;
 }
 
@@ -3098,8 +3305,10 @@ async function loadStocksFromApi() {
   const data = await apiRequest(`/api/stocks/search?${params.toString()}`);
   if (!Array.isArray(data.stocks) || !data.stocks.length) return;
   stocks = data.stocks.map(normalizeApiStock).map((stock) => enrichStock(stock));
-  screenerStocks = [];
-  databaseScreenerActive = false;
+  if (!isRecallScreenerActive()) {
+    screenerStocks = [];
+    databaseScreenerActive = false;
+  }
   if (!stockBySymbol(selectedSymbol)) selectedSymbol = stocks[0].symbol;
   if (!stockBySymbol(selectedAnomalySymbol)) selectedAnomalySymbol = stocks[0].symbol;
 }
@@ -3291,10 +3500,12 @@ function syncStocksFromBackendPortfolio(portfolio) {
 }
 
 function filteredStocks() {
-  const source = apiState.connected && databaseScreenerActive ? screenerStocks : stocks;
+  const recallMode = isRecallScreenerActive();
+  const screenerMode = apiState.connected && (databaseScreenerActive || recallMode);
+  const source = screenerMode ? screenerStocks : stocks;
   const marketList = activeMarket === "all" ? source : source.filter((stock) => stock.market === activeMarket);
   const industryList = activeIndustry ? marketList.filter(stockMatchesActiveIndustry) : marketList;
-  if (apiState.connected && databaseScreenerActive) return industryList;
+  if (screenerMode) return industryList;
   const activeRulesList = [...activeFilterIds].map((id) => filtersById.get(id)).filter(Boolean);
   if (!activeRulesList.length) return industryList;
   return industryList.filter((stock) => {
@@ -3341,27 +3552,35 @@ function renderActiveRules() {
   const promptText = filterPrompt.value.trim();
   const rulePills = rules.map((rule) => `<span class="rule-pill">${rule.label}</span>`);
   if (activeIndustry) rulePills.unshift(`<span class="rule-pill">行业：${escapeHTML(activeIndustry)}</span>`);
-  if (promptText) rulePills.push(`<span class="rule-pill">自然语言：${escapeHTML(promptText)}</span>`);
+  if (promptText) {
+    rulePills.push(`<span class="rule-pill">${iwencaiRecallActive ? "问财画像" : "自然语言"}：${escapeHTML(promptText)}</span>`);
+  }
   activeRules.innerHTML = rulePills.length
     ? rulePills.join("")
     : `<span class="rule-pill muted">未启用过滤</span>`;
 }
 
 async function applyNaturalLanguageFilter() {
-  const rawText = filterPrompt.value.trim();
-  const text = rawText.toLowerCase();
-  if (text) {
-    void saveSearchHistory("filter_prompt", filterPrompt.value);
+  const query = filterPrompt.value.trim();
+  if (query) {
+    void saveSearchHistory("filter_prompt", query);
+    const text = query.toLowerCase();
     if (text.includes("宽松") || text.includes("任一") || text.includes("或者")) {
       filterMode = "any";
       syncFilterModeButtons();
     }
-    const matchedIndustry = industryFromPrompt(rawText);
+    const matchedIndustry = industryFromPrompt(query);
     if (matchedIndustry) {
       activeIndustry = matchedIndustry;
       if (industryFilter) industryFilter.value = matchedIndustry;
       filterPrompt.value = "";
+      renderActiveRules();
+      await runDatabaseScreener();
+      return;
     }
+    renderActiveRules();
+    await runIwencaiRecallScreener(query);
+    return;
   }
   renderActiveRules();
   await runDatabaseScreener();
@@ -3382,7 +3601,62 @@ function industryFromPrompt(value) {
   return contained?.industry ?? "";
 }
 
+async function runIwencaiRecallScreener(query) {
+  if (!apiState.connected) {
+    screenerStocks = [];
+    databaseScreenerActive = false;
+    iwencaiRecallActive = false;
+    iwencaiRecallBySymbol = new Map();
+    renderCandidates();
+    updateBackendStatus("数据 API 未连接，无法执行问财画像召回");
+    return;
+  }
+  const requestId = ++iwencaiRecallRequestId;
+  renderScreenerLoading("问财画像召回中…");
+  try {
+    updateBackendStatus("问财画像召回中");
+    const params = new URLSearchParams({
+      q: query,
+      limit: "20",
+      include_stocks: "true",
+      account_id: apiState.accountId
+    });
+    const payload = await apiRequest(`/api/iwencai-recall/search?${params.toString()}`);
+    if (requestId !== iwencaiRecallRequestId) return;
+    const results = Array.isArray(payload.results) ? payload.results : [];
+    iwencaiRecallBySymbol = new Map(results.map((item) => [item.symbol, item]));
+    iwencaiRecallQuery = query;
+    iwencaiRecallActive = true;
+    databaseScreenerActive = true;
+    screenerStocks = await buildRecallScreenerStocks(results);
+
+    if (screenerStocks.length && !screenerStocks.some((stock) => stock.symbol === selectedSymbol)) {
+      selectedSymbol = screenerStocks[0].symbol;
+    }
+    renderCandidates();
+    renderWatchlist();
+    renderStockAnomalyReport(selectedAnomalySymbol);
+    updateBackendStatus(`问财画像召回完成：${filteredStocks().length} 只`);
+  } catch (error) {
+    if (requestId !== iwencaiRecallRequestId) return;
+    apiState.lastError = `问财画像召回失败：${error.message}`;
+    updateBackendStatus(apiState.lastError);
+    screenerStocks = [];
+    databaseScreenerActive = true;
+    iwencaiRecallActive = true;
+    iwencaiRecallBySymbol = new Map();
+    renderCandidates();
+  }
+}
+
 async function runDatabaseScreener() {
+  if (filterPrompt.value.trim()) {
+    await runIwencaiRecallScreener(filterPrompt.value.trim());
+    return;
+  }
+  iwencaiRecallActive = false;
+  iwencaiRecallBySymbol = new Map();
+  iwencaiRecallQuery = "";
   if (!apiState.connected) {
     screenerStocks = [];
     databaseScreenerActive = false;
@@ -3426,30 +3700,40 @@ async function runDatabaseScreener() {
   }
 }
 
-function renderScreenerLoading() {
-  const message = `<div class="empty-state">正在筛选完整股票池，请稍候...</div>`;
+function renderScreenerLoading(message = "正在筛选完整股票池，请稍候...") {
+  const loading = `<div class="empty-state">${escapeHTML(message)}</div>`;
   if (candidateCount) candidateCount.textContent = "筛选中";
   if (filterResultCount) filterResultCount.textContent = "筛选中";
-  if (candidateGrid) candidateGrid.innerHTML = message;
-  if (filterResultGrid) filterResultGrid.innerHTML = message;
+  if (candidateGrid) candidateGrid.innerHTML = loading;
+  if (filterResultGrid) filterResultGrid.innerHTML = loading;
 }
 
 function renderCandidates() {
   const list = filteredStocks();
+  const showRecallReason = isRecallScreenerActive();
   candidateCount.textContent = `${list.length} 只`;
-  if (candidateGrid) candidateGrid.innerHTML = renderStockCardList(list);
+  if (candidateGrid) candidateGrid.innerHTML = renderStockCardList(list, { showRecallReason });
   if (filterResultCount) filterResultCount.textContent = `${list.length} 只`;
-  if (filterResultGrid) filterResultGrid.innerHTML = renderStockCardList(list);
+  if (filterResultGrid) {
+    filterResultGrid.innerHTML = renderStockCardList(list, { showRecallReason });
+  }
   scheduleSparklineDraw();
   renderAnomalyStockList();
 }
 
-function renderStockCardList(list) {
-  if (!list.length) return `<div class="empty-state">当前过滤组合没有匹配股票。</div>`;
+function renderStockCardList(list, options = {}) {
+  if (!list.length) {
+    const emptyMessage = isRecallScreenerActive()
+      ? (apiState.lastError?.includes("问财画像召回失败")
+        ? apiState.lastError
+        : "当前问财画像召回没有匹配股票。")
+      : "当前过滤组合没有匹配股票。";
+    return `<div class="empty-state">${escapeHTML(emptyMessage)}</div>`;
+  }
   const visible = list.slice(0, STOCK_CARD_RENDER_LIMIT);
   const remainder = list.length - visible.length;
   return `
-    ${visible.map(renderStockCard).join("")}
+    ${visible.map((stock) => renderStockCard(stock, options)).join("")}
     ${remainder > 0 ? `
       <div class="empty-state result-limit-note">
         已显示前 ${visible.length} 只，共 ${list.length} 只。继续增加条件或行业筛选可以缩小结果。
@@ -4032,11 +4316,13 @@ function stockCardCommunitySummary(stock) {
   };
 }
 
-function renderStockCard(stock) {
+function renderStockCard(stock, options = {}) {
   const changeClass = stock.change >= 0 ? "up" : "down";
   const sign = stock.change >= 0 ? "+" : "";
   const marketMetrics = stockCardMarketMetrics(stock);
   const community = stockCardCommunitySummary(stock);
+  const recallItem = stock.recallMatch ?? iwencaiRecallBySymbol.get(stock.symbol);
+  const recallReason = options.showRecallReason && recallItem ? renderRecallReason(recallItem) : "";
   return `
     <article class="stock-card ${stock.symbol === selectedSymbol ? "selected" : ""}" data-symbol="${stock.symbol}">
       <div class="card-head">
@@ -4050,7 +4336,7 @@ function renderStockCard(stock) {
       </div>
       <div class="price-row">
         <span class="price">${formatPrice(stock)}</span>
-        <strong class="change ${changeClass}">${sign}${stock.change.toFixed(1)}%</strong>
+        <strong class="change ${changeClass}">${stock.recallStub && !Number.isFinite(Number(stock.price)) ? "—" : `${sign}${stock.change.toFixed(1)}%`}</strong>
       </div>
       <canvas
         class="sparkline"
@@ -4072,6 +4358,7 @@ function renderStockCard(stock) {
         <span>股吧情绪面</span>
         <strong class="card-community-total ${community.toneClass}">${community.score}/${community.count}</strong>
       </div>
+      ${recallReason}
       <button class="ghost-action" data-analyze="${stock.symbol}" type="button">查看分析</button>
     </article>
   `;
@@ -4603,7 +4890,7 @@ function renderStockDetailPanel(stock) {
       </div>
       <div class="stock-kline-block terminal-chart-block">
         ${bars.length ? `
-          <canvas class="stock-kline-canvas terminal-kline-canvas" width="920" height="420" data-stock-kline="${escapeHTML(stock.symbol)}" data-period="${escapeHTML(period)}" aria-label="K线图"></canvas>
+          <canvas class="stock-kline-canvas terminal-kline-canvas" width="860" height="340" data-stock-kline="${escapeHTML(stock.symbol)}" data-period="${escapeHTML(period)}" aria-label="K线图"></canvas>
         ` : `
           <div class="stock-detail-empty">
             <strong>暂无 K 线数据</strong>
@@ -4611,7 +4898,6 @@ function renderStockDetailPanel(stock) {
           </div>
         `}
       </div>
-      ${renderStockCommunitySourcePanel(stock, detail)}
       <div class="stock-quote-grid terminal-quote-grid">
         ${renderQuoteMetric("昨收", formatDetailNumber(summary.pre_close, 2))}
         ${renderQuoteMetric("成交额", formatLargeMoney(summary.amount, summary.currency))}
@@ -4634,6 +4920,172 @@ function renderStockDetailPanel(stock) {
       ${renderStockInformationPanel(stock, detail)}
     </section>
   `;
+}
+
+function renderIwencaiFundamentalPanel(detail, options = {}) {
+  const profile = detail?.fundamental?.iwencai ?? {};
+  const status = profile.status || "missing";
+  const highlights = Array.isArray(profile.highlights) ? profile.highlights : [];
+  const events = Array.isArray(profile.important_events) ? profile.important_events : [];
+  const concepts = Array.isArray(profile.concepts) ? profile.concepts : [];
+  const summary = String(profile.summary || "").trim();
+  const hasContent = summary || highlights.length || events.length || concepts.length;
+  const sourceMeta = [
+    profile.fetched_at ? `更新 ${formatIwencaiDateTime(profile.fetched_at)}` : "",
+    "问财"
+  ].filter(Boolean).join(" · ");
+  const sideClass = options.surface === "side" ? "fundamental-panel-side" : "";
+  const stock = options.stock ?? selectedStock();
+  const refreshing = stock ? fundamentalRefreshing.has(stock.symbol) : false;
+  const refreshError = stock ? fundamentalRefreshErrors.get(stock.symbol) : "";
+  const refreshButton = stock && apiState.connected
+    ? `<button class="mini-action fundamental-refresh-action" data-fundamental-refresh="iwencai" type="button" ${refreshing ? "disabled" : ""}>${refreshing ? "刷新中" : "刷新"}</button>`
+    : "";
+  const refreshMessage = refreshing
+    ? `<div class="stock-refresh-banner" role="status" aria-live="polite"><div class="refresh-banner-head"><strong>正在刷新基本面</strong>${renderRefreshElapsed("fundamental", stock?.symbol || "")}</div><span>正在请求问财画像并写入本地 iwencai_profile.db。</span><div class="refresh-progress" aria-hidden="true"><span></span></div></div>`
+    : (refreshError ? `<div class="stock-refresh-error">${escapeHTML(refreshError)}</div>` : "");
+
+  if (!hasContent) {
+    return `
+      <div class="fundamental-panel ${sideClass} empty">
+        <div class="fundamental-head">
+          <div>
+            <strong>基本面</strong>
+            <span>问财</span>
+          </div>
+          <div class="fundamental-head-actions">
+            <span class="fundamental-status ${status === "error" ? "warn" : ""}">${escapeHTML(iwencaiStatusText(status))}</span>
+            ${refreshButton}
+          </div>
+        </div>
+        ${refreshMessage}
+        <div class="stock-detail-empty ${status === "error" ? "warn" : ""}">
+          <strong>${status === "no_sections" ? "问财暂无三块画像" : "暂无问财基本面画像"}</strong>
+          <span>${escapeHTML(profile.error || "后台脚本写入 iwencai_profile.db 后，这里会展示简介和看点、近期重要事件、所属概念列表。")}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="fundamental-panel ${sideClass}">
+      <div class="fundamental-head">
+        <div>
+          <strong>基本面</strong>
+          <span>${escapeHTML(sourceMeta || "问财画像库")}</span>
+        </div>
+        <div class="fundamental-head-actions">
+          <span class="fundamental-status">${escapeHTML(iwencaiStatusText(status))}</span>
+          ${refreshButton}
+        </div>
+      </div>
+      ${refreshMessage}
+      <div class="fundamental-section fundamental-summary-section">
+        <div class="fundamental-section-title">
+          <strong>简介和看点</strong>
+          <span>${highlights.length} 个看点</span>
+        </div>
+        ${summary ? `<p class="fundamental-summary">${escapeHTML(summary)}</p>` : `<div class="stock-detail-empty"><strong>暂无简介</strong><span>问财返回中没有简介文本。</span></div>`}
+        ${highlights.length ? `
+          <div class="fundamental-highlight-list">
+            ${highlights.map(renderIwencaiHighlight).join("")}
+          </div>
+        ` : ""}
+      </div>
+      <div class="fundamental-two-column">
+        <div class="fundamental-section">
+          <div class="fundamental-section-title">
+            <strong>近期概念事件</strong>
+            <span>${events.length} 条</span>
+          </div>
+          <div class="fundamental-event-list">
+            ${events.length ? events.map(renderIwencaiEvent).join("") : renderIwencaiEmpty("暂无重要事件", "iwencai_important_events 中没有这只股票的记录。")}
+          </div>
+        </div>
+        <div class="fundamental-section">
+          <div class="fundamental-section-title">
+            <strong>所属概念列表</strong>
+            <span>${concepts.length} 个</span>
+          </div>
+          <div class="fundamental-concept-list">
+            ${concepts.length ? concepts.map(renderIwencaiConcept).join("") : renderIwencaiEmpty("暂无概念", "iwencai_concepts 中没有这只股票的记录。")}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderIwencaiHighlight(item) {
+  const label = item.label || item["看点"] || "未命名看点";
+  const effect = item.effect || item["影响"] || "";
+  const type = item.label_type || item["类型"] || "";
+  const tone = /利好|正面|good/i.test(effect) ? "good" : (/利空|负面|bad/i.test(effect) ? "bad" : "");
+  return `
+    <span class="fundamental-highlight ${tone}">
+      <strong>${escapeHTML(label)}</strong>
+      ${type ? `<em>${escapeHTML(type)}</em>` : ""}
+    </span>
+  `;
+}
+
+function renderIwencaiEvent(item) {
+  const eventName = item.event_name || item["重要事件名称"] || "事件";
+  const content = item.content || item["重要事件内容"] || "";
+  const date = item.announcement_date || item["重要事件公告时间"] || "";
+  return `
+    <article class="fundamental-event">
+      <div>
+        <strong>${escapeHTML(eventName)}</strong>
+        <span>${escapeHTML(formatIwencaiCompactDate(date))}</span>
+      </div>
+      <p>${escapeHTML(content || "暂无事件内容")}</p>
+    </article>
+  `;
+}
+
+function renderIwencaiConcept(item) {
+  const name = item.concept_name || item["诊股概念分类名称"] || "未命名概念";
+  const content = item.concept_content || item["诊股概念分类内容"] || "";
+  const date = item.included_date || item["诊股概念分类纳入日期"] || "";
+  return `
+    <details class="fundamental-concept">
+      <summary>
+        <strong>${escapeHTML(name)}</strong>
+        <span>${escapeHTML(formatIwencaiCompactDate(date))}</span>
+      </summary>
+      <p>${escapeHTML(content || "暂无概念说明")}</p>
+    </details>
+  `;
+}
+
+function renderIwencaiEmpty(title, text) {
+  return `
+    <div class="stock-detail-empty">
+      <strong>${escapeHTML(title)}</strong>
+      <span>${escapeHTML(text)}</span>
+    </div>
+  `;
+}
+
+function iwencaiStatusText(status) {
+  if (status === "ok") return "已入库";
+  if (status === "no_sections") return "无组件";
+  if (status === "error") return "读取异常";
+  return "待抓取";
+}
+
+function formatIwencaiCompactDate(value) {
+  const text = String(value || "").trim();
+  if (/^\d{8}$/.test(text)) return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
+  return text || "暂无日期";
+}
+
+function formatIwencaiDateTime(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const normalized = text.replace("T", " ");
+  return normalized.length > 19 ? normalized.slice(0, 19) : normalized;
 }
 
 function renderStockCommunitySourcePanel(stock, detail) {
@@ -4820,11 +5272,32 @@ function renderQuoteMetric(label, value, valueClass = "") {
 
 function renderSentimentAside(stock, detail) {
   if (!sentimentAside) return;
-  sentimentAside.innerHTML = renderSentimentPanel(detail, {
-    stock,
-    interactive: true,
-    surface: "side"
-  });
+  const activeTab = detailSideTab(stock, detail);
+  sentimentAside.innerHTML = `
+    <div class="detail-side-panel">
+      <div class="detail-side-tabs" role="tablist" aria-label="详情侧栏">
+        <button class="${activeTab === "fundamental" ? "active" : ""}" data-detail-side-tab="fundamental" type="button" role="tab" aria-selected="${activeTab === "fundamental" ? "true" : "false"}">
+          基本面
+        </button>
+        <button class="${activeTab === "sentiment" ? "active" : ""}" data-detail-side-tab="sentiment" type="button" role="tab" aria-selected="${activeTab === "sentiment" ? "true" : "false"}">
+          情绪面
+        </button>
+      </div>
+      <div class="detail-side-content">
+        ${activeTab === "fundamental"
+          ? renderIwencaiFundamentalPanel(detail, { surface: "side" })
+          : renderSentimentPanel(detail, { stock, interactive: true, surface: "side" })}
+      </div>
+    </div>
+  `;
+}
+
+function detailSideTab(stock, detail) {
+  const symbol = stock?.symbol || selectedSymbol || "";
+  const requested = detailSideTabs.get(symbol);
+  if (requested === "fundamental" || requested === "sentiment") return requested;
+  const iwencai = detail?.fundamental?.iwencai;
+  return iwencai?.status === "ok" ? "fundamental" : "sentiment";
 }
 
 function renderSentimentRefreshBanner(stock) {
@@ -8360,6 +8833,20 @@ detailBody.addEventListener("click", (event) => {
 });
 
 sentimentAside?.addEventListener("click", (event) => {
+  const sideTabButton = event.target.closest("[data-detail-side-tab]");
+  if (sideTabButton) {
+    const stock = selectedStock();
+    const tab = sideTabButton.dataset.detailSideTab;
+    if (!stock || (tab !== "fundamental" && tab !== "sentiment")) return;
+    detailSideTabs.set(stock.symbol, tab);
+    renderSentimentAside(stock, stockDetailCache.get(stock.symbol));
+    return;
+  }
+  const fundamentalRefreshButton = event.target.closest("[data-fundamental-refresh]");
+  if (fundamentalRefreshButton) {
+    refreshCurrentFundamental();
+    return;
+  }
   const refreshButton = event.target.closest("[data-sentiment-refresh]");
   if (refreshButton) {
     refreshCurrentSentiment(refreshButton.dataset.sentimentRefresh === "llm");
@@ -8440,6 +8927,11 @@ document.querySelector("#resetFilters").addEventListener("click", () => {
   activeFilterIds = new Set();
   activeMarket = "all";
   activeIndustry = "";
+  iwencaiRecallActive = false;
+  iwencaiRecallBySymbol = new Map();
+  iwencaiRecallQuery = "";
+  screenerStocks = [];
+  databaseScreenerActive = false;
   document.querySelectorAll(".segment").forEach((item) => item.classList.toggle("active", item.dataset.market === "all"));
   if (industryFilter) industryFilter.value = "";
   filterPrompt.value = "";
